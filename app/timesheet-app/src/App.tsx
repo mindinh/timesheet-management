@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import MainLayout from './layouts/MainLayout'
-import TimesheetPage from './pages/timesheet/TimesheetPage'
-import AdminDashboard from './pages/admin/AdminDashboard'
-import ProjectsPage from './pages/admin/ProjectsPage'
+import MainLayout from '@/shared/layouts/MainLayout'
+import TimesheetPage from '@/features/timesheet/pages/TimesheetPage'
+import AdminDashboard from '@/features/admin/pages/AdminDashboard'
+import ProjectsPage from '@/features/admin/pages/ProjectsPage'
 
 function App() {
   return (

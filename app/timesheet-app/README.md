@@ -1,73 +1,122 @@
-# React + TypeScript + Vite
+# Timesheet App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern compiled timesheet management application built with React and Vite.
 
-Currently, two official plugins are available:
+## 📚 Documentation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This project includes comprehensive documentation for developers:
 
-## React Compiler
+- **[DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)** - detailed explanations of architecture, patterns, and workflows
+- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - code snippets and common tasks
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 Quick Start
 
-## Expanding the ESLint configuration
+### Prerequisites
+- Node.js 18+ and npm
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Installation
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Development
+```bash
+npm run dev    # Start dev server
 ```
+
+### Build
+```bash
+npm run build  # Production build
+```
+
+### Linting
+```bash
+npm run lint   # Run ESLint
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── features/          # Feature modules (timesheet, admin, auth)
+├── shared/            # Shared utilities, components, APIs
+├── core/              # Core configuration
+├── App.tsx            # Root component
+└── main.tsx           # Entry point
+```
+
+Each feature module follows a consistent structure:
+- `components/` - React components
+- `pages/` - Route pages
+- `store/` - Zustand state management
+
+## 🛠 Technology Stack
+
+- **React 19.2.0** - UI framework
+- **Vite 7.3.1** - Build tool
+- **Zustand 5.0.11** - State management
+- **React Query 5.90.20** - Data fetching
+- **TailwindCSS 4.1.18** - Styling
+- **Radix UI** - Component primitives
+- **React Hook Form 7.71.1** - Form handling
+- **Zod 4.3.6** - Schema validation
+- **React Router DOM 7.13.0** - Routing
+- **Lucide React** - Icons
+- **Date-fns** - Date manipulation
+
+## 🎨 Key Features
+
+### Timesheet Management
+- Manage daily entries
+- Track project hours
+
+### Admin
+- Project configuration
+- User management
+
+## 📦 Import Aliases
+
+The project uses path aliases for cleaner imports:
+
+```typescript
+import { Button } from '@/shared/components/ui/button'
+import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
+```
+
+| Alias | Maps to |
+|-------|---------|
+| `@/features/*` | `./src/features/*` |
+| `@/shared/*` | `./src/shared/*` |
+| `@/core/*` | `./src/core/*` |
+
+## 🏗 Development Workflow
+
+1. **Create feature** in `src/features/<feature-name>/`
+2. **Create store** for state management
+3. **Build components** in `components/`
+4. **Add routes** in `App.tsx`
+
+## 🔧 Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run lint` | Run ESLint |
+| `npm run preview` | Preview production build |
+
+## 📋 Code Style & Conventions
+
+- **Components**: PascalCase (e.g., `DailyEntryList.tsx`)
+- **Hooks**: `use<Name>.ts`
+- **Stores**: `camelCase` (e.g., `timesheetStore.ts`)
+
+## 📄 License
+
+Private - Timesheet Management Project
+
+---
+
+**Version:** 0.0.0
+**Last Updated:** February 2026
