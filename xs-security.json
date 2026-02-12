@@ -1,6 +1,47 @@
 {
-  "scopes": [],
+  "xsappname": "timesheet-management",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.admin",
+      "description": "Administrator"
+    },
+    {
+      "name": "$XSAPPNAME.member",
+      "description": "Team Member"
+    }
+  ],
   "attributes": [],
-  "role-templates": [],
-  "authorities-inheritance": false
+  "role-templates": [
+    {
+      "name": "admin",
+      "description": "Administrator with full access",
+      "scope-references": [
+        "$XSAPPNAME.admin"
+      ]
+    },
+    {
+      "name": "member",
+      "description": "Team member with basic access",
+      "scope-references": [
+        "$XSAPPNAME.member"
+      ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "TimesheetAdmin",
+      "description": "Timesheet Administrator",
+      "role-template-references": [
+        "$XSAPPNAME.admin"
+      ]
+    },
+    {
+      "name": "TimesheetMember",
+      "description": "Timesheet Team Member",
+      "role-template-references": [
+        "$XSAPPNAME.member"
+      ]
+    }
+  ]
 }

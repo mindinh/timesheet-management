@@ -1,6 +1,17 @@
 import axios from 'axios'
 import type { Project, TimesheetEntry, Timesheet } from '@/shared/types'
 
+// Mock user impersonation support
+let _mockUserId: string | null = null
+
+export function setMockUserId(userId: string | null) {
+    _mockUserId = userId
+}
+
+export function getMockUserId(): string | null {
+    return _mockUserId
+}
+
 const api = axios.create({
     baseURL: '/api/timesheet',
     headers: {
@@ -11,6 +22,14 @@ const api = axios.create({
             .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
             .join('&')
     },
+})
+
+// Inject x-mock-user header when impersonating a user
+api.interceptors.request.use((config) => {
+    if (_mockUserId) {
+        config.headers['x-mock-user'] = _mockUserId
+    }
+    return config
 })
 
 // Projects API
@@ -183,6 +202,14 @@ export const timesheetEntriesAPI = {
             }
         })
         await Promise.all(promises)
+    },
+}
+
+// User Info API (get authenticated user from backend)
+export const userInfoAPI = {
+    get: async (): Promise<{ id: string; email: string; firstName: string; lastName: string; role: string }> => {
+        const response = await api.get('/userInfo()')
+        return response.data
     },
 }
 

@@ -9,6 +9,8 @@ import {
 } from '@/shared/components/ui/select'
 import { Badge } from '@/shared/components/ui/badge'
 import { format } from 'date-fns'
+import { useTimesheetStore } from '../store/timesheetStore'
+
 
 interface CalendarHeaderProps {
     currentMonth: Date
@@ -37,6 +39,7 @@ export function CalendarHeader({
     isDirty = false,
     isLoading = false,
 }: CalendarHeaderProps) {
+    const { currentUser } = useTimesheetStore()
     const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i)
     const months = Array.from({ length: 12 }, (_, i) => i)
 
@@ -49,14 +52,14 @@ export function CalendarHeader({
 
     return (
         <div className="flex-col items-center justify-between flex-wrap w-full">
-            <h1 className="text-3xl font-bold mb-4">Timesheet</h1>
+            <h1 className="text-xl font-bold mb-4"> {currentUser?.firstName + ' ' + currentUser?.lastName} - Timesheet</h1>
             <div className="flex items-center w-full justify-between">
-                <div className="flex items-center">
+                <div className="flex items-center gap-2">
 
                     <Button variant="outline" size="icon" onClick={onPrevMonth}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <h2 className="text-lg font-semibold w-40 text-center">
+                    <h2 className="text-lg font-semibold w-35 text-center">
                         {format(currentMonth, 'MMMM yyyy')}
                     </h2>
                     <Button variant="outline" size="icon" onClick={onNextMonth}>

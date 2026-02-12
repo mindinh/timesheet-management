@@ -1,8 +1,7 @@
 import { create } from 'zustand'
 import type { TimesheetEntry, Timesheet, Project, User } from '@/shared/types'
-import { projectsAPI, timesheetEntriesAPI, timesheetsAPI } from '@/shared/lib/api'
+import { projectsAPI, timesheetEntriesAPI, timesheetsAPI, userInfoAPI, setMockUserId } from '@/shared/lib/api'
 
-// Mock users for testing — replace with real auth later
 export const MOCK_USERS: User[] = [
     { id: '2b7a2d96-0e94-4d13-8a03-7f8a70562590', email: 'alice@example.com', firstName: 'Alice', lastName: 'Nguyen', role: 'Employee' },
     { id: 'c4e8f1a2-3b56-4d78-9e01-a1b2c3d4e5f6', email: 'bob@example.com', firstName: 'Bob', lastName: 'Tran', role: 'Manager' },
@@ -10,7 +9,7 @@ export const MOCK_USERS: User[] = [
 
 interface TimesheetState {
     currentMonth: Date
-    currentUser: User
+    currentUser: User | null
     timesheets: Record<string, Timesheet> // Key: "YYYY-MM"
     entries: TimesheetEntry[] // Local draft entries
     projects: Project[]
@@ -18,7 +17,10 @@ interface TimesheetState {
     isLoading: boolean
 
     setCurrentMonth: (date: Date) => void
-    setCurrentUser: (user: User) => void
+
+    // Auth
+    fetchCurrentUser: () => Promise<void>
+    switchUser: (userId: string) => void
 
     // Projects
     fetchProjects: () => Promise<void>
@@ -40,7 +42,7 @@ let localIdCounter = 0
 
 export const useTimesheetStore = create<TimesheetState>((set, get) => ({
     currentMonth: new Date(),
-    currentUser: MOCK_USERS[0],
+    currentUser: null,
     timesheets: {},
     entries: [],
     projects: [],
@@ -49,9 +51,34 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
 
     setCurrentMonth: (date) => set({ currentMonth: date }),
 
-    setCurrentUser: (user) => {
+    // Fetch the authenticated user identity from the backend
+    fetchCurrentUser: async () => {
+        try {
+            const userInfo = await userInfoAPI.get()
+            set({
+                currentUser: {
+                    id: userInfo.id,
+                    email: userInfo.email,
+                    firstName: userInfo.firstName,
+                    lastName: userInfo.lastName,
+                    role: userInfo.role,
+                },
+            })
+        } catch (error) {
+            console.error('Failed to fetch current user:', error)
+        }
+    },
+
+    // Switch to a different mock user (for dev testing)
+    switchUser: (userId) => {
+        const user = MOCK_USERS.find((u) => u.id === userId)
+        if (!user) return
+
+        // Set the impersonation header for all future API calls
+        setMockUserId(userId)
+
+        // Update store and re-fetch data
         set({ currentUser: user, projects: [], entries: [] })
-        // Re-fetch projects and entries for the new user
         get().fetchProjects()
         const { currentMonth } = get()
         get().fetchEntries(currentMonth.getMonth() + 1, currentMonth.getFullYear())
@@ -62,6 +89,10 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
         set({ isLoading: true })
         try {
             const { currentUser } = get()
+            if (!currentUser) {
+                set({ isLoading: false })
+                return
+            }
             const projects = await projectsAPI.getProjectsByUser(currentUser.id)
             set({ projects, isLoading: false })
         } catch (error) {
@@ -76,7 +107,7 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
             const { currentUser } = get()
             const newProject = await projectsAPI.create({
                 ...project,
-                user_ID: currentUser.id,
+                user_ID: currentUser?.id,
             })
             set((state) => ({
                 projects: [...state.projects, newProject],
@@ -126,6 +157,10 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
         set({ isLoading: true })
         try {
             const { currentUser } = get()
+            if (!currentUser) {
+                set({ isLoading: false })
+                return
+            }
             const entries = await timesheetEntriesAPI.getAll(month, year, currentUser.id)
             set({ entries, isDirty: false, isLoading: false })
         } catch (error) {
@@ -163,6 +198,7 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
 
     saveEntries: async () => {
         const { entries, currentMonth, currentUser } = get()
+        if (!currentUser) return
         set({ isLoading: true })
         try {
             const month = currentMonth.getMonth() + 1

@@ -12,6 +12,7 @@ import type { TimesheetEntry } from '@/shared/types'
 export default function TimesheetPage() {
     const {
         currentMonth,
+        currentUser,
         setCurrentMonth,
         addEntry,
         updateEntry,
@@ -20,6 +21,7 @@ export default function TimesheetPage() {
         projects,
         isDirty,
         isLoading,
+        fetchCurrentUser,
         fetchProjects,
         fetchEntries,
         saveEntries,
@@ -28,16 +30,26 @@ export default function TimesheetPage() {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
     const [editingEntry, setEditingEntry] = useState<TimesheetEntry | undefined>(undefined)
 
-    // Fetch data on mount and month change
+    // Fetch authenticated user on mount
     useEffect(() => {
-        fetchProjects()
-    }, [])
+        fetchCurrentUser()
+    }, [fetchCurrentUser])
 
+    // Fetch projects when user is available
     useEffect(() => {
-        const month = currentMonth.getMonth() + 1
-        const year = currentMonth.getFullYear()
-        fetchEntries(month, year)
-    }, [currentMonth, fetchEntries])
+        if (currentUser) {
+            fetchProjects()
+        }
+    }, [currentUser, fetchProjects])
+
+    // Fetch entries when user or month changes
+    useEffect(() => {
+        if (currentUser) {
+            const month = currentMonth.getMonth() + 1
+            const year = currentMonth.getFullYear()
+            fetchEntries(month, year)
+        }
+    }, [currentMonth, currentUser, fetchEntries])
 
     // Filter entries for current month
     const currentMonthEntries = useMemo(() => {

@@ -20,14 +20,11 @@ const navigation = [
 
 export default function Sidebar() {
     const location = useLocation()
-    const { currentUser, setCurrentUser } = useTimesheetStore()
+    const { currentUser, switchUser } = useTimesheetStore()
     const [isCollapsed, setIsCollapsed] = useState(false)
 
     const handleUserChange = (userId: string) => {
-        const user = MOCK_USERS.find((u) => u.id === userId)
-        if (user) {
-            setCurrentUser(user)
-        }
+        switchUser(userId)
     }
 
     return (
@@ -77,7 +74,7 @@ export default function Sidebar() {
             </nav>
 
             {/* Mock User Switcher - Hidden when collapsed */}
-            {!isCollapsed && (
+            {!isCollapsed && currentUser && (
                 <div className="px-4 pb-2">
                     <label className="text-xs font-medium text-muted-foreground mb-1 block">
                         Switch User
@@ -102,27 +99,35 @@ export default function Sidebar() {
                 "flex p-4 border-t border-border",
                 isCollapsed && "justify-center"
             )}>
-                <div className={cn(
-                    "flex text-left items-center",
-                    !isCollapsed && "w-full"
-                )}>
-                    <div className={cn(
-                        "flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium",
-                        !isCollapsed && "mr-3"
-                    )}>
-                        {currentUser.firstName[0]}{currentUser.lastName[0]}
-                    </div>
-                    {!isCollapsed && (
-                        <div className="flex flex-col">
-                            <span className="text-sm">{currentUser.firstName} {currentUser.lastName}</span>
-                            <span className="text-xs text-muted-foreground">{currentUser.role}</span>
+                {currentUser ? (
+                    <>
+                        <div className={cn(
+                            "flex text-left items-center",
+                            !isCollapsed && "w-full"
+                        )}>
+                            <div className={cn(
+                                "flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium",
+                                !isCollapsed && "mr-3"
+                            )}>
+                                {currentUser.firstName[0]}{currentUser.lastName[0]}
+                            </div>
+                            {!isCollapsed && (
+                                <div className="flex flex-col">
+                                    <span className="text-sm">{currentUser.firstName} {currentUser.lastName}</span>
+                                    <span className="text-xs text-muted-foreground">{currentUser.role}</span>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
-                {!isCollapsed && (
-                    <Button variant="ghost" size="icon">
-                        <LogOut className="h-5 w-5" />
-                    </Button>
+                        {!isCollapsed && (
+                            <Button variant="ghost" size="icon">
+                                <LogOut className="h-5 w-5" />
+                            </Button>
+                        )}
+                    </>
+                ) : (
+                    <div className="text-sm text-muted-foreground">
+                        {isCollapsed ? '...' : 'Loading user...'}
+                    </div>
                 )}
             </div>
         </div>
