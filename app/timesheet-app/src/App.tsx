@@ -1,8 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from '@/shared/layouts/MainLayout'
 import TimesheetPage from '@/features/timesheet/pages/TimesheetPage'
+import TimesheetListPage from '@/features/timesheet/pages/TimesheetListPage'
 import AdminDashboard from '@/features/admin/pages/AdminDashboard'
-import ProjectsPage from '@/features/admin/pages/ProjectsPage'
+import ProjectsPage from '@/features/projects/pages/ProjectsPage'
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Navigate to="/timesheet" replace />} />
         <Route path="timesheet" element={<TimesheetPage />} />
+        <Route path="timesheets" element={<TimesheetListPage />} />
         <Route path="admin" element={<AdminDashboard />} />
         <Route path="admin/projects" element={<ProjectsPage />} />
       </Route>

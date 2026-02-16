@@ -29,6 +29,7 @@ import { Textarea } from '@/shared/components/ui/textarea'
 import { format } from 'date-fns'
 import { useEffect } from 'react'
 import type { TimesheetEntry } from '@/shared/types'
+import { useProjectStore } from '@/features/projects/store/projectStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 
 const formSchema = z.object({
@@ -53,7 +54,8 @@ interface DailyLogDialogProps {
 }
 
 export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: DailyLogDialogProps) {
-    const { projects, fetchProjects } = useTimesheetStore()
+    const { projects, fetchProjects } = useProjectStore()
+    const { currentUser } = useTimesheetStore()
 
     // Use 'any' for the resolver to bypass strict type checking issues between Zod and React Hook Form
     const form = useForm<FormData>({
@@ -66,10 +68,10 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
     })
 
     useEffect(() => {
-        if (open && projects.length === 0) {
-            fetchProjects()
+        if (open && projects.length === 0 && currentUser?.id) {
+            fetchProjects(currentUser.id)
         }
-    }, [open, projects.length, fetchProjects])
+    }, [open, projects.length, fetchProjects, currentUser])
 
     useEffect(() => {
         if (open) {

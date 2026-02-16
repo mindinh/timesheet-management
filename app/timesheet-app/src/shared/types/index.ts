@@ -1,7 +1,11 @@
+export type ProjectType = 'Papierkram' | 'Internal' | 'External' | 'Other'
+export type TimesheetStatusType = 'Draft' | 'Submitted' | 'Approved_By_TeamLead' | 'Approved' | 'Rejected' | 'Finished'
+
 export interface TimesheetEntry {
     id: string
     date: string // YYYY-MM-DD
     projectId: string
+    taskId?: string
     timesheetId?: string
     hours: number
     description?: string
@@ -11,15 +15,30 @@ export interface Timesheet {
     id: string
     month: number
     year: number
-    status: 'Draft' | 'Submitted' | 'Approved' | 'Rejected'
+    status: TimesheetStatusType
     entries: TimesheetEntry[]
+    submitDate?: string
+    approveDate?: string
+    totalHours?: number
 }
 
 export interface Project {
     id: string
     name: string
     code: string
+    type: ProjectType
+    description?: string
     isActive: boolean
+}
+
+export interface Task {
+    id: string
+    projectId: string
+    name: string
+    description?: string
+    startDate?: string
+    endDate?: string
+    status: 'Open' | 'InProgress' | 'Completed' | 'Cancelled'
 }
 
 export interface User {
@@ -28,4 +47,11 @@ export interface User {
     firstName: string
     lastName: string
     role: string
+    manager?: {
+        id: string
+        firstName: string
+        lastName: string
+        role: string
+    }
 }
+

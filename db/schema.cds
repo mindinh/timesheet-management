@@ -14,6 +14,7 @@ type TimesheetStatus : String(30) enum {
   Finished;              // Archived / done
 };
 type TaskStatus    : String(20) enum { Open; InProgress; Completed; Cancelled; };
+type ProjectType   : String(20) enum { Papierkram; Internal; External; Other; };
 
 // ─── User ───────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,7 @@ entity User : cuid, managed {
 entity Project : cuid, managed {
   name        : String(100) @mandatory;
   description : String(500);
+  type        : ProjectType default 'Other';
   code        : String(20)  @mandatory;
   isActive    : Boolean default true;
   user        : Association to User;

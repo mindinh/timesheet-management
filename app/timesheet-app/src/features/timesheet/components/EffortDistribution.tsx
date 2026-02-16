@@ -26,12 +26,12 @@ export function EffortDistribution({ entries, projects }: EffortDistributionProp
             }
         })
         .sort((a, b) => b.hours - a.hours)
-        .slice(0, 3) // Top 3 projects
+        .slice(0, 3)
 
     const colors = [
         'bg-blue-600',
-        'bg-purple-600',
-        'bg-gray-600'
+        'bg-indigo-500',
+        'bg-gray-400'
     ]
 
     if (projectData.length === 0) {
@@ -39,9 +39,9 @@ export function EffortDistribution({ entries, projects }: EffortDistributionProp
     }
 
     return (
-        <div className="mt-6 p-6 bg-card rounded-lg border shadow-sm">
+        <div className="p-5 bg-card rounded-lg border shadow-sm">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wide">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Effort Distribution
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -49,16 +49,17 @@ export function EffortDistribution({ entries, projects }: EffortDistributionProp
                 </p>
             </div>
 
-            <div className="space-y-4">
+            {/* Horizontal layout matching reference */}
+            <div className="flex items-center gap-8">
                 {projectData.map((project, index) => (
-                    <div key={project.projectId} className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium">{project.projectName}</span>
-                            <span className="text-muted-foreground">{project.percentage}%</span>
+                    <div key={project.projectId} className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between text-sm mb-1.5">
+                            <span className="font-medium truncate">{project.projectName}</span>
+                            <span className="text-muted-foreground ml-2 tabular-nums">{project.percentage}%</span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                             <div
-                                className={`h-full ${colors[index % colors.length]} transition-all duration-300`}
+                                className={`h-full ${colors[index % colors.length]} rounded-full transition-all duration-500`}
                                 style={{ width: `${project.percentage}%` }}
                             />
                         </div>

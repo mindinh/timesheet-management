@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
-import { Calendar, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -14,6 +14,7 @@ import { useTimesheetStore, MOCK_USERS } from '@/features/timesheet/store/timesh
 
 const navigation = [
     { name: 'My Timesheet', href: '/timesheet', icon: Calendar },
+    { name: 'My Timesheets', href: '/timesheets', icon: ClipboardList },
     { name: 'Admin Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Projects', href: '/admin/projects', icon: FolderKanban },
 ]

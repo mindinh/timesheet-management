@@ -1,23 +1,36 @@
 import { Calendar, Zap, Clock, CheckCircle } from 'lucide-react'
 import { Card, CardContent } from '@/shared/components/ui/card'
-import type { TimesheetEntry } from '@/shared/types'
+import { getDaysInMonth } from 'date-fns'
+import type { TimesheetEntry, TimesheetStatusType } from '@/shared/types'
 
 interface TimesheetStatsProps {
     entries: TimesheetEntry[]
+    currentMonth: Date
+    status?: TimesheetStatusType
     workingDays?: number
 }
 
-export function TimesheetStats({ entries, workingDays = 22 }: TimesheetStatsProps) {
+export function TimesheetStats({ entries, currentMonth, status = 'Draft', workingDays = 22 }: TimesheetStatsProps) {
     const totalHours = entries.reduce((sum, e) => sum + e.hours, 0)
     const uniqueDays = new Set(entries.map(e => e.date)).size
+    const daysInMonth = getDaysInMonth(currentMonth)
     const utilization = workingDays > 0 ? ((totalHours / (workingDays * 8)) * 100).toFixed(1) : '0.0'
     const overtime = Math.max(0, totalHours - (workingDays * 8))
+
+    const approvalLabel = () => {
+        if (status === 'Approved' || status === 'Finished') return 'Approved'
+        if (status === 'Approved_By_TeamLead') return 'Partial'
+        if (status === 'Submitted') return 'Pending'
+        if (status === 'Rejected') return 'Rejected'
+        return 'Pending'
+    }
 
     const stats = [
         {
             icon: Calendar,
             label: 'LOGGED DAYS',
-            value: uniqueDays.toString(),
+            value: `${uniqueDays}`,
+            suffix: `/ ${daysInMonth}`,
             color: 'text-blue-600',
             bgColor: 'bg-blue-50 dark:bg-blue-950/30'
         },
@@ -31,17 +44,18 @@ export function TimesheetStats({ entries, workingDays = 22 }: TimesheetStatsProp
         {
             icon: Clock,
             label: 'OVERTIME',
-            value: `${overtime.toFixed(2)} H`,
+            value: `${overtime.toFixed(2)}`,
+            suffix: 'H',
             color: 'text-orange-600',
             bgColor: 'bg-orange-50 dark:bg-orange-950/30'
         },
         {
             icon: CheckCircle,
             label: 'APPROVALS',
-            value: 'Pending',
+            value: approvalLabel(),
             color: 'text-purple-600',
             bgColor: 'bg-purple-50 dark:bg-purple-950/30',
-            isItalic: true
+            isItalic: status === 'Draft',
         }
     ]
 
@@ -49,7 +63,7 @@ export function TimesheetStats({ entries, workingDays = 22 }: TimesheetStatsProp
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat) => (
                 <Card key={stat.label} className="border-0 shadow-sm">
-                    <CardContent className="p-6">
+                    <CardContent className="p-5">
                         <div className="flex items-start gap-4">
                             <div className={`p-3 rounded-lg ${stat.bgColor}`}>
                                 <stat.icon className={`h-5 w-5 ${stat.color}`} />
@@ -60,6 +74,11 @@ export function TimesheetStats({ entries, workingDays = 22 }: TimesheetStatsProp
                                 </p>
                                 <p className={`text-2xl font-bold mt-1 ${stat.isItalic ? 'italic' : ''}`}>
                                     {stat.value}
+                                    {stat.suffix && (
+                                        <span className="text-sm font-normal text-muted-foreground ml-1">
+                                            {stat.suffix}
+                                        </span>
+                                    )}
                                 </p>
                             </div>
                         </div>

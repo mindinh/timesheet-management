@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Project, TimesheetEntry, Timesheet } from '@/shared/types'
+import type { Project, TimesheetEntry, Timesheet, Task, TimesheetStatusType } from '@/shared/types'
 
 // Mock user impersonation support
 let _mockUserId: string | null = null
@@ -41,6 +41,8 @@ export const projectsAPI = {
             id: p.ID,
             name: p.name,
             code: p.code,
+            type: p.type || 'Other',
+            description: p.description || '',
             isActive: p.isActive,
         }))
     },
@@ -56,6 +58,8 @@ export const projectsAPI = {
             id: p.ID,
             name: p.name,
             code: p.code,
+            type: p.type || 'Other',
+            description: p.description || '',
             isActive: p.isActive,
         }))
     },
@@ -64,6 +68,8 @@ export const projectsAPI = {
         const response = await api.post('/Projects', {
             name: project.name,
             code: project.code,
+            type: project.type || 'Other',
+            description: project.description || '',
             isActive: project.isActive,
             ...(project.user_ID && { user_ID: project.user_ID }),
         })
@@ -71,16 +77,27 @@ export const projectsAPI = {
             id: response.data.ID,
             name: response.data.name,
             code: response.data.code,
+            type: response.data.type || 'Other',
+            description: response.data.description || '',
             isActive: response.data.isActive,
         }
     },
 
     update: async (id: string, project: Partial<Project>): Promise<Project> => {
-        const response = await api.patch(`/Projects(${id})`, project)
+        const payload: any = {}
+        if (project.name !== undefined) payload.name = project.name
+        if (project.code !== undefined) payload.code = project.code
+        if (project.type !== undefined) payload.type = project.type
+        if (project.description !== undefined) payload.description = project.description
+        if (project.isActive !== undefined) payload.isActive = project.isActive
+
+        const response = await api.patch(`/Projects(${id})`, payload)
         return {
             id: response.data.ID,
             name: response.data.name,
             code: response.data.code,
+            type: response.data.type || 'Other',
+            description: response.data.description || '',
             isActive: response.data.isActive,
         }
     },
@@ -90,8 +107,105 @@ export const projectsAPI = {
     },
 }
 
+// Tasks API
+export const tasksAPI = {
+    getByProject: async (projectId: string): Promise<Task[]> => {
+        const response = await api.get('/Tasks', {
+            params: {
+                $filter: `project_ID eq ${projectId}`,
+            },
+        })
+        const data = response.data.value || response.data
+        return data.map((t: any) => ({
+            id: t.ID,
+            projectId: t.project_ID,
+            name: t.name,
+            description: t.description || '',
+            startDate: t.startDate,
+            endDate: t.endDate,
+            status: t.status || 'Open',
+        }))
+    },
+
+    create: async (task: Omit<Task, 'id'>): Promise<Task> => {
+        const response = await api.post('/Tasks', {
+            project_ID: task.projectId,
+            name: task.name,
+            description: task.description || '',
+            startDate: task.startDate,
+            endDate: task.endDate,
+            status: task.status || 'Open',
+        })
+        return {
+            id: response.data.ID,
+            projectId: response.data.project_ID,
+            name: response.data.name,
+            description: response.data.description || '',
+            startDate: response.data.startDate,
+            endDate: response.data.endDate,
+            status: response.data.status || 'Open',
+        }
+    },
+
+    update: async (id: string, task: Partial<Task>): Promise<Task> => {
+        const payload: any = {}
+        if (task.name !== undefined) payload.name = task.name
+        if (task.description !== undefined) payload.description = task.description
+        if (task.startDate !== undefined) payload.startDate = task.startDate
+        if (task.endDate !== undefined) payload.endDate = task.endDate
+        if (task.status !== undefined) payload.status = task.status
+
+        const response = await api.patch(`/Tasks(${id})`, payload)
+        return {
+            id: response.data.ID,
+            projectId: response.data.project_ID,
+            name: response.data.name,
+            description: response.data.description || '',
+            startDate: response.data.startDate,
+            endDate: response.data.endDate,
+            status: response.data.status || 'Open',
+        }
+    },
+
+    delete: async (id: string): Promise<void> => {
+        await api.delete(`/Tasks(${id})`)
+    },
+}
+
 // Timesheets API
 export const timesheetsAPI = {
+    getAll: async (userId: string): Promise<Timesheet[]> => {
+        const response = await api.get('/Timesheets', {
+            params: {
+                $filter: `user_ID eq ${userId}`,
+                $orderby: 'year desc,month desc',
+                $expand: 'entries',
+            },
+        })
+        const data = response.data.value || response.data
+        return data.map((ts: any) => {
+            const entries = ts.entries ? ts.entries.map((e: any) => ({
+                id: e.ID,
+                date: e.date,
+                hours: Number(e.loggedHours) || 0,
+                description: e.description,
+                projectId: e.project_ID,
+                taskId: e.task_ID,
+            })) : []
+            const totalHours = entries.reduce((sum: number, e: any) => sum + e.hours, 0)
+            return {
+                id: ts.ID,
+                month: ts.month,
+                year: ts.year,
+                status: ts.status as TimesheetStatusType,
+                entries,
+                submitDate: ts.submitDate,
+                approveDate: ts.approveDate,
+                totalHours,
+            }
+        })
+    },
+
     getByMonth: async (month: number, year: number, userId: string): Promise<Timesheet | null> => {
         const response = await api.get('/Timesheets', {
             params: {
@@ -101,18 +215,23 @@ export const timesheetsAPI = {
         })
         const data = response.data.value || response.data
         if (data.length > 0) {
+            const entries = data[0].entries ? data[0].entries.map((e: any) => ({
+                id: e.ID,
+                date: e.date,
+                hours: Number(e.loggedHours) || 0,
+                description: e.description,
+                projectId: e.project_ID,
+                taskId: e.task_ID,
+            })) : []
             return {
                 id: data[0].ID,
                 month: data[0].month,
                 year: data[0].year,
-                status: data[0].status,
-                entries: data[0].entries ? data[0].entries.map((e: any) => ({
-                    id: e.ID,
-                    date: e.date,
-                    hours: e.hours,
-                    description: e.description,
-                    projectId: e.project_ID,
-                })) : []
+                status: data[0].status as TimesheetStatusType,
+                entries,
+                submitDate: data[0].submitDate,
+                approveDate: data[0].approveDate,
+                totalHours: entries.reduce((sum: number, e: any) => sum + e.hours, 0),
             }
         }
         return null
@@ -129,10 +248,15 @@ export const timesheetsAPI = {
             id: response.data.ID,
             month: response.data.month,
             year: response.data.year,
-            status: response.data.status,
+            status: response.data.status as TimesheetStatusType,
             entries: []
         }
-    }
+    },
+
+    submit: async (timesheetId: string): Promise<string> => {
+        const response = await api.post('/submitTimesheet', { timesheetId })
+        return response.data.value || response.data
+    },
 }
 
 // Timesheet Entries API
@@ -147,16 +271,17 @@ export const timesheetEntriesAPI = {
         return (response.data.value || response.data).map((e: any) => ({
             id: e.ID,
             date: e.date,
-            hours: e.hours,
+            hours: Number(e.loggedHours) || 0,
             description: e.description,
-            projectId: e.project_ID
+            projectId: e.project_ID,
+            taskId: e.task_ID,
         }))
     },
 
     create: async (entry: Omit<TimesheetEntry, 'id'> & { timesheetId: string }): Promise<TimesheetEntry> => {
         const response = await api.post('/TimesheetEntries', {
             date: entry.date,
-            hours: entry.hours,
+            loggedHours: entry.hours,
             description: entry.description,
             project_ID: entry.projectId,
             timesheet_ID: entry.timesheetId,
@@ -164,7 +289,7 @@ export const timesheetEntriesAPI = {
         return {
             id: response.data.ID,
             date: response.data.date,
-            hours: response.data.hours,
+            hours: Number(response.data.loggedHours) || 0,
             description: response.data.description,
             projectId: response.data.project_ID,
         }
@@ -173,7 +298,7 @@ export const timesheetEntriesAPI = {
     update: async (id: string, entry: Partial<TimesheetEntry>): Promise<TimesheetEntry> => {
         const payload: any = {}
         if (entry.date) payload.date = entry.date
-        if (entry.hours !== undefined) payload.hours = entry.hours
+        if (entry.hours !== undefined) payload.loggedHours = entry.hours
         if (entry.description !== undefined) payload.description = entry.description
         if (entry.projectId) payload.project_ID = entry.projectId
 
@@ -181,7 +306,7 @@ export const timesheetEntriesAPI = {
         return {
             id: response.data.ID,
             date: response.data.date,
-            hours: response.data.hours,
+            hours: Number(response.data.loggedHours) || 0,
             description: response.data.description,
             projectId: response.data.project_ID,
         }
@@ -207,10 +332,32 @@ export const timesheetEntriesAPI = {
 
 // User Info API (get authenticated user from backend)
 export const userInfoAPI = {
-    get: async (): Promise<{ id: string; email: string; firstName: string; lastName: string; role: string }> => {
+    get: async (): Promise<{ id: string; email: string; firstName: string; lastName: string; role: string; manager?: { id: string; firstName: string; lastName: string; role: string } }> => {
         const response = await api.get('/userInfo()')
         return response.data
+    },
+
+    getWithManager: async (userId: string): Promise<{ id: string; firstName: string; lastName: string; role: string; manager?: { id: string; firstName: string; lastName: string; role: string } }> => {
+        const response = await api.get(`/Users(${userId})`, {
+            params: {
+                $expand: 'manager',
+            },
+        })
+        const data = response.data
+        return {
+            id: data.ID,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            role: data.role,
+            manager: data.manager ? {
+                id: data.manager.ID,
+                firstName: data.manager.firstName,
+                lastName: data.manager.lastName,
+                role: data.manager.role,
+            } : undefined,
+        }
     },
 }
 
 export default api
+

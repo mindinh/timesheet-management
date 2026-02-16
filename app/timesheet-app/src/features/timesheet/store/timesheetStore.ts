@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import type { TimesheetEntry, Timesheet, Project, User } from '@/shared/types'
-import { projectsAPI, timesheetEntriesAPI, timesheetsAPI, userInfoAPI, setMockUserId } from '@/shared/lib/api'
+import type { TimesheetEntry, Timesheet, User, TimesheetStatusType } from '@/shared/types'
+import { timesheetEntriesAPI, timesheetsAPI, userInfoAPI, setMockUserId } from '@/shared/lib/api'
 
 export const MOCK_USERS: User[] = [
     { id: '2b7a2d96-0e94-4d13-8a03-7f8a70562590', email: 'alice@example.com', firstName: 'Alice', lastName: 'Nguyen', role: 'Employee' },
@@ -11,8 +11,9 @@ interface TimesheetState {
     currentMonth: Date
     currentUser: User | null
     timesheets: Record<string, Timesheet> // Key: "YYYY-MM"
+    currentTimesheetStatus: TimesheetStatusType // Status of current month's timesheet
+    currentTimesheetId: string | null // ID of current month's timesheet
     entries: TimesheetEntry[] // Local draft entries
-    projects: Project[]
     isDirty: boolean // Tracks unsaved changes
     isLoading: boolean
 
@@ -22,12 +23,6 @@ interface TimesheetState {
     fetchCurrentUser: () => Promise<void>
     switchUser: (userId: string) => void
 
-    // Projects
-    fetchProjects: () => Promise<void>
-    addProject: (project: Omit<Project, 'id'>) => Promise<void>
-    updateProject: (id: string, project: Partial<Project>) => Promise<void>
-    deleteProject: (id: string) => Promise<void>
-
     // Timesheet Entries (Draft Mode)
     fetchEntries: (month: number, year: number) => Promise<void>
     addEntry: (entry: Omit<TimesheetEntry, 'id'>) => void
@@ -35,7 +30,7 @@ interface TimesheetState {
     deleteEntry: (id: string) => void
     saveEntries: () => Promise<void>
 
-    submitTimesheet: (year: number, month: number) => void
+    submitTimesheet: (year: number, month: number) => Promise<void>
 }
 
 let localIdCounter = 0
@@ -44,8 +39,9 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
     currentMonth: new Date(),
     currentUser: null,
     timesheets: {},
+    currentTimesheetStatus: 'Draft',
+    currentTimesheetId: null,
     entries: [],
-    projects: [],
     isDirty: false,
     isLoading: false,
 
@@ -78,78 +74,9 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
         setMockUserId(userId)
 
         // Update store and re-fetch data
-        set({ currentUser: user, projects: [], entries: [] })
-        get().fetchProjects()
+        set({ currentUser: user, entries: [], currentTimesheetStatus: 'Draft', currentTimesheetId: null })
         const { currentMonth } = get()
         get().fetchEntries(currentMonth.getMonth() + 1, currentMonth.getFullYear())
-    },
-
-    // Projects - immediate API persistence, filtered by current user
-    fetchProjects: async () => {
-        set({ isLoading: true })
-        try {
-            const { currentUser } = get()
-            if (!currentUser) {
-                set({ isLoading: false })
-                return
-            }
-            const projects = await projectsAPI.getProjectsByUser(currentUser.id)
-            set({ projects, isLoading: false })
-        } catch (error) {
-            console.error('Failed to fetch projects:', error)
-            set({ isLoading: false })
-        }
-    },
-
-    addProject: async (project) => {
-        set({ isLoading: true })
-        try {
-            const { currentUser } = get()
-            const newProject = await projectsAPI.create({
-                ...project,
-                user_ID: currentUser?.id,
-            })
-            set((state) => ({
-                projects: [...state.projects, newProject],
-                isLoading: false,
-            }))
-        } catch (error) {
-            console.error('Failed to create project:', error)
-            set({ isLoading: false })
-            throw error
-        }
-    },
-
-    updateProject: async (id, project) => {
-        set({ isLoading: true })
-        try {
-            const updatedProject = await projectsAPI.update(id, project)
-            set((state) => ({
-                projects: state.projects.map((p) =>
-                    p.id === id ? { ...p, ...updatedProject } : p
-                ),
-                isLoading: false,
-            }))
-        } catch (error) {
-            console.error('Failed to update project:', error)
-            set({ isLoading: false })
-            throw error
-        }
-    },
-
-    deleteProject: async (id) => {
-        set({ isLoading: true })
-        try {
-            await projectsAPI.delete(id)
-            set((state) => ({
-                projects: state.projects.filter((p) => p.id !== id),
-                isLoading: false,
-            }))
-        } catch (error) {
-            console.error('Failed to delete project:', error)
-            set({ isLoading: false })
-            throw error
-        }
     },
 
     // Timesheet Entries - Draft mode (local changes until saveEntries)
@@ -161,6 +88,21 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
                 set({ isLoading: false })
                 return
             }
+
+            // Also fetch the timesheet header to get its status
+            const timesheet = await timesheetsAPI.getByMonth(month, year, currentUser.id)
+            if (timesheet) {
+                set({
+                    currentTimesheetStatus: timesheet.status,
+                    currentTimesheetId: timesheet.id,
+                })
+            } else {
+                set({
+                    currentTimesheetStatus: 'Draft',
+                    currentTimesheetId: null,
+                })
+            }
+
             const entries = await timesheetEntriesAPI.getAll(month, year, currentUser.id)
             set({ entries, isDirty: false, isLoading: false })
         } catch (error) {
@@ -217,6 +159,7 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
             }
 
             const timesheetId = timesheet.id
+            set({ currentTimesheetId: timesheetId, currentTimesheetStatus: timesheet.status })
 
             // 2. Save Entries with Timesheet ID
             const entriesWithTimesheetId = entries.map(e => ({
@@ -237,8 +180,28 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
         }
     },
 
-    submitTimesheet: (year, month) => {
-        console.log('Submitting timesheet:', year, month)
-        // TODO: Implement with backend API
+    submitTimesheet: async (year, month) => {
+        const { currentUser, currentTimesheetId } = get()
+        if (!currentUser) return
+
+        set({ isLoading: true })
+        try {
+            // Ensure timesheet exists
+            let timesheetId = currentTimesheetId
+            if (!timesheetId) {
+                const timesheet = await timesheetsAPI.getByMonth(month, year, currentUser.id)
+                if (!timesheet) {
+                    throw new Error('No timesheet found. Please save your entries first.')
+                }
+                timesheetId = timesheet.id
+            }
+
+            await timesheetsAPI.submit(timesheetId)
+            set({ currentTimesheetStatus: 'Submitted', isLoading: false })
+        } catch (error: any) {
+            console.error('Failed to submit timesheet:', error)
+            set({ isLoading: false })
+            throw error
+        }
     },
 }))
