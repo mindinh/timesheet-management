@@ -9,7 +9,8 @@ import { TimesheetFooter } from '@/features/timesheet/components/TimesheetFooter
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 import { userInfoAPI } from '@/shared/lib/api'
 import type { TimesheetEntry } from '@/shared/types'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, History } from 'lucide-react'
+import { AuditHistoryDialog } from '@/features/timesheet/components/AuditHistoryDialog'
 
 import { useProjectStore } from '@/features/projects/store/projectStore'
 
@@ -31,6 +32,7 @@ export default function TimesheetPage() {
         submitTimesheet,
         currentTimesheetStatus,
         currentTimesheetComment,
+        currentApprovalHistory,
     } = useTimesheetStore()
     const [searchParams] = useSearchParams()
     const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -39,6 +41,14 @@ export default function TimesheetPage() {
     const [manager, setManager] = useState<{ id: string; firstName: string; lastName: string; role: string } | undefined>()
     const [potentialApprovers, setPotentialApprovers] = useState<{ id: string; firstName: string; lastName: string; role: string; email: string }[]>([])
     const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date())
+    const [showAuditHistory, setShowAuditHistory] = useState(false)
+
+    // Auto-open audit history when navigating from list with showHistory query param
+    useEffect(() => {
+        if (searchParams.get('showHistory') === 'true') {
+            setShowAuditHistory(true)
+        }
+    }, [searchParams])
 
     // Determine if editing is allowed (Draft or Rejected)
     const isReadOnly = currentTimesheetStatus !== 'Draft' && currentTimesheetStatus !== 'Rejected'
@@ -200,6 +210,19 @@ export default function TimesheetPage() {
                 isReadOnly={isReadOnly}
             />
 
+            {/* Audit History Button — placed after the header */}
+            {currentTimesheetStatus !== 'Draft' && (
+                <div className="flex justify-end -mt-2">
+                    <button
+                        onClick={() => setShowAuditHistory(true)}
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <History className="h-4 w-4" />
+                        View History
+                    </button>
+                </div>
+            )}
+
             {/* Rejection Alert */}
             {currentTimesheetStatus === 'Rejected' && (
                 <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
@@ -259,6 +282,15 @@ export default function TimesheetPage() {
                     onSubmit={handleSaveEntry}
                 />
             )}
+
+            {/* Audit History Dialog */}
+            <AuditHistoryDialog
+                open={showAuditHistory}
+                onOpenChange={setShowAuditHistory}
+                history={currentApprovalHistory}
+                periodLabel={format(currentMonth, 'MMMM yyyy')}
+                userName={currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : undefined}
+            />
         </div>
     )
 }

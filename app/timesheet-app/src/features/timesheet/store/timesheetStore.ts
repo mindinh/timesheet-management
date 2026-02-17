@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { TimesheetEntry, Timesheet, User, TimesheetStatusType } from '@/shared/types'
+import type { TimesheetEntry, Timesheet, User, TimesheetStatusType, ApprovalHistory } from '@/shared/types'
 import { timesheetEntriesAPI, timesheetsAPI, userInfoAPI, setMockUserId } from '@/shared/lib/api'
 
 export const MOCK_USERS: User[] = [
@@ -16,6 +16,7 @@ interface TimesheetState {
     currentTimesheetStatus: TimesheetStatusType // Status of current month's timesheet
     currentTimesheetComment: string | null // Comment from last action (e.g. rejection reason)
     currentTimesheetId: string | null // ID of current month's timesheet
+    currentApprovalHistory: ApprovalHistory[] // Approval history for current timesheet
     entries: TimesheetEntry[] // Local draft entries
     isDirty: boolean // Tracks unsaved changes
     isLoading: boolean
@@ -45,6 +46,7 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
     currentTimesheetStatus: 'Draft',
     currentTimesheetComment: null,
     currentTimesheetId: null,
+    currentApprovalHistory: [],
     entries: [],
     isDirty: false,
     isLoading: false,
@@ -100,12 +102,14 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
                     currentTimesheetStatus: timesheet.status,
                     currentTimesheetComment: timesheet.comment || null,
                     currentTimesheetId: timesheet.id,
+                    currentApprovalHistory: timesheet.approvalHistory || [],
                 })
             } else {
                 set({
                     currentTimesheetStatus: 'Draft',
                     currentTimesheetComment: null,
                     currentTimesheetId: null,
+                    currentApprovalHistory: [],
                 })
             }
 

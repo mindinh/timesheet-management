@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Project, TimesheetEntry, Timesheet, Task, TimesheetStatusType } from '@/shared/types'
+import type { Project, TimesheetEntry, Timesheet, Task, TimesheetStatusType, ApprovalHistory } from '@/shared/types'
 
 // Mock user impersonation support
 let _mockUserId: string | null = null
@@ -217,7 +217,7 @@ export const timesheetsAPI = {
         const response = await api.get('/Timesheets', {
             params: {
                 $filter: `month eq ${month} and year eq ${year} and user_ID eq ${userId}`,
-                $expand: 'entries,currentApprover',
+                $expand: 'entries,currentApprover,approvalHistory($expand=actor)',
             },
         })
         const data = response.data.value || response.data
@@ -231,6 +231,20 @@ export const timesheetsAPI = {
                 projectId: e.project_ID,
                 taskId: e.task_ID,
             })) : []
+            const approvalHistory: ApprovalHistory[] = ts.approvalHistory ? ts.approvalHistory.map((h: any) => ({
+                id: h.ID,
+                action: h.action,
+                fromStatus: h.fromStatus,
+                toStatus: h.toStatus,
+                comment: h.comment,
+                timestamp: h.timestamp || h.createdAt,
+                actor: h.actor ? {
+                    id: h.actor.ID,
+                    firstName: h.actor.firstName,
+                    lastName: h.actor.lastName,
+                    role: h.actor.role,
+                } : undefined,
+            })) : []
             return {
                 id: ts.ID,
                 month: ts.month,
@@ -241,6 +255,7 @@ export const timesheetsAPI = {
                 approveDate: ts.approveDate,
                 totalHours: entries.reduce((sum: number, e: any) => sum + e.hours, 0),
                 comment: ts.comment,
+                approvalHistory,
                 currentApprover: ts.currentApprover ? {
                     id: ts.currentApprover.ID,
                     firstName: ts.currentApprover.firstName,
@@ -314,7 +329,7 @@ export const timesheetsAPI = {
     getTimesheetDetail: async (timesheetId: string): Promise<Timesheet & { entries: TimesheetEntry[] }> => {
         const response = await api.get(`/Timesheets(${timesheetId})`, {
             params: {
-                $expand: 'entries($expand=project,task),currentApprover,user',
+                $expand: 'entries($expand=project,task),currentApprover,user,approvalHistory($expand=actor)',
             },
         })
         const ts = response.data
@@ -329,6 +344,20 @@ export const timesheetsAPI = {
             taskId: e.task_ID,
             taskName: e.task?.name || '',
         })) : []
+        const approvalHistory: ApprovalHistory[] = ts.approvalHistory ? ts.approvalHistory.map((h: any) => ({
+            id: h.ID,
+            action: h.action,
+            fromStatus: h.fromStatus,
+            toStatus: h.toStatus,
+            comment: h.comment,
+            timestamp: h.timestamp || h.createdAt,
+            actor: h.actor ? {
+                id: h.actor.ID,
+                firstName: h.actor.firstName,
+                lastName: h.actor.lastName,
+                role: h.actor.role,
+            } : undefined,
+        })) : []
         return {
             id: ts.ID,
             month: ts.month,
@@ -340,6 +369,7 @@ export const timesheetsAPI = {
             finishedDate: ts.finishedDate,
             totalHours: entries.reduce((sum: number, e: any) => sum + e.hours, 0),
             comment: ts.comment,
+            approvalHistory,
             currentApprover: ts.currentApprover ? {
                 id: ts.currentApprover.ID,
                 firstName: ts.currentApprover.firstName,

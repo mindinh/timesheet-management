@@ -15,6 +15,21 @@ export interface TimesheetEntry {
     description?: string
 }
 
+export interface ApprovalHistory {
+    id: string
+    action: string          // Submitted, Approved, Rejected, Modified, Finished
+    fromStatus?: string
+    toStatus?: string
+    comment?: string
+    timestamp: string
+    actor?: {
+        id: string
+        firstName: string
+        lastName: string
+        role: string
+    }
+}
+
 export interface Timesheet {
     id: string
     month: number
@@ -39,6 +54,7 @@ export interface Timesheet {
         email: string
         role: string
     }
+    approvalHistory?: ApprovalHistory[]
 }
 
 export interface Project {

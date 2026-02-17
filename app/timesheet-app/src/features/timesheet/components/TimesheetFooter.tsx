@@ -1,13 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Save, FileDown } from 'lucide-react'
+import { Save, FileDown, ChevronDown } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/shared/components/ui/select'
+import { Card } from '@/shared/components/ui/card'
 import { EffortDistribution } from './EffortDistribution'
 import type { TimesheetEntry, Project, User, UserRole } from '@/shared/types'
 
@@ -41,23 +35,20 @@ export function TimesheetFooter({
     lastSyncTime,
 }: TimesheetFooterProps) {
     const [selectedApproverId, setSelectedApproverId] = useState<string>('')
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
-    // Filter approvers based on current user role:
-    // - TeamLead submits to Admin only
-    // - Employee submits to TeamLead or Admin
+    // Filter approvers based on current user role
     const filteredApprovers = useMemo(() => {
         const userRole = (currentUser?.role as UserRole) || 'Employee'
         if (userRole === 'TeamLead') {
             return potentialApprovers.filter(a => a.role === 'Admin')
         }
-        // Employee can submit to TeamLead or Admin
         return potentialApprovers.filter(a => a.id !== currentUser?.id)
     }, [potentialApprovers, currentUser])
 
     // Default pre-select manager if available
     useEffect(() => {
         if (manager && !selectedApproverId) {
-            // If manager is in filtered list, pre-select; otherwise pick first
             const managerInList = filteredApprovers.find(a => a.id === manager.id)
             if (managerInList) {
                 setSelectedApproverId(manager.id)
@@ -66,6 +57,8 @@ export function TimesheetFooter({
             }
         }
     }, [manager, selectedApproverId, filteredApprovers])
+
+    const selectedApprover = filteredApprovers.find(a => a.id === selectedApproverId)
 
     const syncText = lastSyncTime
         ? `Last sync: ${Math.round((Date.now() - lastSyncTime.getTime()) / 60000)} mins ago`
@@ -83,47 +76,82 @@ export function TimesheetFooter({
                     <EffortDistribution entries={entries} projects={projects} />
                 </div>
 
-                {/* Right: Approver Card (2/5 width) */}
+                {/* Right: Approver Card (2/5 width) — Redesigned */}
                 <div className="lg:col-span-2">
-                    <div className="p-5 bg-primary rounded-lg text-primary-foreground h-full flex flex-col justify-between">
+                    <Card className="h-full p-5 flex flex-col justify-between border shadow-sm">
                         <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/60 mb-3">
+                            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
                                 Submit To
                             </p>
 
-                            {/* Approver Selection */}
+                            {/* Approver Selection — Custom dropdown */}
                             {canSubmit && filteredApprovers.length > 0 ? (
-                                <Select value={selectedApproverId} onValueChange={setSelectedApproverId}>
-                                    <SelectTrigger className="h-10 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground">
-                                        <SelectValue placeholder="Select approver..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {filteredApprovers.map((approver) => (
-                                            <SelectItem key={approver.id} value={approver.id}>
-                                                <div className="flex items-center gap-2">
-                                                    <span>{approver.firstName} {approver.lastName}</span>
-                                                    <span className="text-xs text-muted-foreground">({approver.role})</span>
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        className="w-full flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-2.5 text-left hover:bg-muted/50 transition-colors"
+                                    >
+                                        {/* Avatar */}
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
+                                            {selectedApprover
+                                                ? `${selectedApprover.firstName[0]}${selectedApprover.lastName[0]}`
+                                                : '??'}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-foreground truncate">
+                                                {selectedApprover
+                                                    ? `${selectedApprover.firstName} ${selectedApprover.lastName}`
+                                                    : 'Select approver...'}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {selectedApprover?.role || 'Choose a reviewer'}
+                                            </p>
+                                        </div>
+                                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    {/* Dropdown panel */}
+                                    {isDropdownOpen && (
+                                        <div className="absolute z-10 mt-1 w-full rounded-lg border border-border bg-card shadow-lg py-1">
+                                            {filteredApprovers.map((approver) => (
+                                                <button
+                                                    key={approver.id}
+                                                    onClick={() => {
+                                                        setSelectedApproverId(approver.id)
+                                                        setIsDropdownOpen(false)
+                                                    }}
+                                                    className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted/50 transition-colors ${approver.id === selectedApproverId ? 'bg-muted/30' : ''
+                                                        }`}
+                                                >
+                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
+                                                        {approver.firstName[0]}{approver.lastName[0]}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium">{approver.firstName} {approver.lastName}</p>
+                                                        <p className="text-xs text-muted-foreground">{approver.role}</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             ) : (
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-primary-foreground/20 flex items-center justify-center text-sm font-bold">
+                                <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
                                         {manager
                                             ? `${manager.firstName[0]}${manager.lastName[0]}`
                                             : 'TL'
                                         }
                                     </div>
                                     <div>
-                                        <p className="font-semibold">
+                                        <p className="text-sm font-medium text-foreground">
                                             {manager
                                                 ? `${manager.firstName} ${manager.lastName}`
                                                 : 'Team Lead'
                                             }
                                         </p>
-                                        <p className="text-primary-foreground/60 text-sm">
+                                        <p className="text-xs text-muted-foreground">
                                             {manager?.role || 'Manager'}
                                         </p>
                                     </div>
@@ -134,14 +162,13 @@ export function TimesheetFooter({
                         {!isReadOnly && canSubmit && (
                             <Button
                                 onClick={() => onSubmit(selectedApproverId || undefined)}
-                                variant="secondary"
-                                className="w-full mt-4 bg-white text-primary hover:bg-primary-foreground/90 font-semibold"
+                                className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                                 disabled={filteredApprovers.length > 0 && !selectedApproverId}
                             >
                                 {submitLabel}
                             </Button>
                         )}
-                    </div>
+                    </Card>
                 </div>
             </div>
 

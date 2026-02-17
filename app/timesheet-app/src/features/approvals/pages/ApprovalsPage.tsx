@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { CheckSquare, Search } from 'lucide-react'
+import { CheckSquare, Search, ArrowUpDown } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
@@ -33,6 +33,7 @@ export default function ApprovalsPage() {
     const { timesheets, isLoading, filter, setFilter, fetchApprovableTimesheets } = useApprovalStore()
     const { currentUser, fetchCurrentUser } = useTimesheetStore()
     const [searchQuery, setSearchQuery] = useState('')
+    const [sortBy, setSortBy] = useState<string>('newest')
 
     useEffect(() => {
         if (!currentUser) {
@@ -59,8 +60,33 @@ export default function ApprovalsPage() {
                 ts.user?.email?.toLowerCase().includes(q)
             )
         }
+        // Sort
+        list = [...list].sort((a, b) => {
+            switch (sortBy) {
+                case 'newest':
+                    return new Date(b.submitDate || 0).getTime() - new Date(a.submitDate || 0).getTime()
+                case 'oldest':
+                    return new Date(a.submitDate || 0).getTime() - new Date(b.submitDate || 0).getTime()
+                case 'name-asc': {
+                    const nameA = `${a.user?.firstName || ''} ${a.user?.lastName || ''}`.toLowerCase()
+                    const nameB = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.toLowerCase()
+                    return nameA.localeCompare(nameB)
+                }
+                case 'name-desc': {
+                    const nameA2 = `${a.user?.firstName || ''} ${a.user?.lastName || ''}`.toLowerCase()
+                    const nameB2 = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.toLowerCase()
+                    return nameB2.localeCompare(nameA2)
+                }
+                case 'hours-high':
+                    return (b.totalHours || 0) - (a.totalHours || 0)
+                case 'hours-low':
+                    return (a.totalHours || 0) - (b.totalHours || 0)
+                default:
+                    return 0
+            }
+        })
         return list
-    }, [timesheets, filter, searchQuery])
+    }, [timesheets, filter, searchQuery, sortBy])
 
     const pendingCount = timesheets.filter(ts => ts.status === 'Submitted').length
 
@@ -82,6 +108,23 @@ export default function ApprovalsPage() {
                     )}
                 </div>
                 <div className="flex items-center gap-3">
+                    {/* Sort Control */}
+                    <div className="relative">
+                        <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <select
+                            className="pl-9 pr-8 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                        >
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="name-asc">Name A→Z</option>
+                            <option value="name-desc">Name Z→A</option>
+                            <option value="hours-high">Hours (High)</option>
+                            <option value="hours-low">Hours (Low)</option>
+                        </select>
+                    </div>
+                    {/* Search */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input
