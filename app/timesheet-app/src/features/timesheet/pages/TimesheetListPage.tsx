@@ -27,12 +27,12 @@ const STATUS_TABS: { label: string; value: TimesheetStatusType | 'All' }[] = [
 ]
 
 const statusColors: Record<string, string> = {
-    Draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200',
-    Submitted: 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300 border-blue-200',
-    Approved_By_TeamLead: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300 border-cyan-200',
-    Approved: 'bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200',
-    Rejected: 'bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200',
-    Finished: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 border-emerald-200',
+    Draft: 'bg-muted text-muted-foreground border-border',
+    Submitted: 'bg-[color:var(--sap-informative)]/10 text-[color:var(--sap-informative)] border-[color:var(--sap-informative)]/20',
+    Approved_By_TeamLead: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
+    Approved: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
+    Rejected: 'bg-[color:var(--sap-negative)]/10 text-[color:var(--sap-negative)] border-[color:var(--sap-negative)]/20',
+    Finished: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
 }
 
 const MONTH_NAMES = [
@@ -91,7 +91,7 @@ export default function TimesheetListPage() {
                 </div>
                 <Button
                     onClick={() => navigate('/timesheet')}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-primary hover:bg-primary/90"
                 >
                     <Calendar className="h-4 w-4 mr-2" />
                     Current Month
@@ -103,8 +103,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/30">
-                                <FileText className="h-5 w-5 text-blue-600" />
+                            <div className="p-2.5 rounded-lg bg-[color:var(--sap-informative)]/10">
+                                <FileText className="h-5 w-5 text-[color:var(--sap-informative)]" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</p>
@@ -129,8 +129,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/30">
-                                <Clock className="h-5 w-5 text-blue-600" />
+                            <div className="p-2.5 rounded-lg bg-[color:var(--sap-informative)]/10">
+                                <Clock className="h-5 w-5 text-[color:var(--sap-informative)]" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pending</p>
@@ -142,8 +142,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-green-50 dark:bg-green-950/30">
-                                <Eye className="h-5 w-5 text-green-600" />
+                            <div className="p-2.5 rounded-lg bg-[color:var(--sap-positive)]/10">
+                                <Eye className="h-5 w-5 text-[color:var(--sap-positive)]" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Approved</p>
@@ -163,7 +163,7 @@ export default function TimesheetListPage() {
                         size="sm"
                         onClick={() => setActiveFilter(tab.value)}
                         className={activeFilter === tab.value
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                             : 'text-muted-foreground hover:text-foreground'
                         }
                     >

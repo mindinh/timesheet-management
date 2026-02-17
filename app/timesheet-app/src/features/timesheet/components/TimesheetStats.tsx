@@ -31,30 +31,30 @@ export function TimesheetStats({ entries, currentMonth, status = 'Draft', workin
             label: 'LOGGED DAYS',
             value: `${uniqueDays}`,
             suffix: `/ ${daysInMonth}`,
-            color: 'text-blue-600',
-            bgColor: 'bg-blue-50 dark:bg-blue-950/30'
+            color: 'text-[color:var(--sap-informative)]',
+            bgColor: 'bg-[color:var(--sap-informative)]/10'
         },
         {
             icon: Zap,
             label: 'UTILIZATION',
             value: `${utilization}%`,
-            color: 'text-green-600',
-            bgColor: 'bg-green-50 dark:bg-green-950/30'
+            color: 'text-[color:var(--sap-positive)]',
+            bgColor: 'bg-[color:var(--sap-positive)]/10'
         },
         {
             icon: Clock,
             label: 'OVERTIME',
             value: `${overtime.toFixed(2)}`,
             suffix: 'H',
-            color: 'text-orange-600',
-            bgColor: 'bg-orange-50 dark:bg-orange-950/30'
+            color: 'text-[color:var(--sap-critical)]',
+            bgColor: 'bg-[color:var(--sap-critical)]/10'
         },
         {
             icon: CheckCircle,
             label: 'APPROVALS',
             value: approvalLabel(),
-            color: 'text-purple-600',
-            bgColor: 'bg-purple-50 dark:bg-purple-950/30',
+            color: 'text-[color:var(--sap-neutral)]',
+            bgColor: 'bg-[color:var(--sap-neutral)]/10',
             isItalic: status === 'Draft',
         }
     ]

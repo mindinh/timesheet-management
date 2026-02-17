@@ -62,74 +62,110 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  font-family: '72';
+  --radius: 0.5rem;
+
+  /* SAP Fiori Horizon - Main Colors */
+  --background: #edeff0;
+  --foreground: #1d2d3e;
+  --card: #ffffff;
+  --card-foreground: #1d2d3e;
+  --popover: #ffffff;
+  --popover-foreground: #1d2d3e;
+
+  /* Brand: #b10e10 */
+  --primary: #b10e10;
+  --primary-foreground: #ffffff;
+
+  --secondary: #e8ecee;
+  --secondary-foreground: #1d2d3e;
+  --muted: #e8ecee;
+  --muted-foreground: #6a6d70;
+  --accent: #e8ecee;
+  --accent-foreground: #1d2d3e;
+
+  /* Negative: #aa0808 */
+  --destructive: #aa0808;
+  --destructive-foreground: #ffffff;
+
+  --border: #d9d9d9;
+  --input: #d9d9d9;
+  --ring: #b10e10;
+
+  /* Link: #820a0c */
+  --link: #820a0c;
+  /* Icon: #6a6d70 */
+  --icon: #6a6d70;
+
+  /* SAP Semantic Colors */
+  --sap-negative: #aa0808;
+  --sap-critical: #e76500;
+  --sap-positive: #256f3a;
+  --sap-informative: #0070f2;
+  --sap-neutral: #788fa6;
+
+  /* Charts using SAP palette */
+  --chart-1: #0070f2;
+  --chart-2: #256f3a;
+  --chart-3: #e76500;
+  --chart-4: #aa0808;
+  --chart-5: #788fa6;
+
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1d2d3e;
+  --sidebar-primary: #b10e10;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f1f2;
+  --sidebar-accent-foreground: #1d2d3e;
+  --sidebar-border: #d9d9d9;
+  --sidebar-ring: #b10e10;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --background: #1a2332;
+  --foreground: #e8ecee;
+  --card: #243447;
+  --card-foreground: #e8ecee;
+  --popover: #243447;
+  --popover-foreground: #e8ecee;
+  --primary: #d4423e;
+  --primary-foreground: #ffffff;
+  --secondary: #2d3f52;
+  --secondary-foreground: #e8ecee;
+  --muted: #2d3f52;
+  --muted-foreground: #8c9bab;
+  --accent: #2d3f52;
+  --accent-foreground: #e8ecee;
+  --destructive: #e74c3c;
+  --destructive-foreground: #ffffff;
+  --border: #3a4f63;
+  --input: #3a4f63;
+  --ring: #d4423e;
+
+  --link: #f28b82;
+  --icon: #8c9bab;
+
+  --sap-negative: #e74c3c;
+  --sap-critical: #f5a623;
+  --sap-positive: #4caf50;
+  --sap-informative: #5b9fd6;
+  --sap-neutral: #8c9bab;
+
+  --chart-1: #5b9fd6;
+  --chart-2: #4caf50;
+  --chart-3: #f5a623;
+  --chart-4: #e74c3c;
+  --chart-5: #8c9bab;
+
+  --sidebar: #1a2332;
+  --sidebar-foreground: #e8ecee;
+  --sidebar-primary: #d4423e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2d3f52;
+  --sidebar-accent-foreground: #e8ecee;
+  --sidebar-border: #3a4f63;
+  --sidebar-ring: #d4423e;
 }
 
 @layer base {

@@ -119,15 +119,15 @@ export function DailyEntryList({
                                     <div className="text-sm font-semibold">
                                         {format(day, 'MMM dd, EEE')}
                                     </div>
-                                    <div className={`text-[11px] font-semibold ${isToday(day) ? 'text-blue-600' :
-                                        isWeekendDay ? 'text-muted-foreground' :
-                                            'text-blue-500'
+                                    <div className={`text-[11px] font-semibold ${isToday(day) ? 'text-[color:var(--sap-informative)]' :
+                                        isWeekendDay ? '' :
+                                            'text-[color:var(--sap-informative)]'
                                         }`}>
                                         {dateLabel}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="text-lg font-bold text-blue-600 tabular-nums min-w-[60px] text-right">
+                                    <div className="text-lg font-bold text-[color:var(--sap-informative)] tabular-nums min-w-[60px] text-right">
                                         {dailyTotal}
                                     </div>
                                     {!readOnly && (
@@ -144,7 +144,7 @@ export function DailyEntryList({
                                             <Button
                                                 variant="default"
                                                 size="icon"
-                                                className="h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700"
+                                                className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
                                                 onClick={() => onAddEntry(dateStr)}
                                                 title="Add task"
                                             >
@@ -220,7 +220,7 @@ export function DailyEntryList({
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                className="h-8 w-8 text-muted-foreground hover:text-blue-600"
+                                                                className="h-8 w-8 text-muted-foreground hover:text-primary"
                                                                 onClick={() => onEditEntry(entry)}
                                                                 title="Edit entry"
                                                             >

@@ -26,12 +26,12 @@ export function CalendarHeader({
 }: CalendarHeaderProps) {
 
     const statusColors: Record<string, string> = {
-        Draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-        Submitted: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-        Approved_By_TeamLead: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300',
-        Approved: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-        Rejected: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-        Finished: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
+        Draft: 'bg-muted text-muted-foreground',
+        Submitted: 'bg-[color:var(--sap-informative)]/10 text-[color:var(--sap-informative)]',
+        Approved_By_TeamLead: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)]',
+        Approved: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)]',
+        Rejected: 'bg-[color:var(--sap-negative)]/10 text-[color:var(--sap-negative)]',
+        Finished: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)]',
     }
 
     const statusLabel = status === 'Draft' ? 'Ready' : status.replace(/_/g, ' ')
@@ -58,14 +58,14 @@ export function CalendarHeader({
             {/* Right: Month Total + Status + Submit */}
             <div className="flex items-center gap-4">
                 {/* Month Total */}
-                <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg px-4 py-2">
+                <div className="flex items-center gap-2 bg-[color:var(--sap-informative)]/10 rounded-lg px-4 py-2">
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                         Month Total
                     </span>
-                    <span className="text-2xl font-bold text-blue-600 tabular-nums">
+                    <span className="text-2xl font-bold text-[color:var(--sap-informative)] tabular-nums">
                         {monthlyTotal.toFixed(2)}
                     </span>
-                    <span className="text-xs font-medium text-blue-600 uppercase">HRS</span>
+                    <span className="text-xs font-medium text-[color:var(--sap-informative)] uppercase">HRS</span>
                 </div>
 
                 {/* Status + Submit */}
@@ -87,7 +87,7 @@ export function CalendarHeader({
                     ) : (
                         <Button
                             onClick={onSubmit}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6"
                             disabled={status !== 'Draft'}
                         >
                             Submit

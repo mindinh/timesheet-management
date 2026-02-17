@@ -45,13 +45,13 @@ export function TimesheetFooter({
 
                 {/* Right: Approver Card (2/5 width) */}
                 <div className="lg:col-span-2">
-                    <div className="p-5 bg-blue-600 rounded-lg text-white h-full flex flex-col justify-between">
+                    <div className="p-5 bg-primary rounded-lg text-primary-foreground h-full flex flex-col justify-between">
                         <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-widest text-blue-200 mb-3">
+                            <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/60 mb-3">
                                 Approver
                             </p>
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold">
+                                <div className="h-10 w-10 rounded-full bg-primary-foreground/20 flex items-center justify-center text-sm font-bold">
                                     {manager
                                         ? `${manager.firstName[0]}${manager.lastName[0]}`
                                         : 'TL'
@@ -64,7 +64,7 @@ export function TimesheetFooter({
                                             : 'Team Lead'
                                         }
                                     </p>
-                                    <p className="text-blue-200 text-sm">
+                                    <p className="text-primary-foreground/60 text-sm">
                                         {manager?.role || 'Manager'}
                                     </p>
                                 </div>
@@ -75,7 +75,7 @@ export function TimesheetFooter({
                             <Button
                                 onClick={onSubmit}
                                 variant="secondary"
-                                className="w-full mt-4 bg-white text-blue-600 hover:bg-blue-50 font-semibold"
+                                className="w-full mt-4 bg-white text-primary hover:bg-primary-foreground/90 font-semibold"
                             >
                                 Submit Timesheet
                             </Button>
@@ -87,7 +87,7 @@ export function TimesheetFooter({
             {/* Bottom Bar */}
             <div className="flex items-center justify-between py-3 border-t text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                    <span className={`h-2 w-2 rounded-full ${isDirty ? 'bg-orange-500' : 'bg-green-500'}`} />
+                    <span className={`h-2 w-2 rounded-full ${isDirty ? 'bg-[var(--sap-critical)]' : 'bg-[var(--sap-positive)]'}`} />
                     <span>{isDirty ? 'Unsaved changes' : 'All saved'}</span>
                     <span className="text-muted-foreground/50 ml-2">{syncText}</span>
                 </div>
@@ -99,7 +99,7 @@ export function TimesheetFooter({
                             size="sm"
                             onClick={onSaveChanges}
                             disabled={!isDirty || isLoading}
-                            className={isDirty ? 'text-orange-600 hover:text-orange-700' : ''}
+                            className={isDirty ? 'text-[color:var(--sap-critical)] hover:opacity-80' : ''}
                         >
                             <Save className="h-4 w-4 mr-1.5" />
                             {isLoading ? 'Saving...' : 'Save as Draft'}

@@ -32,10 +32,10 @@ const PROJECT_TYPES: { value: ProjectType; label: string }[] = [
 ]
 
 const TYPE_COLORS: Record<ProjectType, string> = {
-    Papierkram: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-    Internal: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-    External: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-    Other: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+    Papierkram: 'bg-[color:var(--sap-critical)]/10 text-[color:var(--sap-critical)]',
+    Internal: 'bg-[color:var(--sap-informative)]/10 text-[color:var(--sap-informative)]',
+    External: 'bg-primary/10 text-primary',
+    Other: 'bg-muted text-muted-foreground',
 }
 
 export default function ProjectsPage() {
@@ -119,7 +119,7 @@ export default function ProjectsPage() {
                         Manage your projects and configure task types
                     </p>
                 </div>
-                <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
+                <Button onClick={handleCreate} className="bg-primary hover:bg-primary/90">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Project
                 </Button>
@@ -215,8 +215,8 @@ export default function ProjectsPage() {
                                                     variant="secondary"
                                                     className={
                                                         project.isActive
-                                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                                                            : 'bg-gray-100 text-gray-500'
+                                                            ? 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)]'
+                                                            : 'bg-muted text-muted-foreground'
                                                     }
                                                 >
                                                     {project.isActive ? 'Active' : 'Inactive'}
@@ -333,7 +333,7 @@ export default function ProjectsPage() {
                             <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                            <Button type="submit" className="bg-primary hover:bg-primary/90">
                                 {editingProject ? 'Update' : 'Create'}
                             </Button>
                         </DialogFooter>

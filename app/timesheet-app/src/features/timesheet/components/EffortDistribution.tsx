@@ -29,9 +29,9 @@ export function EffortDistribution({ entries, projects }: EffortDistributionProp
         .slice(0, 3)
 
     const colors = [
-        'bg-blue-600',
-        'bg-indigo-500',
-        'bg-gray-400'
+        'bg-[var(--chart-1)]',
+        'bg-[var(--chart-2)]',
+        'bg-[var(--chart-5)]'
     ]
 
     if (projectData.length === 0) {

@@ -15,10 +15,10 @@ import { useProjectStore } from '@/features/projects/store/projectStore'
 import type { Task } from '@/shared/types'
 
 const STATUS_COLORS: Record<string, string> = {
-    Open: 'bg-blue-500',
-    InProgress: 'bg-purple-500',
-    Completed: 'bg-green-500',
-    Cancelled: 'bg-red-500',
+    Open: 'bg-[var(--sap-informative)]',
+    InProgress: 'bg-[var(--sap-critical)]',
+    Completed: 'bg-[var(--sap-positive)]',
+    Cancelled: 'bg-[var(--sap-negative)]',
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -83,7 +83,7 @@ export function ProjectTasksPanel({ projectId }: ProjectTasksPanelProps) {
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="text-blue-600 hover:text-blue-700 text-xs gap-1"
+                    className="text-primary hover:text-primary/80 text-xs gap-1"
                     onClick={() => setShowAddForm(!showAddForm)}
                 >
                     <Plus className="h-3 w-3" />
