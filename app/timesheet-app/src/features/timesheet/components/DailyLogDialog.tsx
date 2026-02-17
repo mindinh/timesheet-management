@@ -27,13 +27,14 @@ import {
 } from '@/shared/components/ui/select'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { format } from 'date-fns'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { TimesheetEntry } from '@/shared/types'
 import { useProjectStore } from '@/features/projects/store/projectStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 
 const formSchema = z.object({
     projectId: z.string().min(1, 'Project is required'),
+    taskId: z.string().optional(),
     hours: z.coerce
         .number()
         .min(0.1, 'Minimum 0.1 hours')
@@ -54,7 +55,7 @@ interface DailyLogDialogProps {
 }
 
 export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: DailyLogDialogProps) {
-    const { projects, fetchProjects } = useProjectStore()
+    const { projects, fetchProjects, tasks, fetchTasks } = useProjectStore()
     const { currentUser } = useTimesheetStore()
 
     // Use 'any' for the resolver to bypass strict type checking issues between Zod and React Hook Form
@@ -62,10 +63,13 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
         resolver: zodResolver(formSchema) as any,
         defaultValues: {
             projectId: '',
+            taskId: '',
             hours: 8,
             description: '',
         },
     })
+
+    const selectedProjectId = form.watch('projectId')
 
     useEffect(() => {
         if (open && projects.length === 0 && currentUser?.id) {
@@ -73,17 +77,26 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
         }
     }, [open, projects.length, fetchProjects, currentUser])
 
+    // Fetch tasks when a project is selected
+    useEffect(() => {
+        if (selectedProjectId) {
+            fetchTasks(selectedProjectId)
+        }
+    }, [selectedProjectId, fetchTasks])
+
     useEffect(() => {
         if (open) {
             if (entry) {
                 form.reset({
                     projectId: entry.projectId,
+                    taskId: entry.taskId || '',
                     hours: entry.hours,
                     description: entry.description || '',
                 })
             } else {
                 form.reset({
                     projectId: '',
+                    taskId: '',
                     hours: 8,
                     description: '',
                 })
@@ -92,8 +105,20 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
 
     }, [open, entry, form])
 
+    // Filter tasks to only show Open or InProgress
+    const availableTasks = useMemo(() => {
+        if (!selectedProjectId) return []
+        const projectTasks = tasks[selectedProjectId] || []
+        return projectTasks.filter(t => t.status === 'Open' || t.status === 'InProgress')
+    }, [selectedProjectId, tasks])
+
     const handleSubmit = (data: FormData) => {
-        onSubmit(data)
+        // Clean up empty taskId
+        const submitData = {
+            ...data,
+            taskId: data.taskId || undefined,
+        }
+        onSubmit(submitData)
         form.reset()
         onOpenChange(false)
     }
@@ -113,7 +138,14 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Project</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select
+                                        onValueChange={(value) => {
+                                            field.onChange(value)
+                                            // Reset task when project changes
+                                            form.setValue('taskId', '')
+                                        }}
+                                        defaultValue={field.value}
+                                    >
                                         <FormControl>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select Project" />
@@ -131,6 +163,34 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
                                 </FormItem>
                             )}
                         />
+
+                        {/* Task Selection - only visible when a project is selected */}
+                        {selectedProjectId && (
+                            <FormField
+                                control={form.control}
+                                name="taskId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Task</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={availableTasks.length > 0 ? 'Select Task' : 'No tasks available'} />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {availableTasks.map((task) => (
+                                                    <SelectItem key={task.id} value={task.id}>
+                                                        {task.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
 
                         <FormField
                             control={form.control}

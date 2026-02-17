@@ -284,6 +284,7 @@ export const timesheetEntriesAPI = {
             loggedHours: entry.hours,
             description: entry.description,
             project_ID: entry.projectId,
+            task_ID: entry.taskId || null,
             timesheet_ID: entry.timesheetId,
         })
         return {
@@ -292,6 +293,7 @@ export const timesheetEntriesAPI = {
             hours: Number(response.data.loggedHours) || 0,
             description: response.data.description,
             projectId: response.data.project_ID,
+            taskId: response.data.task_ID,
         }
     },
 
@@ -301,6 +303,7 @@ export const timesheetEntriesAPI = {
         if (entry.hours !== undefined) payload.loggedHours = entry.hours
         if (entry.description !== undefined) payload.description = entry.description
         if (entry.projectId) payload.project_ID = entry.projectId
+        if (entry.taskId !== undefined) payload.task_ID = entry.taskId || null
 
         const response = await api.patch(`/TimesheetEntries(${id})`, payload)
         return {
@@ -309,6 +312,7 @@ export const timesheetEntriesAPI = {
             hours: Number(response.data.loggedHours) || 0,
             description: response.data.description,
             projectId: response.data.project_ID,
+            taskId: response.data.task_ID,
         }
     },
 

@@ -13,7 +13,7 @@ import type { TimesheetEntry } from '@/shared/types'
 import { useProjectStore } from '@/features/projects/store/projectStore'
 
 export default function TimesheetPage() {
-    const { projects, fetchProjects } = useProjectStore()
+    const { projects, fetchProjects, tasks } = useProjectStore()
     const {
         currentMonth,
         currentUser,
@@ -170,6 +170,7 @@ export default function TimesheetPage() {
             addEntry({
                 date: entry.date,
                 projectId: entry.projectId,
+                taskId: entry.taskId,
                 hours: entry.hours,
                 description: entry.description,
             })
@@ -201,6 +202,7 @@ export default function TimesheetPage() {
                 currentMonth={currentMonth}
                 entries={currentMonthEntries}
                 projects={projects}
+                tasks={Object.values(tasks).flat()}
                 onAddEntry={handleAddEntry}
                 onDuplicateDay={handleDuplicateDay}
                 onEditEntry={handleEditEntry}

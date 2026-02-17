@@ -96,7 +96,7 @@ export function DailyEntryList({
             <div className="grid grid-cols-12 gap-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3">
                 <div className="col-span-2">Date / Status</div>
                 <div className="col-span-2">Project</div>
-                <div className="col-span-2">Task Type</div>
+                <div className="col-span-2">Task</div>
                 <div className="col-span-3">Task Description</div>
                 <div className="col-span-1 text-right">HRS</div>
                 <div className="col-span-2 text-right">Action</div>
@@ -120,8 +120,8 @@ export function DailyEntryList({
                                         {format(day, 'MMM dd, EEE')}
                                     </div>
                                     <div className={`text-[11px] font-semibold ${isToday(day) ? 'text-blue-600' :
-                                            isWeekendDay ? 'text-muted-foreground' :
-                                                'text-blue-500'
+                                        isWeekendDay ? 'text-muted-foreground' :
+                                            'text-blue-500'
                                         }`}>
                                         {dateLabel}
                                     </div>
