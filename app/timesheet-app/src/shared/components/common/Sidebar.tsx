@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
-import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight, CheckSquare } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -15,6 +15,7 @@ import { useTimesheetStore, MOCK_USERS } from '@/features/timesheet/store/timesh
 const navigation = [
     { name: 'My Timesheet', href: '/timesheet', icon: Calendar },
     { name: 'My Timesheets', href: '/timesheets', icon: ClipboardList },
+    { name: 'Approvals', href: '/approvals', icon: CheckSquare },
     { name: 'Admin Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Projects', href: '/admin/projects', icon: FolderKanban },
 ]
@@ -31,11 +32,11 @@ export default function Sidebar() {
     return (
         <div className={cn(
             "flex flex-col border-r bg-card transition-all duration-300",
-            isCollapsed ? "w-20" : "w-64"
+            isCollapsed ? "w-20" : "w-72"
         )}>
-            {/* Logo */}
             <div className="flex h-16 items-center border-b px-4 justify-between">
-                {!isCollapsed && <h1 className="text-xl font-bold text-primary">Timesheet Mgmt</h1>}
+                {/* <img src="/logo.jpg" alt="logo" className='w-8 h-8' /> */}
+                {!isCollapsed ? <h1 className="text-xl font-bold text-primary">Timesheet Mgmt</h1> : <img src="/logo.jpg" alt="logo" className='w-10 h-10' />}
                 <Button
                     variant="ghost"
                     size="icon"

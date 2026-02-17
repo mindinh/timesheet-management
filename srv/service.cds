@@ -32,13 +32,19 @@ service TimesheetService @(path: '/api/timesheet', requires: 'authenticated-user
   };
 
   // ── Workflow Actions ──────────────────────────────────────────────────────
-  action submitTimesheet  (timesheetId: String)                       returns String;
+  action submitTimesheet  (timesheetId: String, approverId: String)    returns String;
   action approveTimesheet (timesheetId: String, comment: String)      returns String;
   action rejectTimesheet  (timesheetId: String, comment: String)      returns String;
   action finishTimesheet  (timesheetId: String)                       returns String;
 
+  /** Team Lead forwards an Approved timesheet to the final Admin */
+  action submitToAdmin    (timesheetId: String, adminId: String)      returns String;
+
   /** Team Lead or Admin can override hours on a single entry */
   action modifyEntryHours (entryId: String, approvedHours: Decimal)   returns String;
+
+  /** Returns timesheets where the current user is the designated approver */
+  function getApprovableTimesheets() returns array of Timesheets;
 }
 
 /**

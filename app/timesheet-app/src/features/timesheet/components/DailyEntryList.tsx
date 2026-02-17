@@ -111,7 +111,7 @@ export function DailyEntryList({
                 const isWeekendDay = isWeekend(day)
 
                 return (
-                    <Card key={dateStr} className={`border-0 shadow-sm ${isWeekendDay ? 'bg-muted/20' : ''}`}>
+                    <Card key={dateStr} className={`border-0 shadow-sm ${isWeekendDay ? 'bg-amber-50/60 border-l-2 border-l-amber-300' : ''}`}>
                         <CardContent className="p-0">
                             {/* Date Header Row */}
                             <div className="flex items-center justify-between px-6 py-3 border-b border-border/50">

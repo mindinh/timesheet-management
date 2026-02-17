@@ -1,5 +1,13 @@
+import { useState, useEffect } from 'react'
 import { Save, FileDown } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/shared/components/ui/select'
 import { EffortDistribution } from './EffortDistribution'
 import type { TimesheetEntry, Project, User } from '@/shared/types'
 
@@ -8,7 +16,8 @@ interface TimesheetFooterProps {
     projects: Project[]
     currentUser: User | null
     manager?: { id: string; firstName: string; lastName: string; role: string }
-    onSubmit: () => void
+    potentialApprovers: { id: string; firstName: string; lastName: string; role: string; email: string }[]
+    onSubmit: (approverId?: string) => void
     onSaveChanges: () => void
     isDirty: boolean
     isLoading: boolean
@@ -21,6 +30,7 @@ export function TimesheetFooter({
     entries,
     projects,
     manager,
+    potentialApprovers,
     onSubmit,
     onSaveChanges,
     isDirty,
@@ -29,10 +39,21 @@ export function TimesheetFooter({
     status,
     lastSyncTime,
 }: TimesheetFooterProps) {
+    const [selectedApproverId, setSelectedApproverId] = useState<string>('')
+
+    // Default pre-select manager if available
+    useEffect(() => {
+        if (manager && !selectedApproverId) {
+            setSelectedApproverId(manager.id)
+        }
+    }, [manager, selectedApproverId])
 
     const syncText = lastSyncTime
         ? `Last sync: ${Math.round((Date.now() - lastSyncTime.getTime()) / 60000)} mins ago`
         : 'Not synced'
+
+    const canSubmit = status === 'Draft' || status === 'Rejected'
+    const submitLabel = status === 'Rejected' ? 'Resubmit Timesheet' : 'Submit Timesheet'
 
     return (
         <div className="space-y-4">
@@ -48,36 +69,57 @@ export function TimesheetFooter({
                     <div className="p-5 bg-primary rounded-lg text-primary-foreground h-full flex flex-col justify-between">
                         <div>
                             <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/60 mb-3">
-                                Approver
+                                Submit To
                             </p>
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-primary-foreground/20 flex items-center justify-center text-sm font-bold">
-                                    {manager
-                                        ? `${manager.firstName[0]}${manager.lastName[0]}`
-                                        : 'TL'
-                                    }
-                                </div>
-                                <div>
-                                    <p className="font-semibold">
+
+                            {/* Approver Selection */}
+                            {canSubmit && potentialApprovers.length > 0 ? (
+                                <Select value={selectedApproverId} onValueChange={setSelectedApproverId}>
+                                    <SelectTrigger className="h-10 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground">
+                                        <SelectValue placeholder="Select approver..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {potentialApprovers.map((approver) => (
+                                            <SelectItem key={approver.id} value={approver.id}>
+                                                <div className="flex items-center gap-2">
+                                                    <span>{approver.firstName} {approver.lastName}</span>
+                                                    <span className="text-xs text-muted-foreground">({approver.role})</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-primary-foreground/20 flex items-center justify-center text-sm font-bold">
                                         {manager
-                                            ? `${manager.firstName} ${manager.lastName}`
-                                            : 'Team Lead'
+                                            ? `${manager.firstName[0]}${manager.lastName[0]}`
+                                            : 'TL'
                                         }
-                                    </p>
-                                    <p className="text-primary-foreground/60 text-sm">
-                                        {manager?.role || 'Manager'}
-                                    </p>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">
+                                            {manager
+                                                ? `${manager.firstName} ${manager.lastName}`
+                                                : 'Team Lead'
+                                            }
+                                        </p>
+                                        <p className="text-primary-foreground/60 text-sm">
+                                            {manager?.role || 'Manager'}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
-                        {!isReadOnly && status === 'Draft' && (
+                        {!isReadOnly && canSubmit && (
                             <Button
-                                onClick={onSubmit}
+                                onClick={() => onSubmit(selectedApproverId || undefined)}
                                 variant="secondary"
                                 className="w-full mt-4 bg-white text-primary hover:bg-primary-foreground/90 font-semibold"
+                                disabled={potentialApprovers.length > 0 && !selectedApproverId}
                             >
-                                Submit Timesheet
+                                {submitLabel}
                             </Button>
                         )}
                     </div>

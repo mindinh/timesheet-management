@@ -9,6 +9,7 @@ import { TimesheetFooter } from '@/features/timesheet/components/TimesheetFooter
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 import { userInfoAPI } from '@/shared/lib/api'
 import type { TimesheetEntry } from '@/shared/types'
+import { AlertTriangle } from 'lucide-react'
 
 import { useProjectStore } from '@/features/projects/store/projectStore'
 
@@ -29,16 +30,18 @@ export default function TimesheetPage() {
         saveEntries,
         submitTimesheet,
         currentTimesheetStatus,
+        currentTimesheetComment,
     } = useTimesheetStore()
     const [searchParams] = useSearchParams()
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
     const [editingEntry, setEditingEntry] = useState<TimesheetEntry | undefined>(undefined)
     const [manager, setManager] = useState<{ id: string; firstName: string; lastName: string; role: string } | undefined>()
+    const [potentialApprovers, setPotentialApprovers] = useState<{ id: string; firstName: string; lastName: string; role: string; email: string }[]>([])
     const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date())
 
-    // Determine if editing is allowed
-    const isReadOnly = currentTimesheetStatus !== 'Draft'
+    // Determine if editing is allowed (Draft or Rejected)
+    const isReadOnly = currentTimesheetStatus !== 'Draft' && currentTimesheetStatus !== 'Rejected'
 
     // Handle URL query params for month/year (from TimesheetListPage navigation)
     useEffect(() => {
@@ -67,6 +70,13 @@ export default function TimesheetPage() {
                 .catch(() => setManager(undefined))
         }
     }, [currentUser])
+
+    // Fetch potential approvers
+    useEffect(() => {
+        userInfoAPI.getPotentialApprovers()
+            .then(approvers => setPotentialApprovers(approvers))
+            .catch(() => setPotentialApprovers([]))
+    }, [])
 
     // Fetch projects when user is available
     useEffect(() => {
@@ -125,7 +135,7 @@ export default function TimesheetPage() {
         }
     }
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (approverId?: string) => {
         if (isDirty) {
             alert('Please save your changes before submitting.')
             return
@@ -136,7 +146,7 @@ export default function TimesheetPage() {
         try {
             const year = currentMonth.getFullYear()
             const month = currentMonth.getMonth() + 1
-            await submitTimesheet(year, month)
+            await submitTimesheet(year, month, approverId)
             alert('Timesheet submitted successfully!')
         } catch (error: any) {
             alert(error?.message || 'Failed to submit timesheet')
@@ -190,6 +200,19 @@ export default function TimesheetPage() {
                 isReadOnly={isReadOnly}
             />
 
+            {/* Rejection Alert */}
+            {currentTimesheetStatus === 'Rejected' && (
+                <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+                    <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+                    <div>
+                        <p className="text-sm font-semibold text-destructive">Timesheet Rejected</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            {currentTimesheetComment || 'Your timesheet has been rejected. Please review and resubmit.'}
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Stats Cards */}
             <TimesheetStats
                 entries={currentMonthEntries}
@@ -216,6 +239,7 @@ export default function TimesheetPage() {
                 projects={projects}
                 currentUser={currentUser}
                 manager={manager}
+                potentialApprovers={potentialApprovers}
                 onSubmit={handleSubmit}
                 onSaveChanges={handleSaveChanges}
                 isDirty={isDirty}

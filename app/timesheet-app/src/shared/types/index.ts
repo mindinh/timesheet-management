@@ -5,9 +5,12 @@ export interface TimesheetEntry {
     id: string
     date: string // YYYY-MM-DD
     projectId: string
+    projectName?: string
     taskId?: string
+    taskName?: string
     timesheetId?: string
     hours: number
+    approvedHours?: number
     description?: string
 }
 
@@ -19,7 +22,22 @@ export interface Timesheet {
     entries: TimesheetEntry[]
     submitDate?: string
     approveDate?: string
+    finishedDate?: string
     totalHours?: number
+    comment?: string
+    currentApprover?: {
+        id: string
+        firstName: string
+        lastName: string
+        role: string
+    }
+    user?: {
+        id: string
+        firstName: string
+        lastName: string
+        email: string
+        role: string
+    }
 }
 
 export interface Project {
@@ -54,4 +72,3 @@ export interface User {
         role: string
     }
 }
-

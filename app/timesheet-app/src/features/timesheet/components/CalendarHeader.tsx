@@ -11,7 +11,7 @@ interface CalendarHeaderProps {
     onNextMonth: () => void
     monthlyTotal?: number
     status?: TimesheetStatusType
-    onSubmit?: () => void
+    onSubmit?: (approverId?: string) => void
     isReadOnly?: boolean
 }
 
@@ -86,11 +86,11 @@ export function CalendarHeader({
                         </div>
                     ) : (
                         <Button
-                            onClick={onSubmit}
+                            onClick={() => onSubmit?.()}
                             className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6"
-                            disabled={status !== 'Draft'}
+                            disabled={status !== 'Draft' && status !== 'Rejected'}
                         >
-                            Submit
+                            {status === 'Rejected' ? 'Resubmit' : 'Submit'}
                         </Button>
                     )}
                 </div>

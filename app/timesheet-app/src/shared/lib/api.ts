@@ -179,7 +179,7 @@ export const timesheetsAPI = {
             params: {
                 $filter: `user_ID eq ${userId}`,
                 $orderby: 'year desc,month desc',
-                $expand: 'entries',
+                $expand: 'entries,currentApprover',
             },
         })
         const data = response.data.value || response.data
@@ -202,6 +202,13 @@ export const timesheetsAPI = {
                 submitDate: ts.submitDate,
                 approveDate: ts.approveDate,
                 totalHours,
+                comment: ts.comment,
+                currentApprover: ts.currentApprover ? {
+                    id: ts.currentApprover.ID,
+                    firstName: ts.currentApprover.firstName,
+                    lastName: ts.currentApprover.lastName,
+                    role: ts.currentApprover.role,
+                } : undefined,
             }
         })
     },
@@ -210,12 +217,13 @@ export const timesheetsAPI = {
         const response = await api.get('/Timesheets', {
             params: {
                 $filter: `month eq ${month} and year eq ${year} and user_ID eq ${userId}`,
-                $expand: 'entries',
+                $expand: 'entries,currentApprover',
             },
         })
         const data = response.data.value || response.data
         if (data.length > 0) {
-            const entries = data[0].entries ? data[0].entries.map((e: any) => ({
+            const ts = data[0]
+            const entries = ts.entries ? ts.entries.map((e: any) => ({
                 id: e.ID,
                 date: e.date,
                 hours: Number(e.loggedHours) || 0,
@@ -224,14 +232,21 @@ export const timesheetsAPI = {
                 taskId: e.task_ID,
             })) : []
             return {
-                id: data[0].ID,
-                month: data[0].month,
-                year: data[0].year,
-                status: data[0].status as TimesheetStatusType,
+                id: ts.ID,
+                month: ts.month,
+                year: ts.year,
+                status: ts.status as TimesheetStatusType,
                 entries,
-                submitDate: data[0].submitDate,
-                approveDate: data[0].approveDate,
+                submitDate: ts.submitDate,
+                approveDate: ts.approveDate,
                 totalHours: entries.reduce((sum: number, e: any) => sum + e.hours, 0),
+                comment: ts.comment,
+                currentApprover: ts.currentApprover ? {
+                    id: ts.currentApprover.ID,
+                    firstName: ts.currentApprover.firstName,
+                    lastName: ts.currentApprover.lastName,
+                    role: ts.currentApprover.role,
+                } : undefined,
             }
         }
         return null
@@ -253,8 +268,96 @@ export const timesheetsAPI = {
         }
     },
 
-    submit: async (timesheetId: string): Promise<string> => {
-        const response = await api.post('/submitTimesheet', { timesheetId })
+    submit: async (timesheetId: string, approverId?: string): Promise<string> => {
+        const response = await api.post('/submitTimesheet', { timesheetId, approverId })
+        return response.data.value || response.data
+    },
+
+    approve: async (timesheetId: string, comment?: string): Promise<string> => {
+        const response = await api.post('/approveTimesheet', { timesheetId, comment })
+        return response.data.value || response.data
+    },
+
+    reject: async (timesheetId: string, comment?: string): Promise<string> => {
+        const response = await api.post('/rejectTimesheet', { timesheetId, comment })
+        return response.data.value || response.data
+    },
+
+    finish: async (timesheetId: string): Promise<string> => {
+        const response = await api.post('/finishTimesheet', { timesheetId })
+        return response.data.value || response.data
+    },
+
+    submitToAdmin: async (timesheetId: string, adminId: string): Promise<string> => {
+        const response = await api.post('/submitToAdmin', { timesheetId, adminId })
+        return response.data.value || response.data
+    },
+
+    getApprovableTimesheets: async (): Promise<Timesheet[]> => {
+        const response = await api.get('/getApprovableTimesheets()')
+        const data = response.data.value || response.data
+        return data.map((ts: any) => ({
+            id: ts.id || ts.ID,
+            month: ts.month,
+            year: ts.year,
+            status: ts.status as TimesheetStatusType,
+            entries: [],
+            submitDate: ts.submitDate,
+            approveDate: ts.approveDate,
+            finishedDate: ts.finishedDate,
+            totalHours: ts.totalHours || 0,
+            comment: ts.comment,
+            user: ts.user || undefined,
+        }))
+    },
+
+    getTimesheetDetail: async (timesheetId: string): Promise<Timesheet & { entries: TimesheetEntry[] }> => {
+        const response = await api.get(`/Timesheets(${timesheetId})`, {
+            params: {
+                $expand: 'entries($expand=project,task),currentApprover,user',
+            },
+        })
+        const ts = response.data
+        const entries = ts.entries ? ts.entries.map((e: any) => ({
+            id: e.ID,
+            date: e.date,
+            hours: Number(e.loggedHours) || 0,
+            approvedHours: e.approvedHours != null ? Number(e.approvedHours) : undefined,
+            description: e.description,
+            projectId: e.project_ID,
+            projectName: e.project?.name || '',
+            taskId: e.task_ID,
+            taskName: e.task?.name || '',
+        })) : []
+        return {
+            id: ts.ID,
+            month: ts.month,
+            year: ts.year,
+            status: ts.status as TimesheetStatusType,
+            entries,
+            submitDate: ts.submitDate,
+            approveDate: ts.approveDate,
+            finishedDate: ts.finishedDate,
+            totalHours: entries.reduce((sum: number, e: any) => sum + e.hours, 0),
+            comment: ts.comment,
+            currentApprover: ts.currentApprover ? {
+                id: ts.currentApprover.ID,
+                firstName: ts.currentApprover.firstName,
+                lastName: ts.currentApprover.lastName,
+                role: ts.currentApprover.role,
+            } : undefined,
+            user: ts.user ? {
+                id: ts.user.ID,
+                firstName: ts.user.firstName,
+                lastName: ts.user.lastName,
+                email: ts.user.email,
+                role: ts.user.role,
+            } : undefined,
+        }
+    },
+
+    modifyEntryHours: async (entryId: string, approvedHours: number): Promise<string> => {
+        const response = await api.post('/modifyEntryHours', { entryId, approvedHours })
         return response.data.value || response.data
     },
 }
@@ -360,6 +463,22 @@ export const userInfoAPI = {
                 role: data.manager.role,
             } : undefined,
         }
+    },
+
+    getPotentialApprovers: async (): Promise<{ id: string; firstName: string; lastName: string; role: string; email: string }[]> => {
+        const response = await api.get('/Users', {
+            params: {
+                $filter: `role eq 'TeamLead' or role eq 'Admin' or role eq 'Manager'`,
+            },
+        })
+        const data = response.data.value || response.data
+        return data.map((u: any) => ({
+            id: u.ID,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            role: u.role,
+            email: u.email,
+        }))
     },
 }
 
