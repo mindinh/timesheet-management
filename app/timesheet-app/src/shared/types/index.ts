@@ -1,5 +1,6 @@
 export type ProjectType = 'Papierkram' | 'Internal' | 'External' | 'Other'
 export type TimesheetStatusType = 'Draft' | 'Submitted' | 'Approved_By_TeamLead' | 'Approved' | 'Rejected' | 'Finished'
+export type UserRole = 'Employee' | 'TeamLead' | 'Admin'
 
 export interface TimesheetEntry {
     id: string

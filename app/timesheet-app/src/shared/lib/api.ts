@@ -468,7 +468,7 @@ export const userInfoAPI = {
     getPotentialApprovers: async (): Promise<{ id: string; firstName: string; lastName: string; role: string; email: string }[]> => {
         const response = await api.get('/Users', {
             params: {
-                $filter: `role eq 'TeamLead' or role eq 'Admin' or role eq 'Manager'`,
+                $filter: `role eq 'TeamLead' or role eq 'Admin'`,
             },
         })
         const data = response.data.value || response.data

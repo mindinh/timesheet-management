@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Save, FileDown } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -9,7 +9,7 @@ import {
     SelectValue,
 } from '@/shared/components/ui/select'
 import { EffortDistribution } from './EffortDistribution'
-import type { TimesheetEntry, Project, User } from '@/shared/types'
+import type { TimesheetEntry, Project, User, UserRole } from '@/shared/types'
 
 interface TimesheetFooterProps {
     entries: TimesheetEntry[]
@@ -29,6 +29,7 @@ interface TimesheetFooterProps {
 export function TimesheetFooter({
     entries,
     projects,
+    currentUser,
     manager,
     potentialApprovers,
     onSubmit,
@@ -41,12 +42,30 @@ export function TimesheetFooter({
 }: TimesheetFooterProps) {
     const [selectedApproverId, setSelectedApproverId] = useState<string>('')
 
+    // Filter approvers based on current user role:
+    // - TeamLead submits to Admin only
+    // - Employee submits to TeamLead or Admin
+    const filteredApprovers = useMemo(() => {
+        const userRole = (currentUser?.role as UserRole) || 'Employee'
+        if (userRole === 'TeamLead') {
+            return potentialApprovers.filter(a => a.role === 'Admin')
+        }
+        // Employee can submit to TeamLead or Admin
+        return potentialApprovers.filter(a => a.id !== currentUser?.id)
+    }, [potentialApprovers, currentUser])
+
     // Default pre-select manager if available
     useEffect(() => {
         if (manager && !selectedApproverId) {
-            setSelectedApproverId(manager.id)
+            // If manager is in filtered list, pre-select; otherwise pick first
+            const managerInList = filteredApprovers.find(a => a.id === manager.id)
+            if (managerInList) {
+                setSelectedApproverId(manager.id)
+            } else if (filteredApprovers.length > 0) {
+                setSelectedApproverId(filteredApprovers[0].id)
+            }
         }
-    }, [manager, selectedApproverId])
+    }, [manager, selectedApproverId, filteredApprovers])
 
     const syncText = lastSyncTime
         ? `Last sync: ${Math.round((Date.now() - lastSyncTime.getTime()) / 60000)} mins ago`
@@ -73,13 +92,13 @@ export function TimesheetFooter({
                             </p>
 
                             {/* Approver Selection */}
-                            {canSubmit && potentialApprovers.length > 0 ? (
+                            {canSubmit && filteredApprovers.length > 0 ? (
                                 <Select value={selectedApproverId} onValueChange={setSelectedApproverId}>
                                     <SelectTrigger className="h-10 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground">
                                         <SelectValue placeholder="Select approver..." />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {potentialApprovers.map((approver) => (
+                                        {filteredApprovers.map((approver) => (
                                             <SelectItem key={approver.id} value={approver.id}>
                                                 <div className="flex items-center gap-2">
                                                     <span>{approver.firstName} {approver.lastName}</span>
@@ -117,7 +136,7 @@ export function TimesheetFooter({
                                 onClick={() => onSubmit(selectedApproverId || undefined)}
                                 variant="secondary"
                                 className="w-full mt-4 bg-white text-primary hover:bg-primary-foreground/90 font-semibold"
-                                disabled={potentialApprovers.length > 0 && !selectedApproverId}
+                                disabled={filteredApprovers.length > 0 && !selectedApproverId}
                             >
                                 {submitLabel}
                             </Button>

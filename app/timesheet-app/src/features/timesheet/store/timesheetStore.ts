@@ -4,7 +4,7 @@ import { timesheetEntriesAPI, timesheetsAPI, userInfoAPI, setMockUserId } from '
 
 export const MOCK_USERS: User[] = [
     { id: '2b7a2d96-0e94-4d13-8a03-7f8a70562590', email: 'alice@example.com', firstName: 'Alice', lastName: 'Nguyen', role: 'Employee' },
-    { id: 'c4e8f1a2-3b56-4d78-9e01-a1b2c3d4e5f6', email: 'bob@example.com', firstName: 'Bob', lastName: 'Tran', role: 'Manager' },
+    { id: 'c4e8f1a2-3b56-4d78-9e01-a1b2c3d4e5f6', email: 'bob@example.com', firstName: 'Bob', lastName: 'Tran', role: 'TeamLead' },
     { id: 'd5f902b3-4c67-5e89-af12-b2c3d4e5f6a7', email: 'charlie@example.com', firstName: 'Charlie', lastName: 'Le', role: 'TeamLead' },
     { id: 'e6a003c4-5d78-6f90-b023-c3d4e5f6a7b8', email: 'diana@example.com', firstName: 'Diana', lastName: 'Pham', role: 'Admin' },
 ]

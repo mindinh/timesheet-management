@@ -1,12 +1,13 @@
 import { create } from 'zustand'
+import type { UserRole } from '@/shared/types'
 
 interface AuthState {
     user: {
         id: string
         name: string
-        role: 'Employee' | 'Manager' | 'Admin'
+        role: UserRole
     } | null
-    login: (role: 'Employee' | 'Manager' | 'Admin') => void
+    login: (role: UserRole) => void
     logout: () => void
 }
 

@@ -11,13 +11,14 @@ import {
     SelectValue,
 } from '@/shared/components/ui/select'
 import { useTimesheetStore, MOCK_USERS } from '@/features/timesheet/store/timesheetStore'
+import type { UserRole } from '@/shared/types'
 
-const navigation = [
-    { name: 'My Timesheet', href: '/timesheet', icon: Calendar },
-    { name: 'My Timesheets', href: '/timesheets', icon: ClipboardList },
-    { name: 'Approvals', href: '/approvals', icon: CheckSquare },
-    { name: 'Admin Dashboard', href: '/admin', icon: LayoutDashboard },
-    { name: 'Projects', href: '/admin/projects', icon: FolderKanban },
+const navigation: { name: string; href: string; icon: any; roles: UserRole[] }[] = [
+    { name: 'My Timesheet', href: '/timesheet', icon: Calendar, roles: ['Employee', 'TeamLead', 'Admin'] },
+    { name: 'My Timesheets', href: '/timesheets', icon: ClipboardList, roles: ['Employee', 'TeamLead', 'Admin'] },
+    { name: 'My Projects', href: '/projects', icon: FolderKanban, roles: ['Employee', 'TeamLead', 'Admin'] },
+    { name: 'Approvals', href: '/approvals', icon: CheckSquare, roles: ['TeamLead', 'Admin'] },
+    { name: 'Admin Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['Admin'] },
 ]
 
 export default function Sidebar() {
@@ -29,10 +30,14 @@ export default function Sidebar() {
         switchUser(userId)
     }
 
+    // Filter navigation items based on current user's role
+    const userRole = (currentUser?.role as UserRole) || 'Employee'
+    const visibleNavigation = navigation.filter(item => item.roles.includes(userRole))
+
     return (
         <div className={cn(
             "flex flex-col border-r bg-card transition-all duration-300",
-            isCollapsed ? "w-20" : "w-72"
+            isCollapsed ? "w-20" : "w-64"
         )}>
             <div className="flex h-16 items-center border-b px-4 justify-between">
                 {/* <img src="/logo.jpg" alt="logo" className='w-8 h-8' /> */}
@@ -53,7 +58,7 @@ export default function Sidebar() {
 
             {/* Navigation */}
             <nav className="flex-1 space-y-1 p-4">
-                {navigation.map((item) => {
+                {visibleNavigation.map((item) => {
                     const isActive = location.pathname === item.href
                     return (
                         <Link
