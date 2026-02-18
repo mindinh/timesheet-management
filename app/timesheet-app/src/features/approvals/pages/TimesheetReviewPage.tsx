@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/button'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 import { cn } from '@/shared/lib/utils'
+import StatusDialog from '@/shared/components/common/StatusDialog'
 
 const MONTH_NAMES = [
     '', 'January', 'February', 'March', 'April', 'May', 'June',
@@ -36,6 +37,9 @@ export default function TimesheetReviewPage() {
     const [actionLoading, setActionLoading] = useState<string | null>(null)
     const [showAdminDialog, setShowAdminDialog] = useState(false)
     const [selectedAdminId, setSelectedAdminId] = useState('')
+    const [statusDialog, setStatusDialog] = useState<{ open: boolean; variant: 'success' | 'error' | 'warning' | 'info'; title: string; description?: string }>({
+        open: false, variant: 'info', title: ''
+    })
 
     useEffect(() => {
         if (!currentUser) fetchCurrentUser()
@@ -80,7 +84,7 @@ export default function TimesheetReviewPage() {
 
     const handleReject = async () => {
         if (!timesheetId || !comment.trim()) {
-            alert('Please provide a reason for rejection in the notes section.')
+            setStatusDialog({ open: true, variant: 'warning', title: 'Comment Required', description: 'Please provide a reason for rejection in the notes section.' })
             return
         }
         setActionLoading('reject')
@@ -405,6 +409,15 @@ export default function TimesheetReviewPage() {
                     </div>
                 </div>
             )}
+
+            {/* Status Dialog */}
+            <StatusDialog
+                open={statusDialog.open}
+                onOpenChange={(open) => setStatusDialog(prev => ({ ...prev, open }))}
+                variant={statusDialog.variant}
+                title={statusDialog.title}
+                description={statusDialog.description}
+            />
         </div>
     )
 }

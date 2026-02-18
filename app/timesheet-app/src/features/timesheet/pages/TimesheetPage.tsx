@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { addMonths, subMonths, format } from 'date-fns'
 import { CalendarHeader } from '@/features/timesheet/components/CalendarHeader'
@@ -11,6 +11,8 @@ import { userInfoAPI } from '@/shared/lib/api'
 import type { TimesheetEntry } from '@/shared/types'
 import { AlertTriangle, History } from 'lucide-react'
 import { AuditHistoryDialog } from '@/features/timesheet/components/AuditHistoryDialog'
+import StatusDialog from '@/shared/components/common/StatusDialog'
+import ConfirmDialog from '@/shared/components/common/ConfirmDialog'
 
 import { useProjectStore } from '@/features/projects/store/projectStore'
 
@@ -42,6 +44,14 @@ export default function TimesheetPage() {
     const [potentialApprovers, setPotentialApprovers] = useState<{ id: string; firstName: string; lastName: string; role: string; email: string }[]>([])
     const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date())
     const [showAuditHistory, setShowAuditHistory] = useState(false)
+
+    // Dialog state
+    const [statusDialog, setStatusDialog] = useState<{ open: boolean; variant: 'success' | 'error' | 'warning' | 'info'; title: string; description?: string }>({
+        open: false, variant: 'info', title: ''
+    })
+    const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; description?: string; onConfirm: () => void; destructive?: boolean }>({
+        open: false, title: '', onConfirm: () => { }
+    })
 
     // Auto-open audit history when navigating from list with showHistory query param
     useEffect(() => {
@@ -141,26 +151,33 @@ export default function TimesheetPage() {
             await saveEntries()
             setLastSyncTime(new Date())
         } catch {
-            alert('Failed to save changes')
+            setStatusDialog({ open: true, variant: 'error', title: 'Save Failed', description: 'Failed to save changes. Please try again.' })
         }
     }
 
-    const handleSubmit = async (approverId?: string) => {
-        if (isDirty) {
-            alert('Please save your changes before submitting.')
-            return
-        }
-        if (!window.confirm(`Submit timesheet for ${format(currentMonth, 'MMMM yyyy')}? You won't be able to edit after submission.`)) {
-            return
-        }
+    const executeSubmit = useCallback(async (approverId?: string) => {
         try {
             const year = currentMonth.getFullYear()
             const month = currentMonth.getMonth() + 1
             await submitTimesheet(year, month, approverId)
-            alert('Timesheet submitted successfully!')
+            setStatusDialog({ open: true, variant: 'success', title: 'Submitted', description: 'Timesheet submitted successfully!' })
         } catch (error: any) {
-            alert(error?.message || 'Failed to submit timesheet')
+            setStatusDialog({ open: true, variant: 'error', title: 'Submission Failed', description: error?.message || 'Failed to submit timesheet.' })
         }
+    }, [currentMonth, submitTimesheet])
+
+    const handleSubmit = (approverId?: string) => {
+        if (isDirty) {
+            setStatusDialog({ open: true, variant: 'warning', title: 'Unsaved Changes', description: 'Please save your changes before submitting.' })
+            return
+        }
+        setConfirmDialog({
+            open: true,
+            title: 'Submit Timesheet',
+            description: `Submit timesheet for ${format(currentMonth, 'MMMM yyyy')}? You won't be able to edit after submission.`,
+            onConfirm: () => executeSubmit(approverId),
+            destructive: false,
+        })
     }
 
     const handleEditEntry = (entry: TimesheetEntry) => {
@@ -172,9 +189,12 @@ export default function TimesheetPage() {
 
     const handleDeleteEntry = (entryId: string) => {
         if (isReadOnly) return
-        if (window.confirm('Are you sure you want to delete this entry?')) {
-            deleteEntry(entryId)
-        }
+        setConfirmDialog({
+            open: true,
+            title: 'Delete Entry',
+            description: 'Are you sure you want to delete this entry?',
+            onConfirm: () => deleteEntry(entryId),
+        })
     }
 
     const handleDuplicateDay = (dateStr: string) => {
@@ -182,7 +202,7 @@ export default function TimesheetPage() {
         const entriesToDuplicate = entries.filter(e => e.date === dateStr)
 
         if (entriesToDuplicate.length === 0) {
-            alert('No entries to duplicate for this day')
+            setStatusDialog({ open: true, variant: 'info', title: 'Nothing to Duplicate', description: 'No entries to duplicate for this day.' })
             return
         }
 
@@ -290,6 +310,25 @@ export default function TimesheetPage() {
                 history={currentApprovalHistory}
                 periodLabel={format(currentMonth, 'MMMM yyyy')}
                 userName={currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : undefined}
+            />
+
+            {/* Status Dialog */}
+            <StatusDialog
+                open={statusDialog.open}
+                onOpenChange={(open) => setStatusDialog(prev => ({ ...prev, open }))}
+                variant={statusDialog.variant}
+                title={statusDialog.title}
+                description={statusDialog.description}
+            />
+
+            {/* Confirm Dialog */}
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                onConfirm={confirmDialog.onConfirm}
+                destructive={confirmDialog.destructive}
             />
         </div>
     )

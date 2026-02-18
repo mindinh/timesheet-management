@@ -1,7 +1,16 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { CheckSquare, Search, ArrowUpDown } from 'lucide-react'
+import {
+    Search,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown,
+    ClipboardList,
+    Eye,
+    CheckCircle2,
+    Download,
+} from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
@@ -12,46 +21,59 @@ const MONTH_NAMES = [
     'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-const statusColors: Record<string, string> = {
-    Submitted: 'bg-[color:var(--sap-informative)]/10 text-[color:var(--sap-informative)] border-[color:var(--sap-informative)]/20',
+const STATUS_OPTIONS = ['All', 'Submitted', 'Approved', 'Rejected', 'Finished'] as const
+
+const statusBadgeStyles: Record<string, string> = {
+    Submitted: 'bg-[color:var(--sap-critical)]/10 text-[color:var(--sap-critical)] border-[color:var(--sap-critical)]/20',
     Approved: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
     Rejected: 'bg-[color:var(--sap-negative)]/10 text-[color:var(--sap-negative)] border-[color:var(--sap-negative)]/20',
     Finished: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
 }
 
-const statusDotColors: Record<string, string> = {
-    Submitted: 'bg-[color:var(--sap-informative)]',
-    Approved: 'bg-[color:var(--sap-positive)]',
-    Rejected: 'bg-[color:var(--sap-negative)]',
-    Finished: 'bg-[color:var(--sap-positive)]',
-}
-
-const FILTER_TABS = ['All', 'Submitted', 'Approved', 'Rejected'] as const
+type SortField = 'name' | 'period' | 'submitDate' | 'totalHours'
+type SortDir = 'asc' | 'desc'
 
 export default function ApprovalsPage() {
     const navigate = useNavigate()
     const { timesheets, isLoading, filter, setFilter, fetchApprovableTimesheets } = useApprovalStore()
     const { currentUser, fetchCurrentUser } = useTimesheetStore()
     const [searchQuery, setSearchQuery] = useState('')
-    const [sortBy, setSortBy] = useState<string>('newest')
+    const [sortField, setSortField] = useState<SortField>('submitDate')
+    const [sortDir, setSortDir] = useState<SortDir>('desc')
 
     useEffect(() => {
-        if (!currentUser) {
-            fetchCurrentUser()
-        }
+        if (!currentUser) fetchCurrentUser()
     }, [currentUser, fetchCurrentUser])
 
     useEffect(() => {
-        if (currentUser) {
-            fetchApprovableTimesheets()
-        }
+        if (currentUser) fetchApprovableTimesheets()
     }, [currentUser, fetchApprovableTimesheets])
+
+    const toggleSort = (field: SortField) => {
+        if (sortField === field) {
+            setSortDir(prev => prev === 'asc' ? 'desc' : 'asc')
+        } else {
+            setSortField(field)
+            setSortDir('asc')
+        }
+    }
+
+    const SortIcon = ({ field }: { field: SortField }) => {
+        if (sortField !== field) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />
+        return sortDir === 'asc'
+            ? <ArrowUp className="h-3 w-3 ml-1 text-primary" />
+            : <ArrowDown className="h-3 w-3 ml-1 text-primary" />
+    }
 
     const filteredTimesheets = useMemo(() => {
         let list = timesheets
+
+        // Status filter
         if (filter !== 'All') {
             list = list.filter(ts => ts.status === filter)
         }
+
+        // Search filter
         if (searchQuery) {
             const q = searchQuery.toLowerCase()
             list = list.filter(ts =>
@@ -60,33 +82,32 @@ export default function ApprovalsPage() {
                 ts.user?.email?.toLowerCase().includes(q)
             )
         }
+
         // Sort
         list = [...list].sort((a, b) => {
-            switch (sortBy) {
-                case 'newest':
-                    return new Date(b.submitDate || 0).getTime() - new Date(a.submitDate || 0).getTime()
-                case 'oldest':
-                    return new Date(a.submitDate || 0).getTime() - new Date(b.submitDate || 0).getTime()
-                case 'name-asc': {
+            const dir = sortDir === 'asc' ? 1 : -1
+            switch (sortField) {
+                case 'name': {
                     const nameA = `${a.user?.firstName || ''} ${a.user?.lastName || ''}`.toLowerCase()
                     const nameB = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.toLowerCase()
-                    return nameA.localeCompare(nameB)
+                    return nameA.localeCompare(nameB) * dir
                 }
-                case 'name-desc': {
-                    const nameA2 = `${a.user?.firstName || ''} ${a.user?.lastName || ''}`.toLowerCase()
-                    const nameB2 = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.toLowerCase()
-                    return nameB2.localeCompare(nameA2)
+                case 'period': {
+                    const pA = (a.year * 100) + a.month
+                    const pB = (b.year * 100) + b.month
+                    return (pA - pB) * dir
                 }
-                case 'hours-high':
-                    return (b.totalHours || 0) - (a.totalHours || 0)
-                case 'hours-low':
-                    return (a.totalHours || 0) - (b.totalHours || 0)
+                case 'submitDate':
+                    return (new Date(a.submitDate || 0).getTime() - new Date(b.submitDate || 0).getTime()) * dir
+                case 'totalHours':
+                    return ((a.totalHours || 0) - (b.totalHours || 0)) * dir
                 default:
                     return 0
             }
         })
+
         return list
-    }, [timesheets, filter, searchQuery, sortBy])
+    }, [timesheets, filter, searchQuery, sortField, sortDir])
 
     const pendingCount = timesheets.filter(ts => ts.status === 'Submitted').length
 
@@ -94,159 +115,231 @@ export default function ApprovalsPage() {
         navigate(`/approvals/${timesheetId}`)
     }
 
+    const getInitials = (firstName?: string, lastName?: string) => {
+        return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || '??'
+    }
+
+    const getStatusLabel = (status: string) => {
+        if (status === 'Submitted') return 'Pending'
+        if (status === 'Approved_By_TeamLead') return 'Approved'
+        return status
+    }
+
     return (
-        <div className="max-w-6xl mx-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+            {/* ── Header ── */}
+            <div className="flex items-start justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-foreground">Timesheet Approvals</h1>
-                    {pendingCount > 0 && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                            <span className="inline-block w-2 h-2 rounded-full bg-[color:var(--sap-informative)] mr-2" />
-                            {pendingCount} Pending submission{pendingCount !== 1 ? 's' : ''} requiring your review
-                        </p>
-                    )}
-                </div>
-                <div className="flex items-center gap-3">
-                    {/* Sort Control */}
-                    <div className="relative">
-                        <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <select
-                            className="pl-9 pr-8 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer"
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                        >
-                            <option value="newest">Newest First</option>
-                            <option value="oldest">Oldest First</option>
-                            <option value="name-asc">Name A→Z</option>
-                            <option value="name-desc">Name Z→A</option>
-                            <option value="hours-high">Hours (High)</option>
-                            <option value="hours-low">Hours (Low)</option>
-                        </select>
-                    </div>
-                    {/* Search */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="Search employees..."
-                            className="pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 w-64"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                    <h1 className="text-2xl font-bold text-foreground tracking-tight">
+                        Approvals Worklist
+                    </h1>
+                    <div className="flex items-center gap-3 mt-1.5">
+                        {pendingCount > 0 && (
+                            <span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-semibold">
+                                {pendingCount} Pending
+                            </span>
+                        )}
+                        <span className="text-sm text-muted-foreground">
+                            Review and manage employee timesheet submissions.
+                        </span>
                     </div>
                 </div>
             </div>
 
-            {/* Filter Tabs + Table */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
-                {/* Filter Tabs */}
-                <div className="flex items-center justify-end px-6 pt-4">
-                    <div className="flex gap-1 bg-muted rounded-lg p-1">
-                        {FILTER_TABS.map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => setFilter(tab as any)}
-                                className={cn(
-                                    'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
-                                    filter === tab
-                                        ? 'bg-primary text-primary-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:text-foreground'
-                                )}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
+            {/* ── Filter Bar ── */}
+            <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-5 py-3.5">
+                {/* Search */}
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                        type="text"
+                        placeholder="Search employee or project..."
+                        className="w-full pl-10 pr-4 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/60"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
                 </div>
 
-                {/* Table */}
-                <div className="px-6 pb-4 pt-4">
-                    {isLoading ? (
-                        <div className="text-center py-12 text-muted-foreground">Loading...</div>
-                    ) : filteredTimesheets.length === 0 ? (
-                        <div className="text-center py-12">
-                            <CheckSquare className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                            <p className="text-muted-foreground">No timesheets to review</p>
-                        </div>
-                    ) : (
+                {/* Status Filter */}
+                <div className="relative">
+                    <select
+                        className="pl-4 pr-8 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer min-w-[140px]"
+                        value={filter}
+                        onChange={e => setFilter(e.target.value as typeof filter)}
+                    >
+                        {STATUS_OPTIONS.map(opt => (
+                            <option key={opt} value={opt}>
+                                Status: {opt}
+                            </option>
+                        ))}
+                    </select>
+                    <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                </div>
+            </div>
+
+            {/* ── Table ── */}
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+                {isLoading ? (
+                    <div className="text-center py-16 text-muted-foreground">
+                        <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mb-3" />
+                        <p className="text-sm">Loading timesheets...</p>
+                    </div>
+                ) : filteredTimesheets.length === 0 ? (
+                    <div className="text-center py-16">
+                        <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                        <p className="text-muted-foreground font-medium">No timesheets to review</p>
+                        <p className="text-sm text-muted-foreground/60 mt-1">
+                            {filter !== 'All'
+                                ? `No ${filter.toLowerCase()} timesheets found.`
+                                : 'All caught up! Check back later.'}
+                        </p>
+                    </div>
+                ) : (
+                    <>
                         <table className="w-full">
                             <thead>
-                                <tr className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b border-border">
-                                    <th className="text-left py-3 px-2">Employee Name</th>
-                                    <th className="text-left py-3 px-2">Period</th>
-                                    <th className="text-center py-3 px-2">Total Hours</th>
-                                    <th className="text-left py-3 px-2">Submitted Date</th>
-                                    <th className="text-center py-3 px-2">Status</th>
-                                    <th className="text-center py-3 px-2">Action</th>
+                                <tr className="border-b border-border bg-muted/30">
+                                    <th
+                                        className="text-left py-3.5 px-5 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
+                                        onClick={() => toggleSort('name')}
+                                    >
+                                        <span className="inline-flex items-center">
+                                            Submitted By
+                                            <SortIcon field="name" />
+                                        </span>
+                                    </th>
+                                    <th
+                                        className="text-left py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
+                                        onClick={() => toggleSort('period')}
+                                    >
+                                        <span className="inline-flex items-center">
+                                            Period
+                                            <SortIcon field="period" />
+                                        </span>
+                                    </th>
+                                    <th
+                                        className="text-left py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
+                                        onClick={() => toggleSort('submitDate')}
+                                    >
+                                        <span className="inline-flex items-center">
+                                            Submission Date
+                                            <SortIcon field="submitDate" />
+                                        </span>
+                                    </th>
+                                    <th
+                                        className="text-right py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
+                                        onClick={() => toggleSort('totalHours')}
+                                    >
+                                        <span className="inline-flex items-center justify-end">
+                                            Total Hours
+                                            <SortIcon field="totalHours" />
+                                        </span>
+                                    </th>
+                                    <th className="text-center py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th className="text-center py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-border/50">
                                 {filteredTimesheets.map(ts => {
                                     const period = `${MONTH_NAMES[ts.month]} ${ts.year}`
                                     const submittedDate = ts.submitDate
-                                        ? format(new Date(ts.submitDate), 'yyyy-MM-dd')
+                                        ? format(new Date(ts.submitDate), 'MMM dd, hh:mm a')
                                         : '—'
-                                    const initials = ts.user
-                                        ? `${ts.user.firstName?.[0] || ''}${ts.user.lastName?.[0] || ''}`
-                                        : '??'
+                                    const initials = getInitials(ts.user?.firstName, ts.user?.lastName)
+                                    const statusLabel = getStatusLabel(ts.status)
 
                                     return (
-                                        <tr key={ts.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                                            <td className="py-4 px-2">
+                                        <tr
+                                            key={ts.id}
+                                            className="group hover:bg-muted/20 transition-colors"
+                                        >
+                                            {/* Employee info */}
+                                            <td className="py-4 px-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-sm font-semibold ring-1 ring-primary/10">
                                                         {initials}
                                                     </div>
                                                     <div>
-                                                        <div className="font-medium text-sm">
+                                                        <div className="font-medium text-sm text-foreground">
                                                             {ts.user?.firstName} {ts.user?.lastName}
                                                         </div>
                                                         <div className="text-xs text-muted-foreground">
-                                                            {ts.user?.email}
+                                                            {ts.user?.role || 'Employee'}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="py-4 px-2 text-sm">{period}</td>
-                                            <td className="py-4 px-2 text-sm text-center font-semibold">
-                                                {(ts.totalHours || 0).toFixed(1)}h
+
+                                            {/* Period */}
+                                            <td className="py-4 px-4 text-sm text-primary/80 font-medium">
+                                                {period}
                                             </td>
-                                            <td className="py-4 px-2 text-sm">{submittedDate}</td>
-                                            <td className="py-4 px-2 text-center">
+
+                                            {/* Submission Date */}
+                                            <td className="py-4 px-4 text-sm text-muted-foreground">
+                                                {submittedDate}
+                                            </td>
+
+                                            {/* Total Hours */}
+                                            <td className="py-4 px-4 text-sm text-right font-semibold text-foreground">
+                                                {(ts.totalHours || 0).toFixed(1)}
+                                            </td>
+
+                                            {/* Status Badge */}
+                                            <td className="py-4 px-4 text-center">
                                                 <span className={cn(
-                                                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border',
-                                                    statusColors[ts.status] || 'bg-muted text-muted-foreground border-border'
+                                                    'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border',
+                                                    statusBadgeStyles[ts.status] || 'bg-muted text-muted-foreground border-border'
                                                 )}>
-                                                    <span className={cn(
-                                                        'w-1.5 h-1.5 rounded-full',
-                                                        statusDotColors[ts.status] || 'bg-muted-foreground'
-                                                    )} />
-                                                    {ts.status === 'Submitted' ? 'Pending' : ts.status}
+                                                    {statusLabel}
                                                 </span>
                                             </td>
-                                            <td className="py-4 px-2 text-center">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleReview(ts.id)}
-                                                >
-                                                    Review
-                                                </Button>
+
+                                            {/* Actions */}
+                                            <td className="py-4 px-4">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-xs font-medium border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
+                                                        onClick={() => handleReview(ts.id)}
+                                                    >
+                                                        <Eye className="h-3.5 w-3.5 mr-1" />
+                                                        Review
+                                                    </Button>
+                                                    <button
+                                                        className="p-1.5 rounded-md text-[color:var(--sap-positive)] hover:bg-[color:var(--sap-positive)]/10 transition-colors opacity-0 group-hover:opacity-100"
+                                                        title="Quick Approve"
+                                                    >
+                                                        <CheckCircle2 className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        className="p-1.5 rounded-md text-muted-foreground hover:bg-muted/50 transition-colors opacity-0 group-hover:opacity-100"
+                                                        title="Download"
+                                                    >
+                                                        <Download className="h-4 w-4" />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     )
                                 })}
                             </tbody>
                         </table>
-                    )}
-                </div>
 
-                {/* Footer */}
-                {filteredTimesheets.length > 0 && (
-                    <div className="px-6 py-3 border-t border-border text-sm text-muted-foreground">
-                        Showing {filteredTimesheets.length} of {timesheets.length} submissions
-                    </div>
+                        {/* Footer */}
+                        <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-muted/10">
+                            <span className="text-sm text-primary/70">
+                                Showing <strong className="text-foreground">{filteredTimesheets.length}</strong> of{' '}
+                                <strong className="text-foreground">{timesheets.length}</strong>{' '}
+                                pending approvals
+                            </span>
+                        </div>
+                    </>
                 )}
             </div>
         </div>
