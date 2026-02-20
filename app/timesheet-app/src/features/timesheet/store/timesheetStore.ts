@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import type { TimesheetEntry, Timesheet, User, TimesheetStatusType, ApprovalHistory } from '@/shared/types'
-import { timesheetEntriesAPI, timesheetsAPI, userInfoAPI, setMockUserId } from '@/shared/lib/api'
+import { getUserInfo } from '@/features/auth/api/auth-api'
+import { getTimesheetByMonth, createTimesheet, submitTimesheet as submitTimesheetApi } from '@/features/timesheet/api/timesheet-api'
+import { getEntries, bulkSaveEntries } from '@/features/timesheet/api/timesheet-entry-api'
+import { setMockUserId } from '@/shared/lib/mock-user'
 
 export const MOCK_USERS: User[] = [
     { id: '2b7a2d96-0e94-4d13-8a03-7f8a70562590', email: 'alice@example.com', firstName: 'Alice', lastName: 'Nguyen', role: 'Employee' },
@@ -56,7 +59,7 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
     // Fetch the authenticated user identity from the backend
     fetchCurrentUser: async () => {
         try {
-            const userInfo = await userInfoAPI.get()
+            const userInfo = await getUserInfo()
             set({
                 currentUser: {
                     id: userInfo.id,
@@ -96,7 +99,7 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
             }
 
             // Also fetch the timesheet header to get its status
-            const timesheet = await timesheetsAPI.getByMonth(month, year, currentUser.id)
+            const timesheet = await getTimesheetByMonth(month, year, currentUser.id)
             if (timesheet) {
                 set({
                     currentTimesheetStatus: timesheet.status,
@@ -113,7 +116,7 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
                 })
             }
 
-            const entries = await timesheetEntriesAPI.getAll(month, year, currentUser.id)
+            const entries = await getEntries(month, year, currentUser.id)
             set({ entries, isDirty: false, isLoading: false })
         } catch (error) {
             console.error('Failed to fetch entries:', error)
@@ -158,9 +161,9 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
             const userId = currentUser.id
 
             // 1. Get or Create Timesheet Header
-            let timesheet = await timesheetsAPI.getByMonth(month, year, userId)
+            let timesheet = await getTimesheetByMonth(month, year, userId)
             if (!timesheet) {
-                timesheet = await timesheetsAPI.create({
+                timesheet = await createTimesheet({
                     month,
                     year,
                     status: 'Draft',
@@ -177,7 +180,7 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
                 timesheetId
             }))
 
-            await timesheetEntriesAPI.bulkSave(entriesWithTimesheetId)
+            await bulkSaveEntries(entriesWithTimesheetId)
 
             // Refetch to get server IDs and verify
             await get().fetchEntries(month, year)
@@ -199,14 +202,14 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
             // Ensure timesheet exists
             let timesheetId = currentTimesheetId
             if (!timesheetId) {
-                const timesheet = await timesheetsAPI.getByMonth(month, year, currentUser.id)
+                const timesheet = await getTimesheetByMonth(month, year, currentUser.id)
                 if (!timesheet) {
                     throw new Error('No timesheet found. Please save your entries first.')
                 }
                 timesheetId = timesheet.id
             }
 
-            await timesheetsAPI.submit(timesheetId, approverId)
+            await submitTimesheetApi(timesheetId, approverId)
             set({ currentTimesheetStatus: 'Submitted', isLoading: false })
         } catch (error: any) {
             console.error('Failed to submit timesheet:', error)

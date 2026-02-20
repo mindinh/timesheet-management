@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Project, Task } from '@/shared/types'
-import { projectsAPI, tasksAPI } from '@/shared/lib/api'
+import { getProjectsByUser, createProject, updateProject as updateProjectApi, deleteProject as deleteProjectApi } from '@/features/projects/api/project-api'
+import { getTasksByProject, createTask, updateTask as updateTaskApi, deleteTask as deleteTaskApi } from '@/features/tasks/api/task-api'
 
 interface ProjectState {
     projects: Project[]
@@ -32,7 +33,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
                 set({ isLoading: false })
                 return
             }
-            const projects = await projectsAPI.getProjectsByUser(userId)
+            const projects = await getProjectsByUser(userId)
             set({ projects, isLoading: false })
         } catch (error) {
             console.error('Failed to fetch projects:', error)
@@ -43,7 +44,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
     addProject: async (project, userId) => {
         set({ isLoading: true })
         try {
-            const newProject = await projectsAPI.create({
+            const newProject = await createProject({
                 ...project,
                 user_ID: userId,
             })
@@ -61,7 +62,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
     updateProject: async (id, project) => {
         set({ isLoading: true })
         try {
-            const updatedProject = await projectsAPI.update(id, project)
+            const updatedProject = await updateProjectApi(id, project)
             set((state) => ({
                 projects: state.projects.map((p) =>
                     p.id === id ? { ...p, ...updatedProject } : p
@@ -78,7 +79,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
     deleteProject: async (id) => {
         set({ isLoading: true })
         try {
-            await projectsAPI.delete(id)
+            await deleteProjectApi(id)
             set((state) => ({
                 projects: state.projects.filter((p) => p.id !== id),
                 isLoading: false,
@@ -92,7 +93,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
     fetchTasks: async (projectId) => {
         try {
-            const tasks = await tasksAPI.getByProject(projectId)
+            const tasks = await getTasksByProject(projectId)
             set((state) => ({
                 tasks: { ...state.tasks, [projectId]: tasks },
             }))
@@ -103,7 +104,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
     addTask: async (task) => {
         try {
-            const newTask = await tasksAPI.create(task)
+            const newTask = await createTask(task)
             set((state) => ({
                 tasks: {
                     ...state.tasks,
@@ -118,7 +119,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
     updateTask: async (id, task) => {
         try {
-            const updated = await tasksAPI.update(id, task)
+            const updated = await updateTaskApi(id, task)
             const projectId = updated.projectId
             set((state) => ({
                 tasks: {
@@ -136,7 +137,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
     deleteTask: async (id, projectId) => {
         try {
-            await tasksAPI.delete(id)
+            await deleteTaskApi(id)
             set((state) => ({
                 tasks: {
                     ...state.tasks,

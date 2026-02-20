@@ -14,7 +14,7 @@ import {
     TableRow,
 } from '@/shared/components/ui/table'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
-import { timesheetsAPI } from '@/shared/lib/api'
+import { getAllTimesheets } from '@/features/timesheet/api/timesheet-api'
 import type { Timesheet, TimesheetStatusType } from '@/shared/types'
 
 const STATUS_TABS: { label: string; value: TimesheetStatusType | 'All' }[] = [
@@ -54,7 +54,7 @@ export default function TimesheetListPage() {
     useEffect(() => {
         if (!currentUser) return
         setLoading(true)
-        timesheetsAPI.getAll(currentUser.id)
+        getAllTimesheets(currentUser.id)
             .then(setTimesheets)
             .catch(console.error)
             .finally(() => setLoading(false))

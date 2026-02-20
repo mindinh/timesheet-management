@@ -7,7 +7,8 @@ import { DailyEntryList } from '@/features/timesheet/components/DailyEntryList'
 import { DailyLogDialog } from '@/features/timesheet/components/DailyLogDialog'
 import { TimesheetFooter } from '@/features/timesheet/components/TimesheetFooter'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
-import { userInfoAPI, timesheetsAPI } from '@/shared/lib/api'
+import { getUserWithManager, getPotentialApprovers } from '@/features/auth/api/auth-api'
+import { exportToExcel } from '@/features/timesheet/api/timesheet-api'
 import type { TimesheetEntry } from '@/shared/types'
 import { AlertTriangle, History } from 'lucide-react'
 import { AuditHistoryDialog } from '@/features/timesheet/components/AuditHistoryDialog'
@@ -86,7 +87,7 @@ export default function TimesheetPage() {
     // Fetch manager info when user is available
     useEffect(() => {
         if (currentUser) {
-            userInfoAPI.getWithManager(currentUser.id)
+            getUserWithManager(currentUser.id)
                 .then(data => setManager(data.manager))
                 .catch(() => setManager(undefined))
         }
@@ -94,7 +95,7 @@ export default function TimesheetPage() {
 
     // Fetch potential approvers
     useEffect(() => {
-        userInfoAPI.getPotentialApprovers()
+        getPotentialApprovers()
             .then(approvers => setPotentialApprovers(approvers))
             .catch(() => setPotentialApprovers([]))
     }, [])
@@ -226,7 +227,7 @@ export default function TimesheetPage() {
         }
         setIsExporting(true)
         try {
-            await timesheetsAPI.exportToExcel(currentTimesheetId)
+            await exportToExcel(currentTimesheetId)
             setStatusDialog({ open: true, variant: 'success', title: 'Exported', description: 'Timesheet exported successfully!' })
         } catch (error: any) {
             setStatusDialog({ open: true, variant: 'error', title: 'Export Failed', description: error?.message || 'Failed to export timesheet.' })
