@@ -45,6 +45,9 @@ service TimesheetService @(path: '/api/timesheet', requires: 'authenticated-user
 
   /** Returns timesheets where the current user is the designated approver */
   function getApprovableTimesheets() returns array of Timesheets;
+
+  /** Export a timesheet to Excel based on the predefined template */
+  action exportToExcel(timesheetId: String) returns LargeBinary;
 }
 
 /**

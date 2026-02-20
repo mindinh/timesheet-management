@@ -13,8 +13,10 @@ interface TimesheetFooterProps {
     potentialApprovers: { id: string; firstName: string; lastName: string; role: string; email: string }[]
     onSubmit: (approverId?: string) => void
     onSaveChanges: () => void
+    onExport: () => void
     isDirty: boolean
     isLoading: boolean
+    isExporting: boolean
     isReadOnly: boolean
     status: string
     lastSyncTime?: Date
@@ -28,8 +30,10 @@ export function TimesheetFooter({
     potentialApprovers,
     onSubmit,
     onSaveChanges,
+    onExport,
     isDirty,
     isLoading,
+    isExporting,
     isReadOnly,
     status,
     lastSyncTime,
@@ -197,9 +201,11 @@ export function TimesheetFooter({
                         variant="outline"
                         size="sm"
                         className="font-medium"
+                        onClick={onExport}
+                        disabled={isExporting}
                     >
                         <FileDown className="h-4 w-4 mr-1.5" />
-                        Export Report
+                        {isExporting ? 'Exporting...' : 'Export Report'}
                     </Button>
                 </div>
             </div>

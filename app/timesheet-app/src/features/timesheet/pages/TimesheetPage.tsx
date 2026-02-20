@@ -7,7 +7,7 @@ import { DailyEntryList } from '@/features/timesheet/components/DailyEntryList'
 import { DailyLogDialog } from '@/features/timesheet/components/DailyLogDialog'
 import { TimesheetFooter } from '@/features/timesheet/components/TimesheetFooter'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
-import { userInfoAPI } from '@/shared/lib/api'
+import { userInfoAPI, timesheetsAPI } from '@/shared/lib/api'
 import type { TimesheetEntry } from '@/shared/types'
 import { AlertTriangle, History } from 'lucide-react'
 import { AuditHistoryDialog } from '@/features/timesheet/components/AuditHistoryDialog'
@@ -44,6 +44,7 @@ export default function TimesheetPage() {
     const [potentialApprovers, setPotentialApprovers] = useState<{ id: string; firstName: string; lastName: string; role: string; email: string }[]>([])
     const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date())
     const [showAuditHistory, setShowAuditHistory] = useState(false)
+    const [isExporting, setIsExporting] = useState(false)
 
     // Dialog state
     const [statusDialog, setStatusDialog] = useState<{ open: boolean; variant: 'success' | 'error' | 'warning' | 'info'; title: string; description?: string }>({
@@ -217,6 +218,23 @@ export default function TimesheetPage() {
         })
     }
 
+    const handleExport = useCallback(async () => {
+        const { currentTimesheetId } = useTimesheetStore.getState()
+        if (!currentTimesheetId) {
+            setStatusDialog({ open: true, variant: 'warning', title: 'No Timesheet', description: 'Please save your entries first before exporting.' })
+            return
+        }
+        setIsExporting(true)
+        try {
+            await timesheetsAPI.exportToExcel(currentTimesheetId)
+            setStatusDialog({ open: true, variant: 'success', title: 'Exported', description: 'Timesheet exported successfully!' })
+        } catch (error: any) {
+            setStatusDialog({ open: true, variant: 'error', title: 'Export Failed', description: error?.message || 'Failed to export timesheet.' })
+        } finally {
+            setIsExporting(false)
+        }
+    }, [])
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -285,8 +303,10 @@ export default function TimesheetPage() {
                 potentialApprovers={potentialApprovers}
                 onSubmit={handleSubmit}
                 onSaveChanges={handleSaveChanges}
+                onExport={handleExport}
                 isDirty={isDirty}
                 isLoading={isLoading}
+                isExporting={isExporting}
                 isReadOnly={isReadOnly}
                 status={currentTimesheetStatus}
                 lastSyncTime={lastSyncTime}

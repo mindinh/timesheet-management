@@ -390,6 +390,28 @@ export const timesheetsAPI = {
         const response = await api.post('/modifyEntryHours', { entryId, approvedHours })
         return response.data.value || response.data
     },
+
+    exportToExcel: async (timesheetId: string): Promise<void> => {
+        const response = await api.post('/exportToExcel', { timesheetId }, {
+            responseType: 'blob',
+        })
+        // Extract filename from Content-Disposition header, fallback to default
+        const disposition = response.headers['content-disposition']
+        let fileName = 'timesheet.xlsx'
+        if (disposition) {
+            const match = disposition.match(/filename="?([^"]+)"?/)
+            if (match?.[1]) fileName = match[1]
+        }
+        // Trigger browser download
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', fileName)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(url)
+    },
 }
 
 // Timesheet Entries API
