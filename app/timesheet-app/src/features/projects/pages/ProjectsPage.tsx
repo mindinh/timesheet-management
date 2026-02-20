@@ -34,8 +34,8 @@ const PROJECT_TYPES: { value: ProjectType; label: string }[] = [
 ]
 
 const TYPE_COLORS: Record<ProjectType, string> = {
-    Papierkram: 'bg-[color:var(--sap-critical)]/10 text-[color:var(--sap-critical)]',
-    Internal: 'bg-[color:var(--sap-informative)]/10 text-[color:var(--sap-informative)]',
+    Papierkram: 'bg-sap-critical/10 text-sap-critical',
+    Internal: 'bg-sap-informative/10 text-sap-informative',
     External: 'bg-primary/10 text-primary',
     Other: 'bg-muted text-muted-foreground',
 }
@@ -231,7 +231,7 @@ export default function ProjectsPage() {
                                                         variant="secondary"
                                                         className={
                                                             project.isActive
-                                                                ? 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)]'
+                                                                ? 'bg-sap-positive/10 text-sap-positive'
                                                                 : 'bg-muted text-muted-foreground'
                                                         }
                                                     >

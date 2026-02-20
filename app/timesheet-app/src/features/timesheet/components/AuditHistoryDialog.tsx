@@ -28,37 +28,37 @@ const ACTION_CONFIG: Record<string, {
 }> = {
     Submitted: {
         icon: Send,
-        color: 'text-[color:var(--sap-informative)]',
-        bgColor: 'bg-[color:var(--sap-informative)]/10',
-        borderColor: 'border-[color:var(--sap-informative)]/30',
+        color: 'text-sap-informative',
+        bgColor: 'bg-sap-informative/10',
+        borderColor: 'border-sap-informative/30',
         label: 'Submitted',
     },
     Approved: {
         icon: CheckCircle2,
-        color: 'text-[color:var(--sap-positive)]',
-        bgColor: 'bg-[color:var(--sap-positive)]/10',
-        borderColor: 'border-[color:var(--sap-positive)]/30',
+        color: 'text-sap-positive',
+        bgColor: 'bg-sap-positive/10',
+        borderColor: 'border-sap-positive/30',
         label: 'Approved',
     },
     Rejected: {
         icon: XCircle,
-        color: 'text-[color:var(--sap-negative)]',
-        bgColor: 'bg-[color:var(--sap-negative)]/10',
-        borderColor: 'border-[color:var(--sap-negative)]/30',
+        color: 'text-sap-negative',
+        bgColor: 'bg-sap-negative/10',
+        borderColor: 'border-sap-negative/30',
         label: 'Rejected',
     },
     Modified: {
         icon: RotateCcw,
-        color: 'text-[color:var(--sap-critical)]',
-        bgColor: 'bg-[color:var(--sap-critical)]/10',
-        borderColor: 'border-[color:var(--sap-critical)]/30',
+        color: 'text-sap-critical',
+        bgColor: 'bg-sap-critical/10',
+        borderColor: 'border-sap-critical/30',
         label: 'Modified',
     },
     Finished: {
         icon: Flag,
-        color: 'text-[color:var(--sap-positive)]',
-        bgColor: 'bg-[color:var(--sap-positive)]/10',
-        borderColor: 'border-[color:var(--sap-positive)]/30',
+        color: 'text-sap-positive',
+        bgColor: 'bg-sap-positive/10',
+        borderColor: 'border-sap-positive/30',
         label: 'Finished',
     },
 }
@@ -97,8 +97,8 @@ export function AuditHistoryDialog({
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                     <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-[color:var(--sap-informative)]/10">
-                            <History className="h-5 w-5 text-[color:var(--sap-informative)]" />
+                        <div className="p-2 rounded-lg bg-sap-informative/10">
+                            <History className="h-5 w-5 text-sap-informative" />
                         </div>
                         <div>
                             <DialogTitle>Audit History</DialogTitle>
@@ -206,7 +206,7 @@ export function AuditHistoryDialog({
                                                 <div className={cn(
                                                     'mt-3 rounded-md px-3 py-2 text-sm border',
                                                     event.action === 'Rejected'
-                                                        ? 'bg-[color:var(--sap-negative)]/5 border-[color:var(--sap-negative)]/20 text-[color:var(--sap-negative)]'
+                                                        ? 'bg-sap-negative/5 border-sap-negative/20 text-sap-negative'
                                                         : 'bg-muted/30 border-border text-muted-foreground'
                                                 )}>
                                                     <p className="italic">"{event.comment}"</p>

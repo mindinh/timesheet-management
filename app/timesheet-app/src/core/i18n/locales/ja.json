@@ -1,0 +1,19 @@
+{
+    "sidebar": {
+        "title": "勤怠管理",
+        "myTimesheet": "タイムシート",
+        "myTimesheets": "タイムシート一覧",
+        "myProjects": "プロジェクト",
+        "approvals": "承認",
+        "adminDashboard": "管理者ダッシュボード",
+        "switchUser": "ユーザー切替"
+    },
+    "auditHistory": {
+        "title": "監査履歴",
+        "Submitted": "提出済み",
+        "Approved": "承認済み",
+        "Rejected": "却下済み",
+        "Modified": "修正済み",
+        "Finished": "完了済み"
+    }
+}

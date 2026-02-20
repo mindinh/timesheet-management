@@ -1,4 +1,13 @@
 {
+    "sidebar": {
+        "title": "Timesheet Mgmt",
+        "myTimesheet": "My Timesheet",
+        "myTimesheets": "My Timesheets",
+        "myProjects": "My Projects",
+        "approvals": "Approvals",
+        "adminDashboard": "Admin Dashboard",
+        "switchUser": "Switch User"
+    },
     "auditHistory": {
         "title": "Audit History",
         "Submitted": "Submitted",

@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight, CheckSquare } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/components/ui/button'
@@ -10,19 +11,21 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/components/ui/select'
+import LanguageSwitcher from '@/shared/components/common/LanguageSwitcher'
 import { useTimesheetStore, MOCK_USERS } from '@/features/timesheet/store/timesheetStore'
 import type { UserRole } from '@/shared/types'
 
-const navigation: { name: string; href: string; icon: any; roles: UserRole[] }[] = [
-    { name: 'My Timesheet', href: '/timesheet', icon: Calendar, roles: ['Employee', 'TeamLead', 'Admin'] },
-    { name: 'My Timesheets', href: '/timesheets', icon: ClipboardList, roles: ['Employee', 'TeamLead', 'Admin'] },
-    { name: 'My Projects', href: '/projects', icon: FolderKanban, roles: ['Employee', 'TeamLead', 'Admin'] },
-    { name: 'Approvals', href: '/approvals', icon: CheckSquare, roles: ['TeamLead', 'Admin'] },
-    { name: 'Admin Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['Admin'] },
+const navigation: { nameKey: string; href: string; icon: any; roles: UserRole[] }[] = [
+    { nameKey: 'sidebar.myTimesheet', href: '/timesheet', icon: Calendar, roles: ['Employee', 'TeamLead', 'Admin'] },
+    { nameKey: 'sidebar.myTimesheets', href: '/timesheets', icon: ClipboardList, roles: ['Employee', 'TeamLead', 'Admin'] },
+    { nameKey: 'sidebar.myProjects', href: '/projects', icon: FolderKanban, roles: ['Employee', 'TeamLead', 'Admin'] },
+    { nameKey: 'sidebar.approvals', href: '/approvals', icon: CheckSquare, roles: ['TeamLead', 'Admin'] },
+    { nameKey: 'sidebar.adminDashboard', href: '/admin', icon: LayoutDashboard, roles: ['Admin'] },
 ]
 
 export default function Sidebar() {
     const location = useLocation()
+    const { t } = useTranslation()
     const { currentUser, switchUser } = useTimesheetStore()
     const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -41,7 +44,7 @@ export default function Sidebar() {
         )}>
             <div className="flex h-16 items-center border-b px-4 justify-between">
                 {/* <img src="/logo.jpg" alt="logo" className='w-8 h-8' /> */}
-                {!isCollapsed ? <h1 className="text-xl font-bold text-primary">Timesheet Mgmt</h1> : <img src="/logo.jpg" alt="logo" className='w-10 h-10' />}
+                {!isCollapsed ? <h1 className="text-xl font-bold text-primary">{t('sidebar.title')}</h1> : <img src="/logo.jpg" alt="logo" className='w-10 h-10' />}
                 <Button
                     variant="ghost"
                     size="icon"
@@ -60,11 +63,12 @@ export default function Sidebar() {
             <nav className="flex-1 space-y-1 p-4">
                 {visibleNavigation.map((item) => {
                     const isActive = location.pathname === item.href
+                    const label = t(item.nameKey)
                     return (
                         <Link
-                            key={item.name}
+                            key={item.nameKey}
                             to={item.href}
-                            title={isCollapsed ? item.name : undefined}
+                            title={isCollapsed ? label : undefined}
                             className={cn(
                                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                                 isActive
@@ -74,17 +78,20 @@ export default function Sidebar() {
                             )}
                         >
                             <item.icon className="h-5 w-5" />
-                            {!isCollapsed && item.name}
+                            {!isCollapsed && label}
                         </Link>
                     )
                 })}
             </nav>
 
+            {/* Language Switcher */}
+            <LanguageSwitcher isCollapsed={isCollapsed} />
+
             {/* Mock User Switcher - Hidden when collapsed */}
             {!isCollapsed && currentUser && (
                 <div className="px-4 pb-2">
                     <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                        Switch User
+                        {t('sidebar.switchUser')}
                     </label>
                     <Select value={currentUser.id} onValueChange={handleUserChange}>
                         <SelectTrigger className="w-full">

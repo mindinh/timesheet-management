@@ -119,15 +119,15 @@ export function DailyEntryList({
                                     <div className="text-sm font-semibold">
                                         {format(day, 'MMM dd, EEE')}
                                     </div>
-                                    <div className={`text-[11px] font-semibold ${isToday(day) ? 'text-[color:var(--sap-informative)]' :
+                                    <div className={`text-[11px] font-semibold ${isToday(day) ? 'text-sap-informative' :
                                         isWeekendDay ? '' :
-                                            'text-[color:var(--sap-informative)]'
+                                            'text-sap-informative'
                                         }`}>
                                         {dateLabel}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="text-lg font-bold text-[color:var(--sap-informative)] tabular-nums min-w-[60px] text-right">
+                                    <div className="text-lg font-bold text-sap-informative tabular-nums min-w-[60px] text-right">
                                         {dailyTotal}
                                     </div>
                                     {!readOnly && (

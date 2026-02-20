@@ -165,14 +165,14 @@ export default function TimesheetReviewPage() {
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Modified Hours</p>
                     <p className={cn(
                         'text-3xl font-bold',
-                        variance !== 0 ? 'text-[color:var(--sap-informative)]' : 'text-foreground'
+                        variance !== 0 ? 'text-sap-informative' : 'text-foreground'
                     )}>
                         {totalModified.toFixed(2)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                         {variance !== 0 && (
                             <span className={cn(
-                                variance < 0 ? 'text-[color:var(--sap-negative)]' : 'text-[color:var(--sap-positive)]'
+                                variance < 0 ? 'text-sap-negative' : 'text-sap-positive'
                             )}>
                                 {variance > 0 ? '↗' : '↘'} {variancePercent}% change
                             </span>
@@ -184,7 +184,7 @@ export default function TimesheetReviewPage() {
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Variance</p>
                     <p className={cn(
                         'text-3xl font-bold',
-                        variance < 0 ? 'text-[color:var(--sap-negative)]' : variance > 0 ? 'text-[color:var(--sap-positive)]' : 'text-foreground'
+                        variance < 0 ? 'text-sap-negative' : variance > 0 ? 'text-sap-positive' : 'text-foreground'
                     )}>
                         {variance >= 0 ? '+' : ''}{variance.toFixed(2)}
                     </p>
@@ -198,8 +198,8 @@ export default function TimesheetReviewPage() {
                     <h2 className="font-semibold text-foreground">Daily Entry Details</h2>
                     <span className={cn(
                         'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border',
-                        ts.status === 'Submitted' ? 'bg-[color:var(--sap-informative)]/10 text-[color:var(--sap-informative)] border-[color:var(--sap-informative)]/20'
-                            : ts.status === 'Approved' ? 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20'
+                        ts.status === 'Submitted' ? 'bg-sap-informative/10 text-sap-informative border-sap-informative/20'
+                            : ts.status === 'Approved' ? 'bg-sap-positive/10 text-sap-positive border-sap-positive/20'
                                 : 'bg-muted text-muted-foreground border-border'
                     )}>
                         {ts.status === 'Submitted' ? 'Pending Approval' : ts.status}
@@ -252,14 +252,14 @@ export default function TimesheetReviewPage() {
                                                         className={cn(
                                                             'w-20 text-center rounded-md border px-2 py-1 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20',
                                                             isModified
-                                                                ? 'border-[color:var(--sap-informative)] text-[color:var(--sap-informative)] bg-[color:var(--sap-informative)]/5'
+                                                                ? 'border-sap-informative text-sap-informative bg-sap-informative/5'
                                                                 : 'border-border bg-background'
                                                         )}
                                                     />
                                                 ) : (
                                                     <span className={cn(
                                                         'text-sm font-medium',
-                                                        isModified ? 'text-[color:var(--sap-informative)]' : ''
+                                                        isModified ? 'text-sap-informative' : ''
                                                     )}>
                                                         {modified.toFixed(2)}
                                                     </span>
@@ -267,15 +267,15 @@ export default function TimesheetReviewPage() {
                                             </td>
                                             <td className={cn(
                                                 'py-3 px-4 text-center text-sm font-medium',
-                                                entryVariance < 0 ? 'text-[color:var(--sap-negative)]' : entryVariance > 0 ? 'text-[color:var(--sap-positive)]' : 'text-muted-foreground'
+                                                entryVariance < 0 ? 'text-sap-negative' : entryVariance > 0 ? 'text-sap-positive' : 'text-muted-foreground'
                                             )}>
                                                 {entryVariance >= 0 ? '+' : ''}{entryVariance.toFixed(2)}
                                             </td>
                                             <td className="py-3 px-4 text-center">
                                                 {isModified ? (
-                                                    <Send className="h-4 w-4 mx-auto text-[color:var(--sap-informative)]" />
+                                                    <Send className="h-4 w-4 mx-auto text-sap-informative" />
                                                 ) : (
-                                                    <Check className="h-4 w-4 mx-auto text-[color:var(--sap-positive)]" />
+                                                    <Check className="h-4 w-4 mx-auto text-sap-positive" />
                                                 )}
                                             </td>
                                         </tr>
@@ -289,13 +289,13 @@ export default function TimesheetReviewPage() {
                                 <td className="py-3 px-4 text-center text-sm">{totalSubmitted.toFixed(2)}</td>
                                 <td className={cn(
                                     'py-3 px-4 text-center text-sm',
-                                    variance !== 0 ? 'text-[color:var(--sap-informative)]' : ''
+                                    variance !== 0 ? 'text-sap-informative' : ''
                                 )}>
                                     {totalModified.toFixed(2)}
                                 </td>
                                 <td className={cn(
                                     'py-3 px-4 text-center text-sm',
-                                    variance < 0 ? 'text-[color:var(--sap-negative)]' : variance > 0 ? 'text-[color:var(--sap-positive)]' : ''
+                                    variance < 0 ? 'text-sap-negative' : variance > 0 ? 'text-sap-positive' : ''
                                 )}>
                                     {variance >= 0 ? '+' : ''}{variance.toFixed(2)}
                                 </td>
@@ -332,13 +332,13 @@ export default function TimesheetReviewPage() {
                 <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-50">
                     <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-4">
                         <p className="text-sm text-muted-foreground flex items-center gap-2">
-                            <span className="inline-block w-4 h-4 rounded-full bg-[color:var(--sap-informative)]/20 flex items-center justify-center text-xs">ℹ</span>
+                            <span className="inline-block w-4 h-4 rounded-full bg-sap-informative/20 flex items-center justify-center text-xs">ℹ</span>
                             Actions here will notify the employee via email.
                         </p>
                         <div className="flex items-center gap-3">
                             <Button
                                 variant="outline"
-                                className="border-[color:var(--sap-negative)] text-[color:var(--sap-negative)] hover:bg-[color:var(--sap-negative)]/10"
+                                className="border-sap-negative text-sap-negative hover:bg-sap-negative/10"
                                 onClick={handleReject}
                                 disabled={actionLoading !== null}
                             >
@@ -346,7 +346,7 @@ export default function TimesheetReviewPage() {
                                 Reject
                             </Button>
                             <Button
-                                className="bg-[color:var(--sap-positive)] hover:bg-[color:var(--sap-positive)]/90 text-white"
+                                className="bg-sap-positive hover:bg-sap-positive/90 text-white"
                                 onClick={handleApprove}
                                 disabled={actionLoading !== null}
                             >

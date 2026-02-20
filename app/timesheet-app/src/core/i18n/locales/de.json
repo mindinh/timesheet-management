@@ -1,0 +1,19 @@
+{
+    "sidebar": {
+        "title": "Zeiterfassung",
+        "myTimesheet": "Mein Zeitblatt",
+        "myTimesheets": "Meine Zeitblätter",
+        "myProjects": "Meine Projekte",
+        "approvals": "Genehmigungen",
+        "adminDashboard": "Admin-Dashboard",
+        "switchUser": "Benutzer wechseln"
+    },
+    "auditHistory": {
+        "title": "Prüfhistorie",
+        "Submitted": "Eingereicht",
+        "Approved": "Genehmigt",
+        "Rejected": "Abgelehnt",
+        "Modified": "Geändert",
+        "Finished": "Abgeschlossen"
+    }
+}

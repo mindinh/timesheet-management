@@ -17,10 +17,10 @@ import StatusDialog from '@/shared/components/common/StatusDialog'
 import ConfirmDialog from '@/shared/components/common/ConfirmDialog'
 
 const STATUS_COLORS: Record<string, string> = {
-    Open: 'bg-[var(--sap-informative)]',
-    InProgress: 'bg-[var(--sap-critical)]',
-    Completed: 'bg-[var(--sap-positive)]',
-    Cancelled: 'bg-[var(--sap-negative)]',
+    Open: 'bg-sap-informative',
+    InProgress: 'bg-sap-critical',
+    Completed: 'bg-sap-positive',
+    Cancelled: 'bg-sap-negative',
 }
 
 const STATUS_LABELS: Record<string, string> = {

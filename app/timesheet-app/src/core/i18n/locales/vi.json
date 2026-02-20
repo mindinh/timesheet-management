@@ -1,4 +1,13 @@
 {
+    "sidebar": {
+        "title": "Quản lý Timesheet",
+        "myTimesheet": "Timesheet",
+        "myTimesheets": "Danh sách Timesheet",
+        "myProjects": "Dự án",
+        "approvals": "Phê duyệt",
+        "adminDashboard": "Bảng điều khiển",
+        "switchUser": "Chuyển người dùng"
+    },
     "auditHistory": {
         "title": "Lịch sử thay đổi",
         "Submitted": "Đã gửi",

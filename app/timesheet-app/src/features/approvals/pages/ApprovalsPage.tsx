@@ -24,10 +24,10 @@ const MONTH_NAMES = [
 const STATUS_OPTIONS = ['All', 'Submitted', 'Approved', 'Rejected', 'Finished'] as const
 
 const statusBadgeStyles: Record<string, string> = {
-    Submitted: 'bg-[color:var(--sap-critical)]/10 text-[color:var(--sap-critical)] border-[color:var(--sap-critical)]/20',
-    Approved: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
-    Rejected: 'bg-[color:var(--sap-negative)]/10 text-[color:var(--sap-negative)] border-[color:var(--sap-negative)]/20',
-    Finished: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
+    Submitted: 'bg-sap-critical/10 text-sap-critical border-sap-critical/20',
+    Approved: 'bg-sap-positive/10 text-sap-positive border-sap-positive/20',
+    Rejected: 'bg-sap-negative/10 text-sap-negative border-sap-negative/20',
+    Finished: 'bg-sap-positive/10 text-sap-positive border-sap-positive/20',
 }
 
 type SortField = 'name' | 'period' | 'submitDate' | 'totalHours'
@@ -312,7 +312,7 @@ export default function ApprovalsPage() {
                                                         Review
                                                     </Button>
                                                     <button
-                                                        className="p-1.5 rounded-md text-[color:var(--sap-positive)] hover:bg-[color:var(--sap-positive)]/10 transition-colors opacity-0 group-hover:opacity-100"
+                                                        className="p-1.5 rounded-md text-sap-positive hover:bg-sap-positive/10 transition-colors opacity-0 group-hover:opacity-100"
                                                         title="Quick Approve"
                                                     >
                                                         <CheckCircle2 className="h-4 w-4" />

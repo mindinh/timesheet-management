@@ -28,11 +28,11 @@ const STATUS_TABS: { label: string; value: TimesheetStatusType | 'All' }[] = [
 
 const statusColors: Record<string, string> = {
     Draft: 'bg-muted text-muted-foreground border-border',
-    Submitted: 'bg-[color:var(--sap-informative)]/10 text-[color:var(--sap-informative)] border-[color:var(--sap-informative)]/20',
-    Approved_By_TeamLead: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
-    Approved: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
-    Rejected: 'bg-[color:var(--sap-negative)]/10 text-[color:var(--sap-negative)] border-[color:var(--sap-negative)]/20',
-    Finished: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)] border-[color:var(--sap-positive)]/20',
+    Submitted: 'bg-sap-informative/10 text-sap-informative border-sap-informative/20',
+    Approved_By_TeamLead: 'bg-sap-positive/10 text-sap-positive border-sap-positive/20',
+    Approved: 'bg-sap-positive/10 text-sap-positive border-sap-positive/20',
+    Rejected: 'bg-sap-negative/10 text-sap-negative border-sap-negative/20',
+    Finished: 'bg-sap-positive/10 text-sap-positive border-sap-positive/20',
 }
 
 const MONTH_NAMES = [
@@ -103,8 +103,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-[color:var(--sap-informative)]/10">
-                                <FileText className="h-5 w-5 text-[color:var(--sap-informative)]" />
+                            <div className="p-2.5 rounded-lg bg-sap-informative/10">
+                                <FileText className="h-5 w-5 text-sap-informative" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</p>
@@ -129,8 +129,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-[color:var(--sap-informative)]/10">
-                                <Clock className="h-5 w-5 text-[color:var(--sap-informative)]" />
+                            <div className="p-2.5 rounded-lg bg-sap-informative/10">
+                                <Clock className="h-5 w-5 text-sap-informative" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pending</p>
@@ -142,8 +142,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-[color:var(--sap-positive)]/10">
-                                <Eye className="h-5 w-5 text-[color:var(--sap-positive)]" />
+                            <div className="p-2.5 rounded-lg bg-sap-positive/10">
+                                <Eye className="h-5 w-5 text-sap-positive" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Approved</p>
