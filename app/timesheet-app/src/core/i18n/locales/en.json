@@ -1,0 +1,10 @@
+{
+    "auditHistory": {
+        "title": "Audit History",
+        "Submitted": "Submitted",
+        "Approved": "Approved",
+        "Rejected": "Rejected",
+        "Modified": "Modified",
+        "Finished": "Finished"
+    }
+}

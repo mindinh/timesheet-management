@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FolderKanban, Users, ClipboardCheck, ArrowRight } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
-import { projectsAPI, userInfoAPI } from '@/shared/lib/api'
+import { getAllProjects } from '@/features/projects/api/project-api'
+import { getPotentialApprovers } from '@/features/auth/api/auth-api'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 
@@ -20,8 +21,8 @@ export default function AdminDashboard() {
     useEffect(() => {
         if (currentUser) {
             fetchApprovableTimesheets()
-            projectsAPI.getAll().then(data => setProjectCount(data.length)).catch(() => { })
-            userInfoAPI.getPotentialApprovers().then(data => setUserCount(data.length)).catch(() => { })
+            getAllProjects().then(data => setProjectCount(data.length)).catch(() => { })
+            getPotentialApprovers().then(data => setUserCount(data.length)).catch(() => { })
         }
     }, [currentUser, fetchApprovableTimesheets])
 

@@ -6,13 +6,13 @@ This document outlines the high-level architecture, project structure, and secur
 
 The application is built using the **SAP Cloud Application Programming Model (CAP)** and follows a standard 3-tier architecture:
 
-1.  **Frontend (UI)**: SAP Fiori / UI5 based application.
+1.  **Frontend (UI)**: React/Vite application.
     -   Interacts with the backend via OData V4 services.
-    -   Handles user inputs for logging time, viewing status, and project configuration.
+    -   Handles user inputs for logging time, viewing status, and project configuration. (Clean Architecture)
 2.  **Backend (Service Layer)**: Node.js / CAP.
     -   Exposes `TimesheetService` and `AdminService`.
     -   Enforces business logic (validations, workflow transitions).
-    -   Manages data persistence.
+    -   Manages data persistence. 
 3.  **Database**: SQLite (Development) / SAP HANA (Production).
     -   Stores `User`, `Project`, `Task`, `Timesheet`, and `ApprovalHistory` entities.
 

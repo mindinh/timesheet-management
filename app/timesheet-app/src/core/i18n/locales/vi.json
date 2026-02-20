@@ -1,0 +1,10 @@
+{
+    "auditHistory": {
+        "title": "Lịch sử thay đổi",
+        "Submitted": "Đã gửi",
+        "Approved": "Đã phê duyệt",
+        "Rejected": "Đã từ chối",
+        "Modified": "Đã sửa đổi",
+        "Finished": "Đã hoàn thành"
+    }
+}

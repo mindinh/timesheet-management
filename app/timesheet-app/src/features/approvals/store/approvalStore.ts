@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import type { Timesheet, TimesheetEntry } from '@/shared/types'
-import { timesheetsAPI, userInfoAPI } from '@/shared/lib/api'
+import {
+    getApprovableTimesheets,
+    getTimesheetDetail,
+    modifyEntryHours,
+    approveTimesheet as approveTimesheetApi,
+    rejectTimesheet as rejectTimesheetApi,
+    submitToAdmin as submitToAdminApi,
+} from '@/features/timesheet/api/timesheet-api'
+import { getPotentialApprovers } from '@/features/auth/api/auth-api'
 
 interface ApprovalState {
     // List of timesheets pending this user's approval
@@ -47,7 +55,7 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     fetchApprovableTimesheets: async () => {
         set({ isLoading: true })
         try {
-            const timesheets = await timesheetsAPI.getApprovableTimesheets()
+            const timesheets = await getApprovableTimesheets()
             set({ timesheets, isLoading: false })
         } catch (error) {
             console.error('Failed to fetch approvable timesheets:', error)
@@ -58,7 +66,7 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     fetchTimesheetDetail: async (timesheetId: string) => {
         set({ isDetailLoading: true, modifiedHours: {}, comment: '' })
         try {
-            const ts = await timesheetsAPI.getTimesheetDetail(timesheetId)
+            const ts = await getTimesheetDetail(timesheetId)
             // Pre-populate modifiedHours with existing approvedHours
             const modifiedHours: Record<string, number> = {}
             ts.entries.forEach(e => {
@@ -88,7 +96,7 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
                 const original = selectedTimesheet.entries.find(e => e.id === entryId)
                 // Only save if hours were actually modified
                 if (original && hours !== original.hours) {
-                    return timesheetsAPI.modifyEntryHours(entryId, hours)
+                    return modifyEntryHours(entryId, hours)
                 }
                 return Promise.resolve('')
             })
@@ -104,7 +112,7 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
         try {
             // Save any modified hours first
             await get().saveModifiedHours()
-            await timesheetsAPI.approve(timesheetId, comment || undefined)
+            await approveTimesheetApi(timesheetId, comment || undefined)
             // Refresh list
             await get().fetchApprovableTimesheets()
         } catch (error) {
@@ -116,7 +124,7 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     rejectTimesheet: async (timesheetId: string) => {
         const { comment } = get()
         try {
-            await timesheetsAPI.reject(timesheetId, comment || undefined)
+            await rejectTimesheetApi(timesheetId, comment || undefined)
             await get().fetchApprovableTimesheets()
         } catch (error) {
             console.error('Failed to reject timesheet:', error)
@@ -127,7 +135,7 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     submitToAdmin: async (timesheetId: string, adminId: string) => {
         try {
             await get().saveModifiedHours()
-            await timesheetsAPI.submitToAdmin(timesheetId, adminId)
+            await submitToAdminApi(timesheetId, adminId)
             await get().fetchApprovableTimesheets()
         } catch (error) {
             console.error('Failed to submit to admin:', error)
@@ -137,7 +145,7 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
 
     fetchAdmins: async () => {
         try {
-            const approvers = await userInfoAPI.getPotentialApprovers()
+            const approvers = await getPotentialApprovers()
             const admins = approvers.filter(a => a.role === 'Admin' || a.role === 'Manager')
             set({ admins })
         } catch (error) {
