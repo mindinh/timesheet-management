@@ -27,11 +27,11 @@ export function CalendarHeader({
 
     const statusColors: Record<string, string> = {
         Draft: 'bg-muted text-muted-foreground',
-        Submitted: 'bg-[color:var(--sap-informative)]/10 text-[color:var(--sap-informative)]',
-        Approved_By_TeamLead: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)]',
-        Approved: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)]',
-        Rejected: 'bg-[color:var(--sap-negative)]/10 text-[color:var(--sap-negative)]',
-        Finished: 'bg-[color:var(--sap-positive)]/10 text-[color:var(--sap-positive)]',
+        Submitted: 'bg-sap-informative/10 text-sap-informative',
+        Approved_By_TeamLead: 'bg-sap-positive/10 text-sap-positive',
+        Approved: 'bg-sap-positive/10 text-sap-positive',
+        Rejected: 'bg-sap-negative/10 text-sap-negative',
+        Finished: 'bg-sap-positive/10 text-sap-positive',
     }
 
     const statusLabel = status === 'Draft' ? 'Ready' : status.replace(/_/g, ' ')
@@ -58,14 +58,14 @@ export function CalendarHeader({
             {/* Right: Month Total + Status + Submit */}
             <div className="flex items-center gap-4">
                 {/* Month Total */}
-                <div className="flex items-center gap-2 bg-[color:var(--sap-informative)]/10 rounded-lg px-4 py-2">
+                <div className="flex items-center gap-2 bg-sap-informative/10 rounded-lg px-4 py-2">
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                         Month Total
                     </span>
-                    <span className="text-2xl font-bold text-[color:var(--sap-informative)] tabular-nums">
+                    <span className="text-2xl font-bold text-sap-informative tabular-nums">
                         {monthlyTotal.toFixed(2)}
                     </span>
-                    <span className="text-xs font-medium text-[color:var(--sap-informative)] uppercase">HRS</span>
+                    <span className="text-xs font-medium text-sap-informative uppercase">HRS</span>
                 </div>
 
                 {/* Status + Submit */}
@@ -86,7 +86,7 @@ export function CalendarHeader({
                         </div>
                     ) : (
                         <Button
-                            onClick={() => onSubmit?.()}
+                            onClick={() => { }}
                             className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6"
                             disabled={status !== 'Draft' && status !== 'Rejected'}
                         >
