@@ -15,5 +15,20 @@
         "Rejected": "却下済み",
         "Modified": "修正済み",
         "Finished": "完了済み"
+    },
+    "projects": {
+        "title": "プロジェクト",
+        "description": "プロジェクトとタスクタイプの管理",
+        "create": "プロジェクト作成",
+        "noProjects": "まだプロジェクトがありません。\"プロジェクト作成\"をクリックして開始してください。",
+        "table": {
+            "id": "ID",
+            "name": "名前",
+            "code": "コード",
+            "type": "タイプ",
+            "tasks": "タスク",
+            "status": "ステータス",
+            "actions": "アクション"
+        }
     }
 }

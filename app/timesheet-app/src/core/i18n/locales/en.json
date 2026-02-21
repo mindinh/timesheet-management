@@ -15,5 +15,22 @@
         "Rejected": "Rejected",
         "Modified": "Modified",
         "Finished": "Finished"
+    },
+    "projects": {
+        "title": "Projects",
+        "description": "Manage your projects and tasks",
+        "create": "Create Project",
+        "edit": "Edit Project",
+        "delete": "Delete Project",
+        "noProjects": "No projects yet. Click \"Create Project\" to get started.",
+        "table": {
+            "id": "ID",
+            "name": "Name",
+            "code": "Code",
+            "type": "Type",
+            "tasks": "Tasks",
+            "status": "Status",
+            "actions": "Actions"
+        }
     }
 }

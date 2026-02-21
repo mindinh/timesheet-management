@@ -25,6 +25,7 @@ import { ProjectTasksPanel } from '@/features/projects/components/ProjectTasksPa
 import type { Project, ProjectType } from '@/shared/types'
 import StatusDialog from '@/shared/components/common/StatusDialog'
 import ConfirmDialog from '@/shared/components/common/ConfirmDialog'
+import { useTranslation } from 'react-i18next'
 
 const PROJECT_TYPES: { value: ProjectType; label: string }[] = [
     { value: 'Papierkram', label: 'Papierkram' },
@@ -41,6 +42,7 @@ const TYPE_COLORS: Record<ProjectType, string> = {
 }
 
 export default function ProjectsPage() {
+    const { t } = useTranslation()
     const { currentUser } = useTimesheetStore()
     const { projects, tasks, isLoading, fetchProjects, addProject, updateProject, deleteProject } =
         useProjectStore()
@@ -130,14 +132,14 @@ export default function ProjectsPage() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">Project & Task Configuration</h1>
+                        <h1 className="text-2xl font-bold">{t('projects.title')}</h1>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Manage your projects and configure task types
+                            {t('projects.description')}
                         </p>
                     </div>
                     <Button onClick={handleCreate} className="bg-primary hover:bg-primary/90">
                         <Plus className="h-4 w-4 mr-2" />
-                        Create Project
+                        {t('projects.create')}
                     </Button>
                 </div>
 
@@ -149,18 +151,18 @@ export default function ProjectsPage() {
                         <CardContent className="p-0">
                             {/* Table Header */}
                             <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30">
-                                <div className="col-span-1">ID</div>
-                                <div className="col-span-3">Project Name</div>
-                                <div className="col-span-2">Type</div>
-                                <div className="col-span-2">Tasks</div>
-                                <div className="col-span-2">Status</div>
-                                <div className="col-span-2 text-right">Actions</div>
+                                <div className="col-span-1">{t('projects.table.id')}</div>
+                                <div className="col-span-3">{t('projects.table.name')}</div>
+                                <div className="col-span-2">{t('projects.table.type')}</div>
+                                <div className="col-span-2">{t('projects.table.tasks')}</div>
+                                <div className="col-span-2">{t('projects.table.status')}</div>
+                                <div className="col-span-2 text-right">{t('projects.table.actions')}</div>
                             </div>
 
                             {/* Table Rows */}
                             {projects.length === 0 ? (
                                 <div className="py-12 text-center text-muted-foreground">
-                                    No projects yet. Click "Create Project" to get started.
+                                    {t('projects.noProjects')}
                                 </div>
                             ) : (
                                 projects.map((project) => {

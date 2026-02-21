@@ -8,7 +8,7 @@ import {
 } from '@/shared/components/ui/select';
 
 const LOGOS = {
-    en: '🇬🇧',
+    en: 'ᴇɴ',
     vi: '🇻🇳',
     ja: '🇯🇵',
     de: '🇩🇪'
