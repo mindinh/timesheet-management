@@ -79,12 +79,13 @@ export function CalendarHeader({
                         </Badge>
                     </div>
 
-                    {isReadOnly ? (
+                    {/* {isReadOnly ? (
                         <div className="flex items-center gap-1.5 text-muted-foreground text-sm px-3 py-2 border rounded-lg">
                             <Lock className="h-3.5 w-3.5" />
                             <span>Locked</span>
                         </div>
-                    ) : (
+                    ) 
+                    : (
                         <Button
                             onClick={() => { }}
                             className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6"
@@ -92,7 +93,7 @@ export function CalendarHeader({
                         >
                             {status === 'Rejected' ? 'Resubmit' : 'Submit'}
                         </Button>
-                    )}
+                    )} */}
                 </div>
             </div>
         </div>

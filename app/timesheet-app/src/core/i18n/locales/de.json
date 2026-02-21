@@ -15,5 +15,22 @@
         "Rejected": "Abgelehnt",
         "Modified": "Geändert",
         "Finished": "Abgeschlossen"
+    },
+    "projects": {
+        "title": "Projekte",
+        "description": "Verwalten Sie Ihre Projekte und Aufgaben",
+        "create": "Projekt erstellen",
+        "edit": "Projekt bearbeiten",
+        "delete": "Projekt löschen",
+        "noProjects": "Noch keine Projekte vorhanden. Klicken Sie auf \"Projekt erstellen\" um zu beginnen.",
+        "table": {
+            "id": "ID",
+            "name": "Name",
+            "code": "Code",
+            "type": "Typ",
+            "tasks": "Aufgaben",
+            "status": "Status",
+            "actions": "Aktionen"
+        }
     }
 }

@@ -26,6 +26,7 @@ export default function TimesheetPage() {
         addEntry,
         updateEntry,
         deleteEntry,
+        deleteEntries,
         entries,
         isDirty,
         isLoading,
@@ -46,6 +47,7 @@ export default function TimesheetPage() {
     const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date())
     const [showAuditHistory, setShowAuditHistory] = useState(false)
     const [isExporting, setIsExporting] = useState(false)
+    const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set())
 
     // Dialog state
     const [statusDialog, setStatusDialog] = useState<{ open: boolean; variant: 'success' | 'error' | 'warning' | 'info'; title: string; description?: string }>({
@@ -201,12 +203,16 @@ export default function TimesheetPage() {
 
     const handleDuplicateDay = (dateStr: string) => {
         if (isReadOnly) return
-        const entriesToDuplicate = entries.filter(e => e.date === dateStr)
+        const dayEntries = entries.filter(e => e.date === dateStr)
 
-        if (entriesToDuplicate.length === 0) {
+        if (dayEntries.length === 0) {
             setStatusDialog({ open: true, variant: 'info', title: 'Nothing to Duplicate', description: 'No entries to duplicate for this day.' })
             return
         }
+
+        // If some entries are selected for this day, duplicate only those; otherwise duplicate the last entry
+        const selectedForDay = dayEntries.filter(e => selectedEntryIds.has(e.id))
+        const entriesToDuplicate = selectedForDay.length > 0 ? selectedForDay : [dayEntries[dayEntries.length - 1]]
 
         entriesToDuplicate.forEach(entry => {
             addEntry({
@@ -216,6 +222,54 @@ export default function TimesheetPage() {
                 hours: entry.hours,
                 description: entry.description,
             })
+        })
+    }
+
+    const handleSelectEntry = (entryId: string, checked: boolean) => {
+        setSelectedEntryIds(prev => {
+            const next = new Set(prev)
+            if (checked) {
+                next.add(entryId)
+            } else {
+                next.delete(entryId)
+            }
+            return next
+        })
+    }
+
+    const handleSelectAllForDay = (dateStr: string, checked: boolean) => {
+        const dayEntries = entries.filter(e => e.date === dateStr)
+        setSelectedEntryIds(prev => {
+            const next = new Set(prev)
+            dayEntries.forEach(e => {
+                if (checked) {
+                    next.add(e.id)
+                } else {
+                    next.delete(e.id)
+                }
+            })
+            return next
+        })
+    }
+
+    const handleDeleteSelectedForDay = (dateStr: string) => {
+        if (isReadOnly) return
+        const dayEntries = entries.filter(e => e.date === dateStr)
+        const selectedForDay = dayEntries.filter(e => selectedEntryIds.has(e.id))
+        if (selectedForDay.length === 0) return
+        setConfirmDialog({
+            open: true,
+            title: 'Delete Selected Entries',
+            description: `Are you sure you want to delete ${selectedForDay.length} selected entries?`,
+            onConfirm: () => {
+                deleteEntries(selectedForDay.map(e => e.id))
+                setSelectedEntryIds(prev => {
+                    const next = new Set(prev)
+                    selectedForDay.forEach(e => next.delete(e.id))
+                    return next
+                })
+            },
+            destructive: true,
         })
     }
 
@@ -288,10 +342,14 @@ export default function TimesheetPage() {
                 entries={currentMonthEntries}
                 projects={projects}
                 tasks={Object.values(tasks).flat()}
+                selectedEntryIds={selectedEntryIds}
                 onAddEntry={handleAddEntry}
                 onDuplicateDay={handleDuplicateDay}
                 onEditEntry={handleEditEntry}
                 onDeleteEntry={handleDeleteEntry}
+                onSelectEntry={handleSelectEntry}
+                onSelectAllForDay={handleSelectAllForDay}
+                onDeleteSelectedForDay={handleDeleteSelectedForDay}
                 readOnly={isReadOnly}
             />
 

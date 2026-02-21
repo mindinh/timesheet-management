@@ -35,6 +35,7 @@ interface TimesheetState {
     addEntry: (entry: Omit<TimesheetEntry, 'id'>) => void
     updateEntry: (id: string, entry: Partial<TimesheetEntry>) => void
     deleteEntry: (id: string) => void
+    deleteEntries: (ids: string[]) => void
     saveEntries: () => Promise<void>
 
     submitTimesheet: (year: number, month: number, approverId?: string) => Promise<void>
@@ -147,6 +148,14 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
     deleteEntry: (id) => {
         set((state) => ({
             entries: state.entries.filter((e) => e.id !== id),
+            isDirty: true,
+        }))
+    },
+
+    deleteEntries: (ids) => {
+        const idSet = new Set(ids)
+        set((state) => ({
+            entries: state.entries.filter((e) => !idSet.has(e.id)),
             isDirty: true,
         }))
     },
