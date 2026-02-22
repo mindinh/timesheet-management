@@ -17,26 +17,22 @@ stateDiagram-v2
     
     Rejected --> Submitted: User Resubmits (after edit)
     
-    state "Draft" as Draft {
+    state Draft {
         [*] --> Editing
         Editing --> [*]
-        note right of Editing: User can add/edit/delete entries
     }
+    note right of Draft: User can add/edit/delete entries
 
-    state "Submitted" as Submitted {
-        note right of Submitted: Locked for User.\nWaiting for Approver.
-    }
+    note right of Submitted: Locked for User.\nWaiting for Approver.
 
-    state "Approved" as Approved {
-        note right of Approved: Approved by Team Lead.\nReady for Admin or Archiving.
-    }
+    note right of Approved: Approved by Team Lead.\nReady for Admin or Archiving.
 
-    state "Finished" as Finished {
+    state Finished {
         [*] --> Archived
     }
 ```
 
-## detailed Workflows
+## Detailed Workflows
 
 ### 1. Logging Time (Draft Mode)
 - **Actor**: Employee
