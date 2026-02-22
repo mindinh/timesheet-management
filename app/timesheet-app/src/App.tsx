@@ -6,6 +6,7 @@ import ApprovalsPage from '@/features/approvals/pages/ApprovalsPage'
 import TimesheetReviewPage from '@/features/approvals/pages/TimesheetReviewPage'
 import AdminDashboard from '@/features/admin/pages/AdminDashboard'
 import ProjectsPage from '@/features/projects/pages/ProjectsPage'
+import DocsPage from '@/features/docs/pages/DocsPage'
 import ProtectedRoute from '@/shared/components/common/ProtectedRoute'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="timesheet" element={<TimesheetPage />} />
         <Route path="timesheets" element={<TimesheetListPage />} />
         <Route path="projects" element={<ProjectsPage />} />
+        <Route path="docs" element={<DocsPage />} />
         <Route path="approvals" element={
           <ProtectedRoute allowedRoles={['TeamLead', 'Admin']}>
             <ApprovalsPage />

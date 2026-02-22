@@ -6,7 +6,8 @@
         "myProjects": "Dự án",
         "approvals": "Phê duyệt",
         "adminDashboard": "Bảng điều khiển",
-        "switchUser": "Chuyển người dùng"
+        "switchUser": "Chuyển người dùng",
+        "documents": "Tài liệu"
     },
     "auditHistory": {
         "title": "Lịch sử thay đổi",

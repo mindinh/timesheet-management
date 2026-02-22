@@ -6,7 +6,8 @@
         "myProjects": "My Projects",
         "approvals": "Approvals",
         "adminDashboard": "Admin Dashboard",
-        "switchUser": "Switch User"
+        "switchUser": "Switch User",
+        "documents": "Documents"
     },
     "auditHistory": {
         "title": "Audit History",

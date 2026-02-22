@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight, CheckSquare } from 'lucide-react'
+import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight, CheckSquare, BookOpen } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -21,6 +21,7 @@ const navigation: { nameKey: string; href: string; icon: any; roles: UserRole[] 
     { nameKey: 'sidebar.myProjects', href: '/projects', icon: FolderKanban, roles: ['Employee', 'TeamLead', 'Admin'] },
     { nameKey: 'sidebar.approvals', href: '/approvals', icon: CheckSquare, roles: ['TeamLead', 'Admin'] },
     { nameKey: 'sidebar.adminDashboard', href: '/admin', icon: LayoutDashboard, roles: ['Admin'] },
+    { nameKey: 'sidebar.documents', href: '/docs', icon: BookOpen, roles: ['Employee', 'TeamLead', 'Admin'] },
 ]
 
 export default function Sidebar() {
@@ -43,7 +44,6 @@ export default function Sidebar() {
             isCollapsed ? "w-20" : "w-64"
         )}>
             <div className="flex h-16 items-center border-b px-4 justify-between">
-                {/* <img src="/logo.jpg" alt="logo" className='w-8 h-8' /> */}
                 {!isCollapsed ? <h1 className="text-xl font-bold text-primary">{t('sidebar.title')}</h1> : <img src="/logo.jpg" alt="logo" className='w-10 h-10' />}
                 <Button
                     variant="ghost"
@@ -60,7 +60,7 @@ export default function Sidebar() {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 space-y-1 p-4">
+            <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
                 {visibleNavigation.map((item) => {
                     const isActive = location.pathname === item.href
                     const label = t(item.nameKey)

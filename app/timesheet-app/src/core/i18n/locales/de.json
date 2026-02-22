@@ -6,7 +6,8 @@
         "myProjects": "Meine Projekte",
         "approvals": "Genehmigungen",
         "adminDashboard": "Admin-Dashboard",
-        "switchUser": "Benutzer wechseln"
+        "switchUser": "Benutzer wechseln",
+        "documents": "Dokumente"
     },
     "auditHistory": {
         "title": "Prüfhistorie",
