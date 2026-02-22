@@ -6,7 +6,8 @@
         "myProjects": "プロジェクト",
         "approvals": "承認",
         "adminDashboard": "管理者ダッシュボード",
-        "switchUser": "ユーザー切替"
+        "switchUser": "ユーザー切替",
+        "documents": "ドキュメント"
     },
     "auditHistory": {
         "title": "監査履歴",

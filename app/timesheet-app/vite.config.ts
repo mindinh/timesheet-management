@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '/docs': path.resolve(__dirname, '../../docs'),
     },
   },
   server: {
@@ -16,6 +17,13 @@ export default defineConfig({
         target: 'http://localhost:4004',
         changeOrigin: true,
       },
+    },
+    fs: {
+      allow: [
+        // Allow serving files from project root and docs folder
+        path.resolve(__dirname),
+        path.resolve(__dirname, '../../docs'),
+      ],
     },
   },
 })

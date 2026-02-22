@@ -160,7 +160,7 @@ export function DailyEntryList({
                                         {dateLabel}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-4">
                                     <div className="text-lg font-bold text-sap-informative tabular-nums min-w-[60px] text-right">
                                         {dailyTotal}
                                     </div>
@@ -194,7 +194,7 @@ export function DailyEntryList({
                                                 onClick={() => onAddEntry(dateStr)}
                                                 title="Add task"
                                             >
-                                                <Plus className="h-4 w-4" />
+                                                <Plus className="h-4 w-4 text-white" />
                                             </Button>
                                         </>
                                     )}
