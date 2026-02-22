@@ -31,7 +31,7 @@ export default function DocsPage() {
     }
 
     return (
-        <div className="flex h-full -m-6">
+        <div className="flex min-h-[calc(100%+48px)] -m-6">
             {/* In-page docs sidebar */}
             <div className="w-[230px] shrink-0 flex flex-col border-r border-border bg-card">
                 {/* Header */}
@@ -52,7 +52,7 @@ export default function DocsPage() {
             </div>
 
             {/* Content area */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 md:p-10 lg:p-12 bg-card text-card-foreground">
                 {loading ? (
                     <div className="flex items-center justify-center h-48">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />

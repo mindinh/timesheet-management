@@ -1,7 +1,8 @@
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import mermaid from 'mermaid'
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
+import { Loader2, AlertCircle } from 'lucide-react'
 
 interface DocsViewerProps {
     content: string
@@ -9,31 +10,65 @@ interface DocsViewerProps {
 }
 
 function MermaidChart({ chart }: { chart: string }) {
-    const ref = useRef<HTMLDivElement>(null)
+    const [svg, setSvg] = useState<string>('')
+    const [error, setError] = useState<boolean>(false)
 
     useEffect(() => {
         mermaid.initialize({
-            startOnLoad: true,
+            startOnLoad: false,
             theme: 'default',
             securityLevel: 'loose',
             fontFamily: 'inherit',
         })
 
-        if (ref.current) {
-            // Reset the div content to the raw chart string so mermaid.run can process it
-            ref.current.textContent = chart
+        let isMounted = true
+
+        const renderChart = async () => {
             try {
-                mermaid.run({ nodes: [ref.current] })
+                const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`
+                const { svg: generatedSvg } = await mermaid.render(id, chart)
+                if (isMounted) {
+                    setSvg(generatedSvg)
+                    setError(false)
+                }
             } catch (err) {
                 console.error("Mermaid parsing error", err)
+                if (isMounted) {
+                    setError(true)
+                }
             }
+        }
+
+        renderChart()
+
+        return () => {
+            isMounted = false
         }
     }, [chart])
 
+    if (error) {
+        return (
+            <div className="flex justify-center my-8 p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive/20 text-sm gap-2">
+                <AlertCircle className="h-4 w-4" />
+                <span>Failed to render diagram. Check console for details.</span>
+            </div>
+        )
+    }
+
+    if (!svg) {
+        return (
+            <div className="flex justify-center my-8 p-8 bg-muted rounded-lg border border-border flex-col items-center gap-2">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Rendering diagram...</span>
+            </div>
+        )
+    }
+
     return (
-        <div className="flex justify-center my-8 p-4 sm:p-8 bg-white dark:bg-slate-50 rounded-lg border border-border shadow-sm overflow-x-auto">
-            <div ref={ref} className="mermaid min-w-max">{chart}</div>
-        </div>
+        <div
+            className="flex justify-center p-4 sm:p-8 rounded-lg overflow-x-auto [&>svg]:max-w-full [&>svg]:h-auto"
+            dangerouslySetInnerHTML={{ __html: svg }}
+        />
     )
 }
 
@@ -114,11 +149,19 @@ export default function DocsViewer({ content, title }: DocsViewerProps) {
                             </code>
                         )
                     },
-                    pre: ({ children }) => (
-                        <pre className="bg-muted rounded-lg p-4 overflow-x-auto mb-4 border border-border">
-                            {children}
-                        </pre>
-                    ),
+                    pre: ({ children }: any) => {
+                        const child = Array.isArray(children) ? children[0] : children
+                        const childClassName = child?.props?.className || ''
+                        if (childClassName.includes('language-mermaid')) {
+                            // Render without grey background for mermaid charts
+                            return <div className="my-8 w-full">{children}</div>
+                        }
+                        return (
+                            <pre className="bg-muted rounded-lg p-4 overflow-x-auto mb-4 border border-border">
+                                {children}
+                            </pre>
+                        )
+                    },
                     blockquote: ({ children }) => (
                         <blockquote className="border-l-4 border-primary/40 pl-4 py-1 my-4 bg-primary/5 rounded-r-lg text-sm italic text-foreground/80">
                             {children}
