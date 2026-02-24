@@ -31,7 +31,7 @@ export default function DocsPage() {
     }
 
     return (
-        <div className="flex min-h-[calc(100%+48px)] -m-6">
+        <div className="flex h-[calc(100%+48px)] -m-6 overflow-hidden">
             {/* In-page docs sidebar */}
             <div className="w-[230px] shrink-0 flex flex-col border-r border-border bg-card">
                 {/* Header */}
