@@ -27,9 +27,7 @@ stateDiagram-v2
 
     note right of Approved: Approved by Team Lead.\nReady for Admin or Archiving.
 
-    state Finished {
-        [*] --> Archived
-    }
+    Finished --> [*] : Archived
 ```
 
 ## Detailed Workflows

@@ -114,7 +114,7 @@ classDiagram
     
     class ApprovalHistory {
         +UUID ID
-        +String action <<Approve, Reject, Submit>>
+        +String action "Approve, Reject, Submit"
         +String fromStatus
         +String toStatus
         +String comment
@@ -123,7 +123,7 @@ classDiagram
     
     class User {
         +UUID ID
-        +String role <<Team Lead, Admin>>
+        +String role "Team Lead, Admin"
     }
 
     Timesheet "1" *-- "many" ApprovalHistory : generates

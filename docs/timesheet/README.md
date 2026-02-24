@@ -78,26 +78,22 @@ stateDiagram-v2
     state "Draft" as Draft {
         [*] --> Editing
         Editing --> [*]
-        note right of Editing: Employee adds/edits/deletes entries
+        note right of Editing : Employee adds/edits/deletes entries
     }
 
-    Draft --> Submitted: User Submits
+    Draft --> Submitted : User Submits
     
-    state "Submitted" as Submitted {
-        note right of Submitted: Locked for Employee.\nWaiting for Approver.
-    }
+    note right of Submitted : Locked for Employee.\nWaiting for Approver.
 
-    Submitted --> Approved: Team Lead Approves
-    Submitted --> Rejected: Approver Rejects
+    Submitted --> Approved : Team Lead Approves
+    Submitted --> Rejected : Approver Rejects
     
-    Approved --> Submitted: Team Lead Forwards to Admin
-    Approved --> Finished: Final Admin/Manager Sign-Off
+    Approved --> Submitted : Team Lead Forwards to Admin
+    Approved --> Finished : Final Admin/Manager Sign-Off
     
-    Rejected --> Submitted: User Resubmits
+    Rejected --> Submitted : User Resubmits
 
-    state "Finished" as Finished {
-        [*] --> Archived
-    }
+    Finished --> [*] : Archived
 ```
 
 ### Detailed Flow Steps

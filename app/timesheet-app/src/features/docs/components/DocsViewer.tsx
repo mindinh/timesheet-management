@@ -24,8 +24,8 @@ function MermaidChart({ chart }: { chart: string }) {
         let isMounted = true
 
         const renderChart = async () => {
+            const id = `mermaid-${Math.random().toString(36).slice(2, 9)}`
             try {
-                const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`
                 const { svg: generatedSvg } = await mermaid.render(id, chart)
                 if (isMounted) {
                     setSvg(generatedSvg)
@@ -33,6 +33,13 @@ function MermaidChart({ chart }: { chart: string }) {
                 }
             } catch (err) {
                 console.error("Mermaid parsing error", err)
+                // Mermaid injects error elements into the DOM on parse failure.
+                // Clean them up to prevent breaking the page layout.
+                const errEl = document.getElementById(id)
+                if (errEl) errEl.remove()
+                // Also remove any stray mermaid error containers appended to body
+                document.querySelectorAll('svg[id^="dmermaid-"]').forEach(el => el.remove())
+                document.querySelectorAll('[data-mermaid-error]').forEach(el => el.remove())
                 if (isMounted) {
                     setError(true)
                 }
