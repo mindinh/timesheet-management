@@ -48,10 +48,17 @@ export const useProjectStore = create<ProjectState>((set) => ({
                 ...project,
                 user_ID: userId,
             })
-            set((state) => ({
-                projects: [...state.projects, newProject],
-                isLoading: false,
-            }))
+            if (newProject) {
+                set((state) => ({
+                    projects: [...state.projects, newProject],
+                    isLoading: false,
+                }))
+            } else {
+                // Server returned 204 – project was created but no payload returned.
+                // Re-fetch to sync the list.
+                const projects = await getProjectsByUser(userId)
+                set({ projects, isLoading: false })
+            }
         } catch (error) {
             console.error('Failed to create project:', error)
             set({ isLoading: false })

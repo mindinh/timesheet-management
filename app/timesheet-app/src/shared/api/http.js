@@ -54,6 +54,7 @@ export const api = {
                 : {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
+                    "Prefer": "return=representation",
                     "Accept-Language": getLanguage(),
                     ...(options?.headers ?? {})
                 },
