@@ -33,7 +33,7 @@ export async function getProjectsByUser(userId: string): Promise<Project[]> {
 
 export async function createProject(
     project: Omit<Project, 'id'> & { user_ID?: string }
-): Promise<Project> {
+): Promise<Project | null> {
     const data: any = await api.post(PROJECT_URL.projects, {
         name: project.name,
         code: project.code,
@@ -42,7 +42,7 @@ export async function createProject(
         isActive: project.isActive,
         ...(project.user_ID && { user_ID: project.user_ID }),
     })
-    return mapProject(data)
+    return data ? mapProject(data) : null
 }
 
 export async function updateProject(id: string, project: Partial<Project>): Promise<Project> {
