@@ -9,6 +9,7 @@ export const TIMESHEET_URL = {
     reject: `${SERVICE_URL.timesheet}/rejectTimesheet`,
     finish: `${SERVICE_URL.timesheet}/finishTimesheet`,
     submitToAdmin: `${SERVICE_URL.timesheet}/submitToAdmin`,
+    bulkSubmitToAdmin: `${SERVICE_URL.timesheet}/bulkSubmitToAdmin`,
     modifyEntryHours: `${SERVICE_URL.timesheet}/modifyEntryHours`,
     exportToExcel: `${SERVICE_URL.timesheet}/exportToExcel`,
     approvable: `${SERVICE_URL.timesheet}/getApprovableTimesheets()`,

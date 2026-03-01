@@ -1,10 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
-import { ArrowLeft, Check, X, Send, MessageSquare, User as UserIcon, Calendar } from 'lucide-react'
+import { ArrowLeft, Check, X, Send, MessageSquare, User as UserIcon, Calendar, Pencil, Loader2 } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/shared/components/ui/dialog'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
+import { adminModifyEntryHours } from '@/features/admin/api/admin-api'
 import { cn } from '@/shared/lib/utils'
 import StatusDialog from '@/shared/components/common/StatusDialog'
 
@@ -37,6 +41,13 @@ export default function TimesheetReviewPage() {
     const [actionLoading, setActionLoading] = useState<string | null>(null)
     const [showAdminDialog, setShowAdminDialog] = useState(false)
     const [selectedAdminId, setSelectedAdminId] = useState('')
+
+    // Admin Override State
+    const [overrideModal, setOverrideModal] = useState<{ open: boolean, entryId: string, hours: number, note: string }>({
+        open: false, entryId: '', hours: 0, note: ''
+    })
+    const [isOverriding, setIsOverriding] = useState(false)
+
     const [statusDialog, setStatusDialog] = useState<{ open: boolean; variant: 'success' | 'error' | 'warning' | 'info'; title: string; description?: string }>({
         open: false, variant: 'info', title: ''
     })
@@ -109,6 +120,24 @@ export default function TimesheetReviewPage() {
         } finally {
             setActionLoading(null)
             setShowAdminDialog(false)
+        }
+    }
+
+    const handleAdminOverrideSubmit = async () => {
+        if (!overrideModal.entryId) return
+        setIsOverriding(true)
+        try {
+            const msg = await adminModifyEntryHours(overrideModal.entryId, overrideModal.hours, overrideModal.note)
+            setStatusDialog({ open: true, variant: 'success', title: 'Success', description: msg })
+            setOverrideModal({ open: false, entryId: '', hours: 0, note: '' })
+            // Refresh to see the new hours
+            if (timesheetId) {
+                fetchTimesheetDetail(timesheetId)
+            }
+        } catch (err: any) {
+            setStatusDialog({ open: true, variant: 'error', title: 'Override Failed', description: err.message || 'An error occurred during Admin Override.' })
+        } finally {
+            setIsOverriding(false)
         }
     }
 
@@ -216,6 +245,9 @@ export default function TimesheetReviewPage() {
                                 <th className="text-center py-3 px-4">Modified Hours</th>
                                 <th className="text-center py-3 px-4">Variance</th>
                                 <th className="text-center py-3 px-4">Status</th>
+                                {currentUser?.role === 'Admin' && (
+                                    <th className="text-right py-3 px-2">Override</th>
+                                )}
                             </tr>
                         </thead>
                         <tbody>
@@ -278,6 +310,25 @@ export default function TimesheetReviewPage() {
                                                     <Check className="h-4 w-4 mx-auto text-sap-positive" />
                                                 )}
                                             </td>
+
+                                            {/* Admin Override Action Column (Optional logic, we'll append a button next to status if Admin) */}
+                                            {currentUser?.role === 'Admin' && (
+                                                <td className="py-3 px-2 text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 hover:bg-muted"
+                                                        onClick={() => setOverrideModal({
+                                                            open: true,
+                                                            entryId: entry.id,
+                                                            hours: modified,
+                                                            note: ''
+                                                        })}
+                                                    >
+                                                        <Pencil className="h-4 w-4 text-muted-foreground" />
+                                                    </Button>
+                                                </td>
+                                            )}
                                         </tr>
                                     )
                                 })}
@@ -300,6 +351,7 @@ export default function TimesheetReviewPage() {
                                     {variance >= 0 ? '+' : ''}{variance.toFixed(2)}
                                 </td>
                                 <td></td>
+                                {currentUser?.role === 'Admin' && <td></td>}
                             </tr>
                         </tfoot>
                     </table>
@@ -391,7 +443,7 @@ export default function TimesheetReviewPage() {
                             onChange={(e) => setSelectedAdminId(e.target.value)}
                         >
                             <option value="">Select an admin...</option>
-                            {admins.map(admin => (
+                            {admins.map((admin: any) => (
                                 <option key={admin.id} value={admin.id}>
                                     {admin.firstName} {admin.lastName} ({admin.role})
                                 </option>
@@ -409,6 +461,48 @@ export default function TimesheetReviewPage() {
                     </div>
                 </div>
             )}
+
+            {/* Admin Override Modal */}
+            <Dialog open={overrideModal.open} onOpenChange={(open) => !isOverriding && setOverrideModal(prev => ({ ...prev, open }))}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Admin Hours Override</DialogTitle>
+                        <DialogDescription>
+                            Directly modify the approved hours for this specific entry. This will be logged in the system audit trail.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div className="space-y-2">
+                            <Label>Approved Hours</Label>
+                            <Input
+                                type="number"
+                                step="0.25"
+                                min="0"
+                                max="24"
+                                value={overrideModal.hours}
+                                onChange={(e) => setOverrideModal(prev => ({ ...prev, hours: parseFloat(e.target.value) || 0 }))}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Override Note (Reason)</Label>
+                            <Input
+                                placeholder="e.g., Client approved 1 extra hour..."
+                                value={overrideModal.note}
+                                onChange={(e) => setOverrideModal(prev => ({ ...prev, note: e.target.value }))}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setOverrideModal(prev => ({ ...prev, open: false }))} disabled={isOverriding}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleAdminOverrideSubmit} disabled={isOverriding}>
+                            {isOverriding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            Save Changes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Status Dialog */}
             <StatusDialog

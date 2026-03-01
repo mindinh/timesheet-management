@@ -29,6 +29,7 @@ interface TimesheetState {
     // Auth
     fetchCurrentUser: () => Promise<void>
     switchUser: (userId: string) => void
+    logout: () => void
 
     // Timesheet Entries (Draft Mode)
     fetchEntries: (month: number, year: number) => Promise<void>
@@ -87,6 +88,12 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
         set({ currentUser: user, entries: [], currentTimesheetStatus: 'Draft', currentTimesheetComment: null, currentTimesheetId: null })
         const { currentMonth } = get()
         get().fetchEntries(currentMonth.getMonth() + 1, currentMonth.getFullYear())
+    },
+
+    // Clear current user
+    logout: () => {
+        setMockUserId('')
+        set({ currentUser: null, entries: [], currentTimesheetStatus: 'Draft', currentTimesheetComment: null, currentTimesheetId: null, currentApprovalHistory: [] })
     },
 
     // Timesheet Entries - Draft mode (local changes until saveEntries)

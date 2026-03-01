@@ -299,8 +299,6 @@ export default function TimesheetPage() {
                 onNextMonth={() => setCurrentMonth(addMonths(currentMonth, 1))}
                 monthlyTotal={monthlyTotal}
                 status={currentTimesheetStatus}
-                onSubmit={handleSubmit}
-                isReadOnly={isReadOnly}
             />
 
             {/* Audit History Button — placed after the header */}

@@ -206,6 +206,11 @@ export async function submitToAdmin(timesheetId: string, adminId: string): Promi
     return data.value || data
 }
 
+export async function bulkSubmitToAdmin(timesheetIds: string[], adminId: string): Promise<string> {
+    const data: any = await api.post(TIMESHEET_URL.bulkSubmitToAdmin, { timesheetIds, adminId })
+    return data.value || data
+}
+
 export async function modifyEntryHours(entryId: string, approvedHours: number): Promise<string> {
     const data: any = await api.post(TIMESHEET_URL.modifyEntryHours, { entryId, approvedHours })
     return data.value || data

@@ -30,8 +30,8 @@ Detailed specifications.
 
 | Document | Description |
 |----------|-------------|
-| [API Reference](./04-reference/api-reference.md) | REST/OData endpoints |
-| [Configuration](./04-reference/configuration.md) | Environment settings |
+| [API Reference](./api-reference.md) | **All REST/OData endpoints** (TimesheetService + AdminService, including new bulk/import/admin APIs) |
+| [PRD](./01-architecture/PRD.md) | Product Requirements Document |
 
 ### Testing
 | Document | Description |

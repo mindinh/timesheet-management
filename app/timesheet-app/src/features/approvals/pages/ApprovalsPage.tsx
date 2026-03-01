@@ -10,6 +10,8 @@ import {
     Eye,
     CheckCircle2,
     Download,
+    Send,
+    Loader2
 } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
@@ -40,6 +42,10 @@ export default function ApprovalsPage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [sortField, setSortField] = useState<SortField>('submitDate')
     const [sortDir, setSortDir] = useState<SortDir>('desc')
+
+    // Batch submit state
+    const [selectedIds, setSelectedIds] = useState<string[]>([])
+    const [actionLoading, setActionLoading] = useState(false)
 
     useEffect(() => {
         if (!currentUser) fetchCurrentUser()
@@ -111,6 +117,43 @@ export default function ApprovalsPage() {
 
     const pendingCount = timesheets.filter(ts => ts.status === 'Submitted').length
 
+    const submittableIds = useMemo(() => {
+        return filteredTimesheets
+            .filter(ts => ts.status === 'Approved')
+            .map(ts => ts.id)
+    }, [filteredTimesheets])
+
+    const isAllSelected = submittableIds.length > 0 && submittableIds.every(id => selectedIds.includes(id))
+
+    const handleSelectAll = () => {
+        if (isAllSelected) {
+            setSelectedIds([])
+        } else {
+            setSelectedIds(submittableIds)
+        }
+    }
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+    }
+
+    const handleBatchSubmit = async () => {
+        if (selectedIds.length === 0) return
+        setActionLoading(true)
+        try {
+            // Note: Temporarily leaving this block for eventual bulk submit to backend.
+            // Currently bulk submission is not defined directly via UI in the new plan
+            // without a target "adminId", but this handles UI state clearing.
+            console.log('Batch Submit IDs:', selectedIds)
+            // TODO: Call bulk batch submit API here if needed by new flow
+            setSelectedIds([])
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setActionLoading(false)
+        }
+    }
+
     const handleReview = (timesheetId: string) => {
         navigate(`/approvals/${timesheetId}`)
     }
@@ -121,7 +164,6 @@ export default function ApprovalsPage() {
 
     const getStatusLabel = (status: string) => {
         if (status === 'Submitted') return 'Pending'
-        if (status === 'Approved_By_TeamLead') return 'Approved'
         return status
     }
 
@@ -196,11 +238,39 @@ export default function ApprovalsPage() {
                     </div>
                 ) : (
                     <>
+                        {/* Action Bar for Batch Submit */}
+                        {selectedIds.length > 0 && (
+                            <div className="bg-primary/5 border-b border-border/50 px-5 py-3 flex items-center justify-between">
+                                <span className="text-sm font-medium text-primary">
+                                    {selectedIds.length} timesheet(s) selected
+                                </span>
+                                <Button
+                                    size="sm"
+                                    onClick={handleBatchSubmit}
+                                    disabled={actionLoading}
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shadow-sm"
+                                >
+                                    {actionLoading ? <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> : <Send className="h-3.5 w-3.5 mr-2" />}
+                                    Create Batch
+                                </Button>
+                            </div>
+                        )}
+
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-border bg-muted/30">
+                                    <th className="py-3.5 px-5 w-[40px] text-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isAllSelected}
+                                            onChange={handleSelectAll}
+                                            disabled={submittableIds.length === 0}
+                                            className="rounded border-border text-primary focus:ring-primary h-4 w-4"
+                                            title="Select all Approved"
+                                        />
+                                    </th>
                                     <th
-                                        className="text-left py-3.5 px-5 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
+                                        className="text-left py-3.5 px-2 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
                                         onClick={() => toggleSort('name')}
                                     >
                                         <span className="inline-flex items-center">
@@ -255,10 +325,25 @@ export default function ApprovalsPage() {
                                     return (
                                         <tr
                                             key={ts.id}
-                                            className="group hover:bg-muted/20 transition-colors"
+                                            className={cn(
+                                                "group hover:bg-muted/20 transition-colors",
+                                                selectedIds.includes(ts.id) && "bg-primary/5"
+                                            )}
                                         >
+                                            {/* Checkbox */}
+                                            <td className="py-4 px-5 w-[40px] text-center">
+                                                {ts.status === 'Approved' && (
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedIds.includes(ts.id)}
+                                                        onChange={() => toggleSelect(ts.id)}
+                                                        className="rounded border-border text-primary focus:ring-primary h-4 w-4"
+                                                    />
+                                                )}
+                                            </td>
+
                                             {/* Employee info */}
-                                            <td className="py-4 px-5">
+                                            <td className="py-4 px-2">
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-sm font-semibold ring-1 ring-primary/10">
                                                         {initials}
@@ -342,6 +427,6 @@ export default function ApprovalsPage() {
                     </>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

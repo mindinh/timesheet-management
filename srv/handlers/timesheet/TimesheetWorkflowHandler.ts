@@ -75,21 +75,13 @@ export class TimesheetWorkflowHandler {
             return req.reject(400, `Cannot approve – status is "${ts.status}"`)
         }
 
-        // Admin/Manager → Finished; TeamLead → Approved
-        let newStatus: string
-        if (user.role === 'Admin' || user.role === 'Manager') {
-            newStatus = 'Finished'
-        } else {
-            newStatus = 'Approved'
-        }
+        // TeamLead/Admin/Manager → Approved
+        let newStatus = 'Approved'
 
         const updateData: any = {
             status: newStatus,
             approveDate: new Date().toISOString(),
             comment: comment || ts.comment,
-        }
-        if (newStatus === 'Finished') {
-            updateData.finishedDate = new Date().toISOString()
         }
 
         await UPDATE(Timesheet).set(updateData).where({ ID: timesheetId })
@@ -104,7 +96,7 @@ export class TimesheetWorkflowHandler {
             timestamp: new Date().toISOString(),
         })
 
-        return `Timesheet ${newStatus === 'Finished' ? 'finished' : 'approved'} successfully`
+        return `Timesheet approved successfully`
     }
 
     // ── rejectTimesheet ──
@@ -206,16 +198,15 @@ export class TimesheetWorkflowHandler {
         }
 
         await UPDATE(Timesheet).set({
-            status: 'Submitted',
             currentApprover_ID: adminId,
         }).where({ ID: timesheetId })
 
         await INSERT.into(ApprovalHistory).entries({
             timesheet_ID: timesheetId,
             actor_ID: user.ID,
-            action: 'Submitted_To_Admin',
-            fromStatus: 'Approved',
-            toStatus: 'Submitted',
+            action: 'SubmittedToAdmin',
+            fromStatus: ts.status,
+            toStatus: ts.status, // Remains Approved
             timestamp: new Date().toISOString(),
         })
 

@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FolderKanban, Users, ClipboardCheck, ArrowRight } from 'lucide-react'
+import { FolderKanban, Users, ClipboardCheck, ArrowRight, Layers } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { getAllProjects } from '@/features/projects/api/project-api'
 import { getPotentialApprovers } from '@/features/auth/api/auth-api'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
+
+import { AdminSyncButton } from '../components/AdminSyncButton'
+import { AdminExportPanel } from '../components/AdminExportPanel'
+import { AdminExportHistory } from '../components/AdminExportHistory'
+import { AdminStatsPanel } from '../components/AdminStatsPanel'
+import { AdminChartsPanel } from '../components/AdminChartsPanel'
 
 export default function AdminDashboard() {
     const navigate = useNavigate()
@@ -13,6 +19,7 @@ export default function AdminDashboard() {
     const { timesheets, fetchApprovableTimesheets } = useApprovalStore()
     const [projectCount, setProjectCount] = useState(0)
     const [userCount, setUserCount] = useState(0)
+    const [exportRefreshTrigger, setExportRefreshTrigger] = useState(0)
 
     useEffect(() => {
         if (!currentUser) fetchCurrentUser()
@@ -54,13 +61,27 @@ export default function AdminDashboard() {
             action: () => navigate('/approvals'),
             actionLabel: 'Review Timesheets',
         },
+        {
+            title: 'Batch Submissions',
+            value: '-',
+            icon: Layers,
+            color: 'text-primary',
+            bg: 'bg-primary/10',
+            action: () => navigate('/admin/batches'),
+            actionLabel: 'View Batches',
+        },
     ]
 
     return (
-        <div className="space-y-6 max-w-6xl mx-auto">
-            <div>
-                <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-                <p className="text-muted-foreground text-sm mt-1">System overview and management</p>
+        <div className="space-y-6 max-w-6xl mx-auto pb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+                    <p className="text-muted-foreground text-sm mt-1">System overview and management</p>
+                </div>
+                <div>
+                    <AdminSyncButton />
+                </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -89,7 +110,26 @@ export default function AdminDashboard() {
                     </div>
                 ))}
             </div>
+
+            {/* Dashboard Charts Panel (Status Breakdown, Hours Trend) */}
+            <div className="mt-8">
+                <AdminChartsPanel />
+            </div>
+
+            {/* Dashboard Stats Panel (OT, Missing, Activity) */}
+            <div className="mt-8">
+                <AdminStatsPanel />
+            </div>
+
+            <div className="mt-8">
+                <AdminExportPanel onExportComplete={() => setExportRefreshTrigger(prev => prev + 1)} />
+            </div>
+
+            <div className="mt-8">
+                <AdminExportHistory refreshTrigger={exportRefreshTrigger} />
+            </div>
         </div>
     )
 }
+
 
