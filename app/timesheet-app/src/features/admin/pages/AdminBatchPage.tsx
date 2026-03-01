@@ -3,6 +3,23 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Layers, CheckCircle2, XCircle, Eye, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { Button } from '@/shared/components/ui/button'
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/shared/components/ui/table'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/shared/components/ui/dialog'
+import { Textarea } from '@/shared/components/ui/textarea'
 import { fetchTimesheetBatches, markBatchDoneApi, rejectBatchApi } from '@/features/admin/api/admin-api'
 import type { TimesheetBatch } from '@/features/admin/api/admin-api'
 import { cn } from '@/shared/lib/utils'
@@ -88,12 +105,14 @@ export default function AdminBatchPage() {
         <div className="max-w-6xl mx-auto space-y-6 pb-20">
             {/* Breadcrumb & Header */}
             <div className="flex items-center gap-4">
-                <button
+                <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => navigate('/admin')}
-                    className="p-2 hover:bg-muted/50 rounded-full transition-colors"
+                    className="rounded-full rounded-full"
                 >
                     <ArrowLeft className="h-5 w-5 text-muted-foreground" />
-                </button>
+                </Button>
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
                         <Layers className="h-6 w-6 text-primary" />
@@ -114,24 +133,24 @@ export default function AdminBatchPage() {
                 </div>
             ) : (
                 <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="border-b bg-muted/40">
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/40">
+                                <TableHead className="uppercase tracking-wider">
                                     Period (Created At)
-                                </th>
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
+                                </TableHead>
+                                <TableHead className="uppercase tracking-wider">
                                     ID
-                                </th>
-                                <th className="px-5 py-4 text-xs font-semibold text-primary uppercase tracking-wider">Submitted By (Team Lead)</th>
-                                <th className="px-5 py-4 text-xs font-semibold text-primary uppercase tracking-wider text-center">Contains</th>
-                                <th className="px-5 py-4 text-xs font-semibold text-primary uppercase tracking-wider text-center">Status</th>
-                                <th className="text-center py-3 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
+                                </TableHead>
+                                <TableHead className="uppercase tracking-wider">Submitted By (Team Lead)</TableHead>
+                                <TableHead className="uppercase tracking-wider text-center">Contains</TableHead>
+                                <TableHead className="uppercase tracking-wider text-center">Status</TableHead>
+                                <TableHead className="text-center uppercase tracking-wider">
                                     Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/50 bg-card">
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody className="bg-card">
                             {filteredBatches.map(batch => {
                                 const createdDate = batch.createdAt ? new Date(batch.createdAt) : null
                                 const monthName = createdDate ? MONTH_NAMES[createdDate.getMonth() + 1] : 'Unknown Month'
@@ -139,8 +158,8 @@ export default function AdminBatchPage() {
                                 const isActionLoading = actionLoadingId === batch.ID
 
                                 return (
-                                    <tr key={batch.ID} className="hover:bg-muted/30 transition-colors">
-                                        <td className="py-3 px-4 text-sm font-medium">
+                                    <TableRow key={batch.ID} className="hover:bg-muted/30 transition-colors">
+                                        <TableCell className="font-medium">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shadow-sm border border-primary/20">
                                                     {monthName.substring(0, 3)}
@@ -152,15 +171,15 @@ export default function AdminBatchPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td className="py-3 px-4">
+                                        </TableCell>
+                                        <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded border">
                                                     {batch.ID.split('-')[0]}...
                                                 </span>
                                             </div>
-                                        </td>
-                                        <td className="px-5 py-4">
+                                        </TableCell>
+                                        <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <div className="bg-primary/10 text-primary w-8 h-8 rounded-full flex justify-center items-center text-xs font-semibold">
                                                     {batch.teamLead?.firstName?.[0]}{batch.teamLead?.lastName?.[0]}
@@ -172,21 +191,21 @@ export default function AdminBatchPage() {
                                                     <div className="text-xs text-muted-foreground">{batch.teamLead?.email}</div>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td className="px-5 py-4 text-center">
+                                        </TableCell>
+                                        <TableCell className="text-center">
                                             <span className="inline-flex items-center justify-center bg-muted px-2.5 py-1 rounded-md text-xs font-medium border">
                                                 {batch.timesheets?.length || 0} timesheets
                                             </span>
-                                        </td>
-                                        <td className="px-5 py-4 text-center">
+                                        </TableCell>
+                                        <TableCell className="text-center">
                                             <span className={cn(
                                                 "inline-block px-2 py-1 rounded-full text-xs font-medium",
                                                 batch.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-green-500/10 text-green-500 border border-green-500/20'
                                             )}>
                                                 {batch.status}
                                             </span>
-                                        </td>
-                                        <td className="py-3 px-4">
+                                        </TableCell>
+                                        <TableCell>
                                             <div className="flex items-center justify-center gap-2">
                                                 {batch.status === 'Pending' && (
                                                     <>
@@ -218,55 +237,54 @@ export default function AdminBatchPage() {
                                                     <Eye className="h-4 w-4 mr-1" /> View
                                                 </Button>
                                             </div>
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 )
                             })}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             )}
 
-            {/* Reject Batch Dialog */}
-            {rejectDialogOpen && (
-                <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-                    <div className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95">
-                        <div className="px-6 py-4 border-b border-border bg-muted/30">
-                            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                                <XCircle className="h-5 w-5 text-sap-negative" />
-                                Reject Batch
-                            </h2>
-                        </div>
-                        <div className="p-6">
-                            <p className="text-sm text-muted-foreground mb-4">
-                                Are you sure you want to reject this batch? Provide a reason for this rejection. All timesheets in this batch will be marked as Rejected.
-                            </p>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Rejection Reason</label>
-                                <textarea
-                                    className="w-full min-h-[100px] p-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-sap-negative/50 resize-none"
-                                    placeholder="Enter rejection reason here..."
-                                    value={rejectComment}
-                                    onChange={(e) => setRejectComment(e.target.value)}
-                                    autoFocus
-                                />
-                            </div>
-                        </div>
-                        <div className="px-6 py-4 border-t border-border bg-muted/10 flex justify-end gap-3">
-                            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button
-                                className="bg-sap-negative hover:bg-sap-negative/90 text-white"
-                                onClick={handleRejectBatch}
-                                disabled={!rejectComment.trim()}
-                            >
-                                Reject Batch
-                            </Button>
+            <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <XCircle className="h-5 w-5 text-sap-negative" />
+                            Reject Batch
+                        </DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to reject this batch? Provide a reason for this rejection. All timesheets in this batch will be marked as Rejected.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground">Rejection Reason</label>
+                            <Textarea
+                                className="min-h-[100px] resize-none"
+                                placeholder="Enter rejection reason here..."
+                                value={rejectComment}
+                                onChange={(e) => setRejectComment(e.target.value)}
+                                autoFocus
+                            />
                         </div>
                     </div>
-                </div>
-            )}
+
+                    <DialogFooter className="sm:justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={() => setRejectDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            className="bg-sap-negative hover:bg-sap-negative/90 text-white"
+                            onClick={handleRejectBatch}
+                            disabled={!rejectComment.trim()}
+                        >
+                            Reject Batch
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

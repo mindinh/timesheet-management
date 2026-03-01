@@ -21,7 +21,7 @@ interface ApprovalState {
     isDetailLoading: boolean
     modifiedHours: Record<string, number> // entryId → approvedHours
     comment: string
-    admins: any[] // Store list of admins for TeamLead to select
+    admins: { id: string; firstName: string; lastName: string; role: string }[] // Store list of admins for TeamLead to select
 
     // Actions
     setFilter: (filter: ApprovalState['filter']) => void
@@ -90,8 +90,8 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
             // Reusing get users with role Admin. 
             // In a real scenario we might have a specific endpoint, but for now we can fetch all and filter or call an admin endpoint.
             // Using a simple api.get to Users?$filter=role eq 'Admin'
-            const data: any = await api.get('/api/admin/Users?$filter=role eq \'Admin\'')
-            const admins = data.value || data
+            const data: unknown = await api.get('/api/admin/Users?$filter=role eq \'Admin\'')
+            const admins = (data && typeof data === 'object' && 'value' in data ? (data as any).value : data) as { id: string; firstName: string; lastName: string; role: string }[]
             set({ admins })
         } catch (error) {
             console.error('Failed to fetch admins:', error)

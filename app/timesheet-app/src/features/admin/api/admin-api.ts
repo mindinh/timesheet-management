@@ -115,26 +115,26 @@ export interface ExportLog {
 
 // ── Export History ────────────────────────────────────────────────────────
 export async function fetchExportLogs(): Promise<ExportLog[]> {
-    const data: any = await api.get(ADMIN_URL.exportLogs, {
+    const data: unknown = await api.get(ADMIN_URL.exportLogs, {
         $orderby: 'exportDate desc'
     })
-    return data.value || data
+    return (data as { value: ExportLog[] }).value || (data as ExportLog[])
 }
 
 // ── Batch Submissions ──────────────────────────────────────────────────
 export async function fetchTimesheetBatches(): Promise<TimesheetBatch[]> {
-    const data: any = await api.get(ADMIN_URL.timesheetBatches, {
+    const data: unknown = await api.get(ADMIN_URL.timesheetBatches, {
         $expand: 'teamLead($select=ID,firstName,lastName,email),timesheets($select=ID,status)',
         $orderby: 'createdAt desc'
     })
-    return data.value || data
+    return (data as { value: TimesheetBatch[] }).value || (data as TimesheetBatch[])
 }
 
 export async function fetchTimesheetBatchById(id: string): Promise<TimesheetBatchDetail> {
-    const data: any = await api.get(`${ADMIN_URL.timesheetBatches}('${id}')`, {
+    const data: unknown = await api.get(`${ADMIN_URL.timesheetBatches}('${id}')`, {
         $expand: 'teamLead($select=ID,firstName,lastName,email),history($expand=actor($select=ID,firstName,lastName);$orderby=timestamp desc),timesheets($expand=user($select=ID,firstName,lastName),approvalHistory($expand=actor($select=ID,firstName,lastName);$orderby=timestamp desc);$select=ID,status,month,year)'
     })
-    return data.value || data
+    return (data as { value: TimesheetBatchDetail }).value || (data as TimesheetBatchDetail)
 }
 
 // ── Admin Export (Excel) ──────────────────────────────────────────────────
@@ -148,12 +148,12 @@ export async function triggerExportToExcel(params: {
 }): Promise<void> {
 
     // Call the action with { responseType: 'blob' } to handle the binary Excel file
-    const blob: any = await api.post(ADMIN_URL.exportToExcel, params, {
+    const blob: unknown = await api.post(ADMIN_URL.exportToExcel, params, {
         responseType: 'blob'
     })
 
     // Create a temporary link to download the blob
-    const url = window.URL.createObjectURL(blob)
+    const url = window.URL.createObjectURL(blob as Blob)
     const link = document.createElement('a')
     link.href = url
 
@@ -173,52 +173,53 @@ export async function triggerExportToExcel(params: {
 
 // ── Send Email ────────────────────────────────────────────────────────────
 export async function sendEmailToGermany(exportId?: string | null, recipientEmail?: string): Promise<string> {
-    const data: any = await api.post(ADMIN_URL.sendEmailToGermany, {
+    const data: unknown = await api.post(ADMIN_URL.sendEmailToGermany, {
         exportId,
         recipientEmail
     })
-    return data.value || data
+    return (data as { value: string }).value || (data as string)
 }
 
 // ── Sync Papierkram Projects ──────────────────────────────────────────────
 export async function syncProjects(): Promise<string> {
-    const data: any = await api.post(ADMIN_URL.syncProjects, {})
-    return data.value || data
+    const data: unknown = await api.post(ADMIN_URL.syncProjects, {})
+    return (data as { value: string }).value || (data as string)
 }
 
 // ── Modify Entry Hours ────────────────────────────────────────────────────
 export async function adminModifyEntryHours(entryId: string, approvedHours: number, note?: string): Promise<string> {
-    const data: any = await api.post(ADMIN_URL.adminModifyEntryHours, {
+    const data: unknown = await api.post(ADMIN_URL.adminModifyEntryHours, {
         entryId,
         approvedHours,
         note
     })
-    return data.value || data
+    return (data as { value: string }).value || (data as string)
 }
 
 // ── Batch Actions ────────────────────────────────────────────────────────
 export async function markBatchDoneApi(batchId: string): Promise<string> {
-    const data: any = await api.post(`${ADMIN_URL.base}/markBatchDone`, {
+    const data: unknown = await api.post(`${ADMIN_URL.base}/markBatchDone`, {
         batchId
     })
-    return data.value || data
+    return (data as { value: string }).value || (data as string)
 }
 
 export async function rejectBatchApi(batchId: string, comment: string): Promise<string> {
-    const data: any = await api.post(`${ADMIN_URL.base}/rejectBatch`, {
+    const data: unknown = await api.post(`${ADMIN_URL.base}/rejectBatch`, {
         batchId,
         comment
     })
-    return data.value || data
+    return (data as { value: string }).value || (data as string)
 }
 
 // ── Dashboard Statistics ─────────────────────────────────────────────────
 export async function fetchDashboardStats(month: number, year: number): Promise<DashboardStats> {
-    const data: any = await api.post(`${ADMIN_URL.base}/getDashboardStats`, {
+    const data: unknown = await api.post(`${ADMIN_URL.base}/getDashboardStats`, {
         month,
         year
     })
     // The backend returns a JSON string that we must parse
-    const parsedData = typeof data.value === 'string' ? JSON.parse(data.value) : (data.value || data)
+    const dataValue = (data as { value: unknown }).value || data
+    const parsedData = typeof dataValue === 'string' ? JSON.parse(dataValue) : dataValue
     return parsedData as DashboardStats
 }

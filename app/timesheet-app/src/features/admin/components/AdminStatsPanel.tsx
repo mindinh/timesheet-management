@@ -22,9 +22,10 @@ export function AdminStatsPanel() {
             try {
                 const data = await fetchDashboardStats(currentMonth, currentYear)
                 setStats(data)
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Failed to load dashboard stats", err)
-                setError(err.message || "Failed to load statistics")
+                const msg = err instanceof Error ? err.message : "Failed to load statistics"
+                setError(msg)
             } finally {
                 setIsLoading(false)
             }
