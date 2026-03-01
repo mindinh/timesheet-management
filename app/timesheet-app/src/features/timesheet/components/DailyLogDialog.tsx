@@ -59,6 +59,7 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
     const { currentUser } = useTimesheetStore()
 
     // Use 'any' for the resolver to bypass strict type checking issues between Zod and React Hook Form
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema) as any,
         defaultValues: {

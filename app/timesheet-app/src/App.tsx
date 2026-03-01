@@ -5,6 +5,8 @@ import TimesheetListPage from '@/features/timesheet/pages/TimesheetListPage'
 import ApprovalsPage from '@/features/approvals/pages/ApprovalsPage'
 import TimesheetReviewPage from '@/features/approvals/pages/TimesheetReviewPage'
 import AdminDashboard from '@/features/admin/pages/AdminDashboard'
+import AdminBatchPage from '@/features/admin/pages/AdminBatchPage'
+import AdminBatchDetailPage from '@/features/admin/pages/AdminBatchDetailPage'
 import ProjectsPage from '@/features/projects/pages/ProjectsPage'
 import DocsPage from '@/features/docs/pages/DocsPage'
 import ProtectedRoute from '@/shared/components/common/ProtectedRoute'
@@ -24,13 +26,23 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="approvals/:timesheetId" element={
-          <ProtectedRoute allowedRoles={['TeamLead', 'Admin']}>
+          <ProtectedRoute allowedRoles={['TeamLead']}>
             <TimesheetReviewPage />
           </ProtectedRoute>
         } />
         <Route path="admin" element={
           <ProtectedRoute allowedRoles={['Admin']}>
             <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="admin/batches" element={
+          <ProtectedRoute allowedRoles={['Admin']}>
+            <AdminBatchPage />
+          </ProtectedRoute>
+        } />
+        <Route path="admin/batches/:batchId" element={
+          <ProtectedRoute allowedRoles={['Admin']}>
+            <AdminBatchDetailPage />
           </ProtectedRoute>
         } />
       </Route>

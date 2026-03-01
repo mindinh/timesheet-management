@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
+import { useAuthStore } from '@/features/auth/store/authStore'
 import type { UserRole } from '@/shared/types'
 
 interface ProtectedRouteProps {
@@ -8,14 +8,14 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) {
-    const { currentUser } = useTimesheetStore()
+    const { user } = useAuthStore()
 
-    if (!currentUser) {
-        // Still loading user data — show nothing or a loader
-        return null
+    if (!user) {
+        // Not logged in or loading
+        return <Navigate to="/timesheet" replace />
     }
 
-    if (!allowedRoles.includes(currentUser.role as UserRole)) {
+    if (!allowedRoles.includes(user.role as UserRole)) {
         return <Navigate to="/timesheet" replace />
     }
 

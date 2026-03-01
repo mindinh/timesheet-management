@@ -8,10 +8,9 @@ type UserRole      : String(20) enum { Employee; TeamLead; Manager; Admin; };
 type TimesheetStatus : String(30) enum {
   Draft;                 // User is editing
   Submitted;             // Waiting for Team Lead review
-  Approved_By_TeamLead;  // Team Lead approved, waiting for Admin
-  Approved;              // Admin approved – finalised
+  Approved;              // Team Lead approved – finalised (ready for batching)
   Rejected;              // Returned to employee
-  Finished;              // Archived / done
+  Finished;              // Archived / done (Admin marked batch as Done)
 };
 type TaskStatus    : String(20) enum { Open; InProgress; Completed; Cancelled; };
 type ProjectType   : String(20) enum { Papierkram; Internal; External; Others; };
@@ -65,6 +64,19 @@ entity Task : cuid, managed {
   entries     : Association to many TimesheetEntry on entries.task = $self;
 }
 
+// ─── Timesheet Batch ────────────────────────────────────────────────────────
+
+/**
+ * A group of timesheets approved by a Team Lead and forwarded to an Admin.
+ */
+entity TimesheetBatch : cuid, managed {
+  teamLead    : Association to User @mandatory;          // who created the batch
+  admin       : Association to User @mandatory;          // which admin it was sent to
+  status      : String(20) default 'Pending';            // Pending, Processed
+  timesheets  : Composition of many Timesheet on timesheets.batch = $self;
+  history     : Composition of many BatchHistory on history.batch = $self;
+}
+
 // ─── Timesheet ──────────────────────────────────────────────────────────────
 
 /**
@@ -80,6 +92,7 @@ entity Timesheet : cuid, managed {
   approveDate    : DateTime;
   finishedDate   : DateTime;                        // date moved to Finished
   currentApprover : Association to User;            // who needs to act next
+  batch          : Association to TimesheetBatch;   // which batch this belongs to
   comment        : String(1000);
   entries        : Composition of many TimesheetEntry on entries.timesheet = $self;
   approvalHistory : Composition of many ApprovalHistory on approvalHistory.timesheet = $self;
@@ -119,6 +132,20 @@ entity ApprovalHistory : cuid, managed {
   timestamp    : DateTime @mandatory;
 }
 
+// ─── Batch History ──────────────────────────────────────────────────────────
+
+/**
+ * Immutable audit trail of every batch action step.
+ */
+entity BatchHistory : cuid, managed {
+  batch        : Association to TimesheetBatch @mandatory;
+  actor        : Association to User @mandatory;         // who performed the action
+  action       : String(30) @mandatory;                  // Created, Finished, Rejected
+  status       : String(20);                             // Pending, Processed, Rejected
+  comment      : String(1000);
+  timestamp    : DateTime @mandatory;
+}
+
 // ─── Audit Log ──────────────────────────────────────────────────────────────
 
 /**
@@ -130,4 +157,22 @@ entity AuditLog : cuid, managed {
   action       : String(20) @mandatory;                  // Created, Updated, Deleted
   userId       : String(36);
   changes      : String(2000);
+}
+
+// ─── Export Log ─────────────────────────────────────────────────────────────
+
+/**
+ * Tracks every Excel export performed by Admin.
+ * Allows re-download of previously exported files.
+ */
+entity ExportLog : cuid, managed {
+  exportedBy   : Association to User @mandatory;         // Admin who triggered the export
+  exportDate   : DateTime @mandatory;                    // When the export was created
+  fromDate     : Date;                                   // Filter: start date
+  toDate       : Date;                                   // Filter: end date
+  userId       : String(36);                             // Filter: specific user (nullable = all)
+  projectId    : String(36);                             // Filter: specific project (nullable = all)
+  totalEntries : Integer default 0;                      // How many entries were exported
+  filePath     : String(500);                            // Stored file path (future: blob storage)
+  filters      : String(1000);                           // JSON snapshot of applied filters
 }

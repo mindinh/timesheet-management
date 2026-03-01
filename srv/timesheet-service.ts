@@ -3,6 +3,8 @@ import { TimesheetAuthHandler } from './handlers/timesheet/TimesheetAuthHandler'
 import { TimesheetEntryHandler } from './handlers/timesheet/TimesheetEntryHandler'
 import { TimesheetWorkflowHandler } from './handlers/timesheet/TimesheetWorkflowHandler'
 import { TimesheetExportHandler } from './handlers/timesheet/TimesheetExportHandler'
+import { TimesheetBulkHandler } from './handlers/timesheet/TimesheetBulkHandler'
+import { TimesheetImportHandler } from './handlers/timesheet/TimesheetImportHandler'
 
 /**
  * TimesheetService – Entry point for End Users.
@@ -17,7 +19,10 @@ export default class TimesheetService extends cds.ApplicationService {
         new TimesheetEntryHandler(this).register()
         new TimesheetWorkflowHandler(this).register()
         new TimesheetExportHandler(this).register()
+        new TimesheetBulkHandler(this).register()
+        new TimesheetImportHandler(this).register()
 
         await super.init()
     }
 }
+

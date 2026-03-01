@@ -6,9 +6,9 @@ import {
     modifyEntryHours,
     approveTimesheet as approveTimesheetApi,
     rejectTimesheet as rejectTimesheetApi,
-    submitToAdmin as submitToAdminApi,
+    submitToAdmin as submitTimesheetToAdmin
 } from '@/features/timesheet/api/timesheet-api'
-import { getPotentialApprovers } from '@/features/auth/api/auth-api'
+import { api } from '@/shared/api/http'
 
 interface ApprovalState {
     // List of timesheets pending this user's approval
@@ -21,9 +21,7 @@ interface ApprovalState {
     isDetailLoading: boolean
     modifiedHours: Record<string, number> // entryId → approvedHours
     comment: string
-
-    // Admin list for "Submit to Admin" dialog
-    admins: { id: string; firstName: string; lastName: string; role: string; email: string }[]
+    admins: { id: string; firstName: string; lastName: string; role: string }[] // Store list of admins for TeamLead to select
 
     // Actions
     setFilter: (filter: ApprovalState['filter']) => void
@@ -31,12 +29,12 @@ interface ApprovalState {
     fetchTimesheetDetail: (timesheetId: string) => Promise<void>
     setModifiedHours: (entryId: string, hours: number) => void
     setComment: (comment: string) => void
+    fetchAdmins: () => Promise<void>
 
     approveTimesheet: (timesheetId: string) => Promise<void>
     rejectTimesheet: (timesheetId: string) => Promise<void>
     submitToAdmin: (timesheetId: string, adminId: string) => Promise<void>
     saveModifiedHours: () => Promise<void>
-    fetchAdmins: () => Promise<void>
 }
 
 export const useApprovalStore = create<ApprovalState>((set, get) => ({
@@ -87,6 +85,19 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
 
     setComment: (comment) => set({ comment }),
 
+    fetchAdmins: async () => {
+        try {
+            // Reusing get users with role Admin. 
+            // In a real scenario we might have a specific endpoint, but for now we can fetch all and filter or call an admin endpoint.
+            // Using a simple api.get to Users?$filter=role eq 'Admin'
+            const data: unknown = await api.get('/api/admin/Users?$filter=role eq \'Admin\'')
+            const admins = (data && typeof data === 'object' && 'value' in data ? (data as any).value : data) as { id: string; firstName: string; lastName: string; role: string }[]
+            set({ admins })
+        } catch (error) {
+            console.error('Failed to fetch admins:', error)
+        }
+    },
+
     saveModifiedHours: async () => {
         const { modifiedHours, selectedTimesheet } = get()
         if (!selectedTimesheet) return
@@ -135,21 +146,11 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     submitToAdmin: async (timesheetId: string, adminId: string) => {
         try {
             await get().saveModifiedHours()
-            await submitToAdminApi(timesheetId, adminId)
+            await submitTimesheetToAdmin(timesheetId, adminId)
             await get().fetchApprovableTimesheets()
         } catch (error) {
-            console.error('Failed to submit to admin:', error)
+            console.error('Failed to submit timesheet to admin:', error)
             throw error
         }
-    },
-
-    fetchAdmins: async () => {
-        try {
-            const approvers = await getPotentialApprovers()
-            const admins = approvers.filter(a => a.role === 'Admin' || a.role === 'Manager')
-            set({ admins })
-        } catch (error) {
-            console.error('Failed to fetch admins:', error)
-        }
-    },
+    }
 }))

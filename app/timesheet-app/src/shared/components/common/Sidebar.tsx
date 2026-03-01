@@ -1,5 +1,5 @@
-import { Link, useLocation } from 'react-router-dom'
-import { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight, CheckSquare, BookOpen } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
@@ -13,6 +13,7 @@ import {
 } from '@/shared/components/ui/select'
 import LanguageSwitcher from '@/shared/components/common/LanguageSwitcher'
 import { useTimesheetStore, MOCK_USERS } from '@/features/timesheet/store/timesheetStore'
+import { useAuthStore } from '@/features/auth/store/authStore'
 import type { UserRole } from '@/shared/types'
 
 const navigation: { nameKey: string; href: string; icon: any; roles: UserRole[] }[] = [
@@ -26,11 +27,31 @@ const navigation: { nameKey: string; href: string; icon: any; roles: UserRole[] 
 
 export default function Sidebar() {
     const location = useLocation()
+    const navigate = useNavigate()
     const { t } = useTranslation()
-    const { currentUser, switchUser } = useTimesheetStore()
+    const { currentUser, switchUser, logout } = useTimesheetStore()
+    const { user: authUser, login } = useAuthStore()
     const [isCollapsed, setIsCollapsed] = useState(false)
 
+    useEffect(() => {
+        // Hydrate timesheet store based on auth store if timesheet store is empty
+        if (!currentUser && authUser) {
+            const matchedUser = MOCK_USERS.find(u => u.role === authUser.role)
+            if (matchedUser) {
+                switchUser(matchedUser.id)
+            }
+        } else if (!authUser && !currentUser) {
+            // Default fallback if somehow both are empty
+            login('Employee')
+            switchUser(MOCK_USERS[0].id)
+        }
+    }, [authUser, currentUser, switchUser, login])
+
     const handleUserChange = (userId: string) => {
+        const user = MOCK_USERS.find(u => u.id === userId)
+        if (user) {
+            login(user.role as UserRole)
+        }
         switchUser(userId)
     }
 
@@ -133,7 +154,7 @@ export default function Sidebar() {
                             )}
                         </div>
                         {!isCollapsed && (
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" onClick={() => { logout(); navigate('/') }}>
                                 <LogOut className="h-5 w-5" />
                             </Button>
                         )}

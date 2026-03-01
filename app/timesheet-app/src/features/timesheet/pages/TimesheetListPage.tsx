@@ -53,11 +53,22 @@ export default function TimesheetListPage() {
 
     useEffect(() => {
         if (!currentUser) return
+
+        let isActive = true
         setLoading(true)
+
         getAllTimesheets(currentUser.id)
-            .then(setTimesheets)
+            .then((data) => {
+                if (isActive) setTimesheets(data)
+            })
             .catch(console.error)
-            .finally(() => setLoading(false))
+            .finally(() => {
+                if (isActive) setLoading(false)
+            })
+
+        return () => {
+            isActive = false
+        }
     }, [currentUser])
 
     const filteredTimesheets = useMemo(() => {

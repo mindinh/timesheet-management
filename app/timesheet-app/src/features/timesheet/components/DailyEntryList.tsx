@@ -113,10 +113,6 @@ export function DailyEntryList({
     }
 
     // Count selected entries for a specific day
-    const getSelectedCountForDay = (dateStr: string) => {
-        const dayEntries = groupedEntries[dateStr] || []
-        return dayEntries.filter(e => selectedEntryIds.has(e.id)).length
-    }
 
     const visibleDaysList = allDaysInMonth.slice(0, visibleDays)
     const hasMore = visibleDays < allDaysInMonth.length
@@ -142,7 +138,6 @@ export function DailyEntryList({
                 const isWeekendDay = isWeekend(day)
                 const allSelected = areAllDayEntriesSelected(dateStr)
                 const someSelected = areSomeDayEntriesSelected(dateStr)
-                const daySelectedCount = getSelectedCountForDay(dateStr)
 
                 return (
                     <Card key={dateStr} className={`border-0 shadow-sm ${isWeekendDay ? 'bg-amber-50/60 border-l-2 border-l-amber-300' : ''}`}>

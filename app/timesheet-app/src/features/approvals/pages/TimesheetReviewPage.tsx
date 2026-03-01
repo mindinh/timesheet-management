@@ -1,10 +1,30 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
-import { ArrowLeft, Check, X, Send, MessageSquare, User as UserIcon, Calendar } from 'lucide-react'
+import { ArrowLeft, Check, X, Send, MessageSquare, User as UserIcon, Calendar, Pencil, Loader2 } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/shared/components/ui/dialog'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/shared/components/ui/select'
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/shared/components/ui/table'
+import { Textarea } from '@/shared/components/ui/textarea'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
+import { adminModifyEntryHours } from '@/features/admin/api/admin-api'
 import { cn } from '@/shared/lib/utils'
 import StatusDialog from '@/shared/components/common/StatusDialog'
 
@@ -37,6 +57,13 @@ export default function TimesheetReviewPage() {
     const [actionLoading, setActionLoading] = useState<string | null>(null)
     const [showAdminDialog, setShowAdminDialog] = useState(false)
     const [selectedAdminId, setSelectedAdminId] = useState('')
+
+    // Admin Override State
+    const [overrideModal, setOverrideModal] = useState<{ open: boolean, entryId: string, hours: number, note: string }>({
+        open: false, entryId: '', hours: 0, note: ''
+    })
+    const [isOverriding, setIsOverriding] = useState(false)
+
     const [statusDialog, setStatusDialog] = useState<{ open: boolean; variant: 'success' | 'error' | 'warning' | 'info'; title: string; description?: string }>({
         open: false, variant: 'info', title: ''
     })
@@ -109,6 +136,25 @@ export default function TimesheetReviewPage() {
         } finally {
             setActionLoading(null)
             setShowAdminDialog(false)
+        }
+    }
+
+    const handleAdminOverrideSubmit = async () => {
+        if (!overrideModal.entryId) return
+        setIsOverriding(true)
+        try {
+            const msg = await adminModifyEntryHours(overrideModal.entryId, overrideModal.hours, overrideModal.note)
+            setStatusDialog({ open: true, variant: 'success', title: 'Success', description: msg })
+            setOverrideModal({ open: false, entryId: '', hours: 0, note: '' })
+            // Refresh to see the new hours
+            if (timesheetId) {
+                fetchTimesheetDetail(timesheetId)
+            }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'An error occurred during Admin Override.'
+            setStatusDialog({ open: true, variant: 'error', title: 'Override Failed', description: msg })
+        } finally {
+            setIsOverriding(false)
         }
     }
 
@@ -205,20 +251,22 @@ export default function TimesheetReviewPage() {
                         {ts.status === 'Submitted' ? 'Pending Approval' : ts.status}
                     </span>
                 </div>
-
                 <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b border-border">
-                                <th className="text-left py-3 px-6">Date</th>
-                                <th className="text-left py-3 px-4">Project / Task</th>
-                                <th className="text-center py-3 px-4">Submitted</th>
-                                <th className="text-center py-3 px-4">Modified Hours</th>
-                                <th className="text-center py-3 px-4">Variance</th>
-                                <th className="text-center py-3 px-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <Table>
+                        <TableHeader className="bg-muted/30">
+                            <TableRow>
+                                <TableHead className="w-[120px]">Date</TableHead>
+                                <TableHead>Project / Task</TableHead>
+                                <TableHead className="text-center w-[100px]">Submitted</TableHead>
+                                <TableHead className="text-center w-[120px]">Modified Hours</TableHead>
+                                <TableHead className="text-center w-[100px]">Variance</TableHead>
+                                <TableHead className="text-center w-[80px]">Status</TableHead>
+                                {currentUser?.role === 'Admin' && (
+                                    <TableHead className="text-right w-[80px]">Override</TableHead>
+                                )}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {ts.entries
                                 .sort((a, b) => a.date.localeCompare(b.date))
                                 .map(entry => {
@@ -230,19 +278,21 @@ export default function TimesheetReviewPage() {
                                     const isModified = entryVariance !== 0
 
                                     return (
-                                        <tr key={entry.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                                            <td className="py-3 px-6">
-                                                <div className="text-sm font-medium">{dateLabel}</div>
+                                        <TableRow key={entry.id} className="group hover:bg-muted/20">
+                                            <TableCell>
+                                                <div className="font-medium">{dateLabel}</div>
                                                 <div className="text-xs text-muted-foreground">{dayName}</div>
-                                            </td>
-                                            <td className="py-3 px-4">
-                                                <div className="text-sm font-medium">{entry.projectName || '—'}</div>
-                                                <div className="text-xs text-muted-foreground">{entry.taskName || entry.description || ''}</div>
-                                            </td>
-                                            <td className="py-3 px-4 text-center text-sm">{entry.hours.toFixed(2)}</td>
-                                            <td className="py-3 px-4 text-center">
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="font-medium text-foreground">{entry.projectName || '—'}</div>
+                                                <div className="text-xs text-muted-foreground mt-0.5">{entry.taskName || entry.description || ''}</div>
+                                            </TableCell>
+                                            <TableCell className="text-center font-mono">
+                                                {entry.hours.toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="text-center">
                                                 {isApprover && (ts.status === 'Submitted' || ts.status === 'Approved') ? (
-                                                    <input
+                                                    <Input
                                                         type="number"
                                                         step="0.25"
                                                         min="0"
@@ -250,59 +300,81 @@ export default function TimesheetReviewPage() {
                                                         value={modified}
                                                         onChange={(e) => setModifiedHours(entry.id, parseFloat(e.target.value) || 0)}
                                                         className={cn(
-                                                            'w-20 text-center rounded-md border px-2 py-1 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20',
-                                                            isModified
-                                                                ? 'border-sap-informative text-sap-informative bg-sap-informative/5'
-                                                                : 'border-border bg-background'
+                                                            'w-20 mx-auto text-center h-8 font-mono',
+                                                            isModified ? 'border-sap-informative text-sap-informative bg-sap-informative/5 focus-visible:ring-sap-informative' : ''
                                                         )}
                                                     />
                                                 ) : (
                                                     <span className={cn(
-                                                        'text-sm font-medium',
-                                                        isModified ? 'text-sap-informative' : ''
+                                                        'font-mono text-sm',
+                                                        isModified ? 'text-sap-informative font-medium bg-sap-informative/10 px-2 py-0.5 rounded' : ''
                                                     )}>
                                                         {modified.toFixed(2)}
                                                     </span>
                                                 )}
-                                            </td>
-                                            <td className={cn(
-                                                'py-3 px-4 text-center text-sm font-medium',
-                                                entryVariance < 0 ? 'text-sap-negative' : entryVariance > 0 ? 'text-sap-positive' : 'text-muted-foreground'
-                                            )}>
-                                                {entryVariance >= 0 ? '+' : ''}{entryVariance.toFixed(2)}
-                                            </td>
-                                            <td className="py-3 px-4 text-center">
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <span className={cn(
+                                                    'font-mono text-sm',
+                                                    entryVariance < 0 ? 'text-sap-negative' : entryVariance > 0 ? 'text-sap-positive' : 'text-muted-foreground'
+                                                )}>
+                                                    {entryVariance > 0 ? '+' : ''}{entryVariance !== 0 ? entryVariance.toFixed(2) : '—'}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-center">
                                                 {isModified ? (
                                                     <Send className="h-4 w-4 mx-auto text-sap-informative" />
                                                 ) : (
                                                     <Check className="h-4 w-4 mx-auto text-sap-positive" />
                                                 )}
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+
+                                            {currentUser?.role === 'Admin' && (
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        onClick={() => setOverrideModal({
+                                                            open: true,
+                                                            entryId: entry.id,
+                                                            hours: modified,
+                                                            note: ''
+                                                        })}
+                                                    >
+                                                        <Pencil className="h-4 w-4 text-muted-foreground" />
+                                                    </Button>
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
                                     )
                                 })}
-                        </tbody>
-                        {/* Totals row */}
-                        <tfoot>
-                            <tr className="border-t-2 border-border font-semibold">
-                                <td colSpan={2} className="py-3 px-6 text-sm text-right uppercase tracking-wide">Total Period Hours</td>
-                                <td className="py-3 px-4 text-center text-sm">{totalSubmitted.toFixed(2)}</td>
-                                <td className={cn(
-                                    'py-3 px-4 text-center text-sm',
+                        </TableBody>
+                        <tfoot className="bg-muted/50 border-t border-border">
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={2} className="text-right font-medium uppercase text-xs tracking-wider text-muted-foreground">
+                                    Total Period Hours
+                                </TableCell>
+                                <TableCell className="text-center font-bold font-mono">
+                                    {totalSubmitted.toFixed(2)}
+                                </TableCell>
+                                <TableCell className={cn(
+                                    'text-center font-bold font-mono',
                                     variance !== 0 ? 'text-sap-informative' : ''
                                 )}>
                                     {totalModified.toFixed(2)}
-                                </td>
-                                <td className={cn(
-                                    'py-3 px-4 text-center text-sm',
-                                    variance < 0 ? 'text-sap-negative' : variance > 0 ? 'text-sap-positive' : ''
+                                </TableCell>
+                                <TableCell className={cn(
+                                    'text-center font-bold font-mono',
+                                    variance < 0 ? 'text-sap-negative' : variance > 0 ? 'text-sap-positive' : 'text-muted-foreground'
                                 )}>
-                                    {variance >= 0 ? '+' : ''}{variance.toFixed(2)}
-                                </td>
-                                <td></td>
-                            </tr>
+                                    {variance > 0 ? '+' : ''}{variance !== 0 ? variance.toFixed(2) : '-'}
+                                </TableCell>
+                                <TableCell></TableCell>
+                                {currentUser?.role === 'Admin' && <TableCell></TableCell>}
+                            </TableRow>
                         </tfoot>
-                    </table>
+                    </Table>
                 </div>
             </div>
 
@@ -313,8 +385,8 @@ export default function TimesheetReviewPage() {
                     <h2 className="font-semibold text-foreground">Manager Notes & Feedback</h2>
                 </div>
                 {isApprover && (ts.status === 'Submitted' || ts.status === 'Approved') ? (
-                    <textarea
-                        className="w-full border border-border rounded-lg p-3 text-sm bg-background resize-y min-h-[100px] focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    <Textarea
+                        className="w-full min-h-[100px] resize-y"
                         placeholder="Add notes about this timesheet review..."
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
@@ -385,18 +457,21 @@ export default function TimesheetReviewPage() {
                     <div className="bg-card rounded-xl border border-border shadow-xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
                         <h3 className="text-lg font-semibold mb-4">Select Final Admin</h3>
                         <p className="text-sm text-muted-foreground mb-4">Choose an admin to forward this timesheet for final approval.</p>
-                        <select
-                            className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background mb-4 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        <Select
                             value={selectedAdminId}
-                            onChange={(e) => setSelectedAdminId(e.target.value)}
+                            onValueChange={(value) => setSelectedAdminId(value)}
                         >
-                            <option value="">Select an admin...</option>
-                            {admins.map(admin => (
-                                <option key={admin.id} value={admin.id}>
-                                    {admin.firstName} {admin.lastName} ({admin.role})
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="w-full mb-6">
+                                <SelectValue placeholder="Select an admin..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {admins.map((admin: { id: string, firstName: string, lastName: string, role: string }) => (
+                                    <SelectItem key={admin.id} value={admin.id}>
+                                        {admin.firstName} {admin.lastName} ({admin.role})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         <div className="flex justify-end gap-3">
                             <Button variant="outline" onClick={() => setShowAdminDialog(false)}>Cancel</Button>
                             <Button
@@ -409,6 +484,48 @@ export default function TimesheetReviewPage() {
                     </div>
                 </div>
             )}
+
+            {/* Admin Override Modal */}
+            <Dialog open={overrideModal.open} onOpenChange={(open) => !isOverriding && setOverrideModal(prev => ({ ...prev, open }))}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Admin Hours Override</DialogTitle>
+                        <DialogDescription>
+                            Directly modify the approved hours for this specific entry. This will be logged in the system audit trail.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div className="space-y-2">
+                            <Label>Approved Hours</Label>
+                            <Input
+                                type="number"
+                                step="0.25"
+                                min="0"
+                                max="24"
+                                value={overrideModal.hours}
+                                onChange={(e) => setOverrideModal(prev => ({ ...prev, hours: parseFloat(e.target.value) || 0 }))}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Override Note (Reason)</Label>
+                            <Input
+                                placeholder="e.g., Client approved 1 extra hour..."
+                                value={overrideModal.note}
+                                onChange={(e) => setOverrideModal(prev => ({ ...prev, note: e.target.value }))}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setOverrideModal(prev => ({ ...prev, open: false }))} disabled={isOverriding}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleAdminOverrideSubmit} disabled={isOverriding}>
+                            {isOverriding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            Save Changes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Status Dialog */}
             <StatusDialog

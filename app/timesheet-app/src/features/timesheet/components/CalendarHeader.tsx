@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Lock } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { format } from 'date-fns'
@@ -11,8 +11,6 @@ interface CalendarHeaderProps {
     onNextMonth: () => void
     monthlyTotal?: number
     status?: TimesheetStatusType
-    onSubmit?: (approverId?: string) => void
-    isReadOnly?: boolean
 }
 
 export function CalendarHeader({
@@ -21,8 +19,6 @@ export function CalendarHeader({
     onNextMonth,
     monthlyTotal = 0,
     status = 'Draft',
-    onSubmit,
-    isReadOnly = false,
 }: CalendarHeaderProps) {
 
     const statusColors: Record<string, string> = {

@@ -1,22 +1,69 @@
-import * as React from "react"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/utils"
+import { cn } from "@/shared/lib/utils";
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+const inputVariants = cva(
+  // Base styles applied to all variants
+  "flex h-9 w-full min-w-0 rounded-md border-2 px-3 py-1 text-base transition-[color,box-shadow,border-color] outline-none md:text-sm file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
+  {
+    variants: {
+      variant: {
+        default: [
+          "bg-card border-[var(--input-border)]",
+          "hover:border-[var(--input-border-hover)]",
+          "focus:border-[var(--color-brand)]",
+          "aria-invalid:ring-destructive/20 aria-invalid:border-destructive",
+        ],
+        readonly: [
+          "bg-muted border-border text-muted-foreground",
+          "cursor-not-allowed pointer-events-none",
+        ],
+        info: [
+          "bg-[var(--info-bg)] border-[var(--info)] text-foreground",
+          "cursor-not-allowed pointer-events-none",
+        ],
+        success: [
+          "bg-[var(--success-bg)] border-[var(--success)] text-foreground",
+          "cursor-not-allowed pointer-events-none",
+        ],
+        warning: [
+          "bg-[var(--warning-bg)] border-[var(--warning)] text-foreground",
+          "cursor-not-allowed pointer-events-none",
+        ],
+        destructive: [
+          "bg-destructive/10 border-destructive text-foreground",
+          "cursor-not-allowed pointer-events-none",
+        ],
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
+export interface InputProps
+  extends React.ComponentProps<"input">,
+  VariantProps<typeof inputVariants> { }
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, variant, disabled, readOnly, ...props }, ref) => {
+    // Auto-detect readonly variant if disabled/readOnly is set but no variant specified
+    const effectiveVariant = variant ?? (disabled || readOnly ? "readonly" : "default");
+
     return (
       <input
         type={type}
-        className={cn(
-          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-          className
-        )}
         ref={ref}
+        disabled={disabled}
+        readOnly={readOnly}
+        className={cn(inputVariants({ variant: effectiveVariant }), className)}
         {...props}
       />
-    )
+    );
   }
-)
-Input.displayName = "Input"
+);
+Input.displayName = "Input";
 
-export { Input }
+export { Input, inputVariants };
