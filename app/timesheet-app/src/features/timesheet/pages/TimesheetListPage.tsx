@@ -13,6 +13,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/shared/components/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 import { getAllTimesheets } from '@/features/timesheet/api/timesheet-api'
 import type { Timesheet, TimesheetStatusType } from '@/shared/types'
@@ -27,12 +28,12 @@ const STATUS_TABS: { label: string; value: TimesheetStatusType | 'All' }[] = [
 ]
 
 const statusColors: Record<string, string> = {
-    Draft: 'bg-muted text-muted-foreground border-border',
-    Submitted: 'bg-sap-informative/10 text-sap-informative border-sap-informative/20',
-    Approved_By_TeamLead: 'bg-sap-positive/10 text-sap-positive border-sap-positive/20',
-    Approved: 'bg-sap-positive/10 text-sap-positive border-sap-positive/20',
-    Rejected: 'bg-sap-negative/10 text-sap-negative border-sap-negative/20',
-    Finished: 'bg-sap-positive/10 text-sap-positive border-sap-positive/20',
+    Draft: 'bg-status-obsoleted text-status-obsoleted-text border-status-obsoleted-border',
+    Submitted: 'bg-status-sent text-status-sent-text border-status-sent-border',
+    Approved_By_TeamLead: 'bg-status-completed text-status-completed-text border-status-completed-border',
+    Approved: 'bg-status-completed text-status-completed-text border-status-completed-border',
+    Rejected: 'bg-status-new text-status-new-text border-status-new-border',
+    Finished: 'bg-status-completed text-status-completed-text border-status-completed-border',
 }
 
 const MONTH_NAMES = [
@@ -90,6 +91,12 @@ export default function TimesheetListPage() {
         navigate(`/timesheet?month=${ts.month}&year=${ts.year}`)
     }
 
+    const getTabCount = (value: TimesheetStatusType | 'All') => {
+        if (value === 'All') return timesheets.length
+        if (value === 'Approved') return timesheets.filter(ts => ['Approved', 'Approved_By_TeamLead'].includes(ts.status)).length
+        return timesheets.filter(ts => ts.status === value).length
+    }
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -100,10 +107,7 @@ export default function TimesheetListPage() {
                         View and manage your timesheet submissions
                     </p>
                 </div>
-                <Button
-                    onClick={() => navigate('/timesheet')}
-                    className="bg-primary hover:bg-primary/90"
-                >
+                <Button onClick={() => navigate('/timesheet')}>
                     <Calendar className="h-4 w-4 mr-2" />
                     Current Month
                 </Button>
@@ -114,8 +118,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-sap-informative/10">
-                                <FileText className="h-5 w-5 text-sap-informative" />
+                            <div className="p-2.5 rounded-lg bg-info-bg">
+                                <FileText className="h-5 w-5 text-info" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</p>
@@ -127,8 +131,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800">
-                                <FileText className="h-5 w-5 text-gray-600" />
+                            <div className="p-2.5 rounded-lg bg-muted">
+                                <FileText className="h-5 w-5 text-muted-foreground" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Drafts</p>
@@ -140,8 +144,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-sap-informative/10">
-                                <Clock className="h-5 w-5 text-sap-informative" />
+                            <div className="p-2.5 rounded-lg bg-info-bg">
+                                <Clock className="h-5 w-5 text-info" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pending</p>
@@ -153,8 +157,8 @@ export default function TimesheetListPage() {
                 <Card className="border-0 shadow-sm">
                     <CardContent className="p-5">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-lg bg-sap-positive/10">
-                                <Eye className="h-5 w-5 text-sap-positive" />
+                            <div className="p-2.5 rounded-lg bg-success-bg">
+                                <Eye className="h-5 w-5 text-success" />
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Approved</p>
@@ -166,31 +170,20 @@ export default function TimesheetListPage() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-2 border-b pb-2">
-                {STATUS_TABS.map((tab) => (
-                    <Button
-                        key={tab.value}
-                        variant={activeFilter === tab.value ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveFilter(tab.value)}
-                        className={activeFilter === tab.value
-                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground'
-                        }
-                    >
-                        {tab.label}
-                        {tab.value !== 'All' && (
-                            <span className="ml-1.5 text-xs opacity-70">
-                                ({timesheets.filter(ts =>
-                                    tab.value === 'Approved'
-                                        ? ['Approved', 'Approved_By_TeamLead'].includes(ts.status)
-                                        : ts.status === tab.value
-                                ).length})
-                            </span>
-                        )}
-                    </Button>
-                ))}
-            </div>
+            <Tabs value={activeFilter} onValueChange={(val) => setActiveFilter(val as TimesheetStatusType | 'All')}>
+                <TabsList>
+                    {STATUS_TABS.map((tab) => (
+                        <TabsTrigger key={tab.value} value={tab.value}>
+                            {tab.label}
+                            {tab.value !== 'All' && (
+                                <span className="ml-1.5 text-xs opacity-70">
+                                    ({getTabCount(tab.value)})
+                                </span>
+                            )}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+            </Tabs>
 
             {/* Table */}
             <Card className="border-0 shadow-sm">

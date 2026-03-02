@@ -22,12 +22,12 @@ export function CalendarHeader({
 }: CalendarHeaderProps) {
 
     const statusColors: Record<string, string> = {
-        Draft: 'bg-muted text-muted-foreground',
-        Submitted: 'bg-sap-informative/10 text-sap-informative',
-        Approved_By_TeamLead: 'bg-sap-positive/10 text-sap-positive',
-        Approved: 'bg-sap-positive/10 text-sap-positive',
-        Rejected: 'bg-sap-negative/10 text-sap-negative',
-        Finished: 'bg-sap-positive/10 text-sap-positive',
+        Draft: 'bg-status-obsoleted text-status-obsoleted-text',
+        Submitted: 'bg-status-sent text-status-sent-text',
+        Approved_By_TeamLead: 'bg-status-completed text-status-completed-text',
+        Approved: 'bg-status-completed text-status-completed-text',
+        Rejected: 'bg-status-new text-status-new-text',
+        Finished: 'bg-status-completed text-status-completed-text',
     }
 
     const statusLabel = status === 'Draft' ? 'Ready' : status.replace(/_/g, ' ')
@@ -54,14 +54,14 @@ export function CalendarHeader({
             {/* Right: Month Total + Status + Submit */}
             <div className="flex items-center gap-4">
                 {/* Month Total */}
-                <div className="flex items-center gap-2 bg-sap-informative/10 rounded-lg px-4 py-2">
+                <div className="flex items-center gap-2 bg-info-bg rounded-lg px-4 py-2">
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                         Month Total
                     </span>
-                    <span className="text-2xl font-bold text-sap-informative tabular-nums">
+                    <span className="text-2xl font-bold text-info tabular-nums">
                         {monthlyTotal.toFixed(2)}
                     </span>
-                    <span className="text-xs font-medium text-sap-informative uppercase">HRS</span>
+                    <span className="text-xs font-medium text-info uppercase">HRS</span>
                 </div>
 
                 {/* Status + Submit */}

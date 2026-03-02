@@ -166,7 +166,7 @@ export function TimesheetFooter({
                         {!isReadOnly && canSubmit && (
                             <Button
                                 onClick={() => onSubmit(selectedApproverId || undefined)}
-                                className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                                className="w-full mt-4 font-semibold"
                                 disabled={filteredApprovers.length > 0 && !selectedApproverId}
                             >
                                 {submitLabel}
@@ -179,7 +179,7 @@ export function TimesheetFooter({
             {/* Bottom Bar */}
             <div className="flex items-center justify-between py-3 border-t text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                    <span className={`h-2 w-2 rounded-full ${isDirty ? 'bg-sap-critical' : 'bg-sap-positive'}`} />
+                    <span className={`h-2 w-2 rounded-full ${isDirty ? 'bg-warning' : 'bg-success'}`} />
                     <span>{isDirty ? 'Unsaved changes' : 'All saved'}</span>
                     <span className="text-muted-foreground/50 ml-2">{syncText}</span>
                 </div>
@@ -191,7 +191,7 @@ export function TimesheetFooter({
                             size="sm"
                             onClick={onSaveChanges}
                             disabled={!isDirty || isLoading}
-                            className={isDirty ? 'text-sap-critical hover:opacity-80' : ''}
+                            className={isDirty ? 'text-warning hover:opacity-80' : ''}
                         >
                             <Save className="h-4 w-4 mr-1.5" />
                             {isLoading ? 'Saving...' : 'Save as Draft'}

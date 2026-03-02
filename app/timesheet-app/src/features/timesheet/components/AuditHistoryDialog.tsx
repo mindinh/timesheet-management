@@ -28,37 +28,37 @@ const ACTION_CONFIG: Record<string, {
 }> = {
     Submitted: {
         icon: Send,
-        color: 'text-sap-informative',
-        bgColor: 'bg-sap-informative/10',
-        borderColor: 'border-sap-informative/30',
+        color: 'text-info',
+        bgColor: 'bg-info-bg',
+        borderColor: 'border-info/30',
         label: 'Submitted',
     },
     Approved: {
         icon: CheckCircle2,
-        color: 'text-sap-positive',
-        bgColor: 'bg-sap-positive/10',
-        borderColor: 'border-sap-positive/30',
+        color: 'text-success',
+        bgColor: 'bg-success-bg',
+        borderColor: 'border-success/30',
         label: 'Approved',
     },
     Rejected: {
         icon: XCircle,
-        color: 'text-sap-negative',
-        bgColor: 'bg-sap-negative/10',
-        borderColor: 'border-sap-negative/30',
+        color: 'text-error',
+        bgColor: 'bg-error-bg',
+        borderColor: 'border-error/30',
         label: 'Rejected',
     },
     Modified: {
         icon: RotateCcw,
-        color: 'text-sap-critical',
-        bgColor: 'bg-sap-critical/10',
-        borderColor: 'border-sap-critical/30',
+        color: 'text-warning',
+        bgColor: 'bg-warning-bg',
+        borderColor: 'border-warning/30',
         label: 'Modified',
     },
     Finished: {
         icon: Flag,
-        color: 'text-sap-positive',
-        bgColor: 'bg-sap-positive/10',
-        borderColor: 'border-sap-positive/30',
+        color: 'text-success',
+        bgColor: 'bg-success-bg',
+        borderColor: 'border-success/30',
         label: 'Finished',
     },
 }
@@ -97,8 +97,8 @@ export function AuditHistoryDialog({
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                     <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-sap-informative/10">
-                            <History className="h-5 w-5 text-sap-informative" />
+                        <div className="p-2 rounded-lg bg-info-bg">
+                            <History className="h-5 w-5 text-info" />
                         </div>
                         <div>
                             <DialogTitle>Audit History</DialogTitle>
@@ -206,7 +206,7 @@ export function AuditHistoryDialog({
                                                 <div className={cn(
                                                     'mt-3 rounded-md px-3 py-2 text-sm border',
                                                     event.action === 'Rejected'
-                                                        ? 'bg-sap-negative/5 border-sap-negative/20 text-sap-negative'
+                                                        ? 'bg-error-bg border-error/20 text-error'
                                                         : 'bg-muted/30 border-border text-muted-foreground'
                                                 )}>
                                                     <p className="italic">"{event.comment}"</p>
