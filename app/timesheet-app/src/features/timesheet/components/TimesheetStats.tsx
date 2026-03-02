@@ -31,31 +31,30 @@ export function TimesheetStats({ entries, currentMonth, status = 'Draft', workin
             label: 'LOGGED DAYS',
             value: `${uniqueDays}`,
             suffix: `/ ${daysInMonth}`,
-            color: 'text-sap-informative',
-            bgColor: 'bg-sap-informative/10'
+            color: 'text-info',
+            bgColor: 'bg-info-bg'
         },
         {
             icon: Zap,
             label: 'UTILIZATION',
             value: `${utilization}%`,
-            color: 'text-sap-positive',
-            bgColor: 'bg-sap-positive/10'
+            color: 'text-success',
+            bgColor: 'bg-success-bg'
         },
         {
             icon: Clock,
             label: 'OVERTIME',
             value: `${overtime.toFixed(2)}`,
             suffix: 'H',
-            color: 'text-sap-critical',
-            bgColor: 'bg-sap-critical/10'
+            color: 'text-warning',
+            bgColor: 'bg-warning-bg'
         },
         {
             icon: CheckCircle,
             label: 'APPROVALS',
             value: approvalLabel(),
-            color: 'text-sap-neutral',
-            bgColor: 'bg-sap-neutral/10',
-            isItalic: status === 'Draft',
+            color: 'text-muted-foreground',
+            bgColor: 'bg-muted',
         }
     ]
 
@@ -72,7 +71,7 @@ export function TimesheetStats({ entries, currentMonth, status = 'Draft', workin
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                     {stat.label}
                                 </p>
-                                <p className={`text-2xl font-bold mt-1 ${stat.isItalic ? 'italic' : ''}`}>
+                                <p className="text-2xl font-bold mt-1">
                                     {stat.value}
                                     {stat.suffix && (
                                         <span className="text-sm font-normal text-muted-foreground ml-1">

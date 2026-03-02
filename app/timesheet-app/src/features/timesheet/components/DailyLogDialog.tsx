@@ -227,10 +227,10 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
                         />
 
                         <DialogFooter>
+                            <Button type="submit">{entry ? 'Update Entry' : 'Save Entry'}</Button>
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit">{entry ? 'Update Entry' : 'Save Entry'}</Button>
                         </DialogFooter>
                     </form>
                 </Form>
