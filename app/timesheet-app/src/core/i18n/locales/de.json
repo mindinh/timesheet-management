@@ -1,8 +1,8 @@
 {
     "sidebar": {
         "title": "Zeiterfassung",
-        "myTimesheet": "Mein Zeitblatt",
-        "myTimesheets": "Meine Zeitblätter",
+        "myTimesheet": "Zeitblatt erfassen",
+        "myTimesheets": "Zeitblatt-Worklist",
         "myProjects": "Meine Projekte",
         "approvals": "Genehmigungen",
         "adminDashboard": "Admin-Dashboard",
