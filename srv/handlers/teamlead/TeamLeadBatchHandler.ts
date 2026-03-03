@@ -33,7 +33,7 @@ export class TeamLeadBatchHandler {
         // Allow Team Lead to see timesheets directly assigned to them or those of their direct reports.
         // For strictness, usually currentApprover_ID = user.ID
         const timesheets = await SELECT.from(Timesheet)
-            .where({ currentApprover_ID: user.ID, status: 'Submitted' })
+            .where({ currentApprover_ID: user.ID, status: { 'in': ['Submitted', 'Approved'] } })
             .orderBy('year desc', 'month desc', 'submitDate desc');
 
         const enriched = [];
@@ -203,16 +203,18 @@ export class TeamLeadBatchHandler {
         const [admin] = await SELECT.from(User).where({ ID: adminId, role: 'Admin' });
         if (!admin) return req.reject(400, 'Invalid admin designated for the batch');
 
-        // Check if all timesheets are 'Approved'
+        // Check if all timesheets are valid
         const timesheets = await SELECT.from(Timesheet).where({ ID: { 'in': timesheetIds } });
         for (const ts of timesheets) {
-            if (ts.status !== 'Approved') {
-                return req.reject(400, `Timesheet ${ts.ID} is not approved yet (Status: ${ts.status})`);
+            if (ts.status !== 'Approved' && ts.status !== 'Submitted') {
+                return req.reject(400, `Timesheet ${ts.ID} has invalid status (Status: ${ts.status})`);
             }
             if (ts.batch_ID) {
                 return req.reject(400, `Timesheet ${ts.ID} is already in a batch`);
             }
         }
+
+        const now = new Date().toISOString();
 
         // Create Batch
         const batchId = cds.utils.uuid();
@@ -229,11 +231,28 @@ export class TeamLeadBatchHandler {
             action: 'Created',
             status: 'Pending',
             comment: `Batch created with ${timesheets.length} timesheets`,
-            timestamp: new Date().toISOString()
+            timestamp: now
         });
 
-        // Assign to Batch & update currentApprover to Admin
+        // Log approvals if they were submitted
+        for (const ts of timesheets) {
+            if (ts.status === 'Submitted') {
+                await INSERT.into('sap.timesheet.ApprovalHistory').entries({
+                    timesheet_ID: ts.ID,
+                    actor_ID: user.ID,
+                    action: 'Approved',
+                    fromStatus: 'Submitted',
+                    toStatus: 'Approved',
+                    comment: 'Auto-approved during batch creation',
+                    timestamp: now,
+                });
+            }
+        }
+
+        // Assign to Batch, update currentApprover to Admin, and status to Approved
         await UPDATE(Timesheet).set({
+            status: 'Approved',
+            approveDate: now,
             batch_ID: batchId,
             currentApprover_ID: adminId
         }).where({ ID: { 'in': timesheetIds } });

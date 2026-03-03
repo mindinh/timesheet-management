@@ -6,7 +6,6 @@ import {
     ArrowUpDown,
     ArrowUp,
     ArrowDown,
-    ClipboardList,
     Eye,
     Send,
     Loader2,
@@ -31,7 +30,6 @@ import {
     TableRow,
 } from '@/shared/components/ui/table'
 import { Checkbox } from '@/shared/components/ui/checkbox'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/shared/components/ui/dialog'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
@@ -53,7 +51,6 @@ export default function ApprovalsPage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [sortField, setSortField] = useState<SortField>('submitDate')
     const [sortDir, setSortDir] = useState<SortDir>('desc')
-    const [activeTab, setActiveTab] = useState<'pending' | 'batching'>('pending')
 
     // Selection
     const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -94,7 +91,7 @@ export default function ApprovalsPage() {
     }
 
     const displayedTimesheets = useMemo(() => {
-        let list = timesheets.filter(ts => activeTab === 'pending' ? ts.status === 'Submitted' : ts.status === 'Approved')
+        let list = [...timesheets]
 
         // Search filter
         if (searchQuery) {
@@ -130,10 +127,7 @@ export default function ApprovalsPage() {
         })
 
         return list
-    }, [timesheets, searchQuery, sortField, sortDir, activeTab])
-
-    const pendingCount = timesheets.filter(ts => ts.status === 'Submitted').length
-    const approvedCount = timesheets.filter(ts => ts.status === 'Approved').length
+    }, [timesheets, searchQuery, sortField, sortDir])
 
     const isAllSelected = displayedTimesheets.length > 0 && displayedTimesheets.every(ts => selectedIds.includes(ts.id))
 
@@ -152,10 +146,6 @@ export default function ApprovalsPage() {
     const resetSelection = () => {
         setSelectedIds([])
     }
-
-    useEffect(() => {
-        resetSelection()
-    }, [activeTab])
 
     // ---- Handlers ----
     const handleOpenCommentModal = (action: 'approve' | 'reject') => {
@@ -222,231 +212,226 @@ export default function ApprovalsPage() {
                 </div>
             </div>
 
-            {/* Main Tabs */}
-            <Tabs value={activeTab} onValueChange={(val: any) => setActiveTab(val)}>
-                <div className="flex items-center justify-between mb-4">
-                    <TabsList className="bg-card border border-border">
-                        <TabsTrigger value="pending" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                            Pending Approvals
-                            {pendingCount > 0 && (
-                                <span className="ml-2 inline-flex items-center rounded-full bg-primary text-primary-foreground px-2 py-0.5 text-xs font-semibold">
-                                    {pendingCount}
-                                </span>
-                            )}
-                        </TabsTrigger>
-                        <TabsTrigger value="batching" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                            Approved & Batching
-                            {approvedCount > 0 && (
-                                <span className="ml-2 inline-flex items-center rounded-full bg-sap-positive text-primary-foreground px-2 py-0.5 text-xs font-semibold">
-                                    {approvedCount}
-                                </span>
-                            )}
-                        </TabsTrigger>
-                    </TabsList>
-
-                    {/* Filter Bar */}
-                    <div className="relative max-w-sm w-72">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="text"
-                            placeholder="Search employee..."
-                            className="pl-10 h-10 w-full"
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                        />
+            {/* Main Content */}
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex gap-4 items-center">
+                    <div className="flex bg-muted/30 border border-border rounded-lg p-1">
+                        <span className="px-3 py-1.5 text-sm font-medium text-foreground">
+                            All Pending & Approved
+                            <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
+                                {timesheets.length}
+                            </span>
+                        </span>
                     </div>
                 </div>
 
-                <div className="bg-card border border-border rounded-xl flex flex-col min-h-[500px]">
-                    {isLoading ? (
-                        <div className="flex flex-col flex-1 items-center justify-center py-16 text-muted-foreground">
-                            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mb-3" />
-                            <p className="text-sm">Loading timesheets...</p>
-                        </div>
-                    ) : displayedTimesheets.length === 0 ? (
-                        <div className="flex flex-col flex-1 items-center justify-center py-16">
-                            <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-                            <p className="text-muted-foreground font-medium">No timesheets found</p>
-                            <p className="text-sm text-muted-foreground/60 mt-1">
-                                {activeTab === 'pending'
-                                    ? 'All caught up! Check back later.'
-                                    : 'No approved timesheets waiting for batching.'}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col h-full">
-                            {/* Actions Bar */}
-                            {selectedIds.length > 0 && (
-                                <div className="bg-primary/5 border-b border-border/50 px-5 py-3 flex items-center justify-between">
-                                    <span className="text-sm font-medium text-primary">
-                                        {selectedIds.length} timesheet(s) selected
-                                    </span>
-                                    {activeTab === 'pending' ? (
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="border-sap-negative text-sap-negative hover:bg-sap-negative/10"
-                                                onClick={() => handleOpenCommentModal('reject')}
-                                                disabled={actionLoading !== null}
-                                            >
-                                                {actionLoading === 'reject' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <X className="h-4 w-4 mr-2" />}
-                                                Reject All Selected
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                onClick={() => handleOpenCommentModal('approve')}
-                                                disabled={actionLoading !== null}
-                                                className="bg-sap-positive hover:bg-sap-positive/90 text-white shadow-sm"
-                                            >
-                                                {actionLoading === 'approve' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
-                                                Approve All Selected
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => setAdminModal({ open: true, adminId: '' })}
-                                            disabled={actionLoading !== null}
-                                            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
-                                        >
-                                            <Send className="h-4 w-4 mr-2" />
-                                            Create Batch & Forward
-                                        </Button>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Table */}
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow className="border-b border-border bg-muted/30">
-                                            <TableHead className="py-3.5 px-5 w-[40px] text-center">
-                                                <Checkbox
-                                                    checked={isAllSelected}
-                                                    onCheckedChange={handleSelectAll}
-                                                    className="translate-y-[2px]"
-                                                />
-                                            </TableHead>
-                                            <TableHead
-                                                className="text-left py-3.5 px-2 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
-                                                onClick={() => toggleSort('name')}
-                                            >
-                                                <span className="inline-flex items-center">
-                                                    Employee
-                                                    <SortIcon field="name" />
-                                                </span>
-                                            </TableHead>
-                                            <TableHead
-                                                className="text-left py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
-                                                onClick={() => toggleSort('period')}
-                                            >
-                                                <span className="inline-flex items-center">
-                                                    Period
-                                                    <SortIcon field="period" />
-                                                </span>
-                                            </TableHead>
-                                            <TableHead
-                                                className="text-left py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
-                                                onClick={() => toggleSort('submitDate')}
-                                            >
-                                                <span className="inline-flex items-center">
-                                                    Submitted Date
-                                                    <SortIcon field="submitDate" />
-                                                </span>
-                                            </TableHead>
-                                            <TableHead
-                                                className="text-right py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
-                                                onClick={() => toggleSort('totalHours')}
-                                            >
-                                                <span className="inline-flex items-center justify-end">
-                                                    Total Hours
-                                                    <SortIcon field="totalHours" />
-                                                </span>
-                                            </TableHead>
-                                            <TableHead className="text-center py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
-                                                Actions
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody className="divide-y divide-border/50">
-                                        {displayedTimesheets.map(ts => {
-                                            const period = `${MONTH_NAMES[ts.month]} ${ts.year}`
-                                            const submittedDate = ts.submitDate
-                                                ? format(new Date(ts.submitDate), 'MMM dd, hh:mm a')
-                                                : '—'
-                                            const initials = getInitials(ts.user?.firstName, ts.user?.lastName)
-
-                                            return (
-                                                <TableRow
-                                                    key={ts.id}
-                                                    className={cn(
-                                                        "group hover:bg-muted/20 transition-colors",
-                                                        selectedIds.includes(ts.id) && "bg-primary/5"
-                                                    )}
-                                                >
-                                                    <TableCell className="py-4 px-5 w-[40px] text-center">
-                                                        <Checkbox
-                                                            checked={selectedIds.includes(ts.id)}
-                                                            onCheckedChange={() => toggleSelect(ts.id)}
-                                                            className="translate-y-[2px]"
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell className="py-4 px-2">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-sm font-semibold ring-1 ring-primary/10">
-                                                                {initials}
-                                                            </div>
-                                                            <div>
-                                                                <div className="font-medium text-sm text-foreground">
-                                                                    {ts.user?.firstName} {ts.user?.lastName}
-                                                                </div>
-                                                                <div className="text-xs text-muted-foreground">
-                                                                    {ts.user?.role || 'Employee'}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="py-4 px-4 text-sm text-primary/80 font-medium whitespace-nowrap">
-                                                        {period}
-                                                    </TableCell>
-                                                    <TableCell className="py-4 px-4 text-sm text-muted-foreground whitespace-nowrap">
-                                                        {submittedDate}
-                                                    </TableCell>
-                                                    <TableCell className="py-4 px-4 text-sm text-right font-semibold text-foreground">
-                                                        {(ts.totalHours || 0).toFixed(1)}
-                                                    </TableCell>
-                                                    <TableCell className="py-4 px-4">
-                                                        <div className="flex items-center justify-center gap-2">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="text-xs font-medium border-primary/30 text-primary hover:bg-primary/5 hover:text-primary h-8 px-2"
-                                                                onClick={() => handleReview(ts.id)}
-                                                            >
-                                                                <Eye className="h-3.5 w-3.5 mr-1" />
-                                                                Review Details
-                                                            </Button>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            )
-                                        })}
-                                    </TableBody>
-                                </Table>
-                            </div>
-
-                            {/* Footer */}
-                            <div className="flex items-center justify-between px-5 py-3 border-t border-border mt-auto bg-muted/10">
-                                <span className="text-sm text-primary/70">
-                                    Showing <strong className="text-foreground">{displayedTimesheets.length}</strong> records
-                                </span>
-                            </div>
-                        </div>
-                    )}
+                {/* Filter Bar */}
+                <div className="relative max-w-sm w-72">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="text"
+                        placeholder="Search employee..."
+                        className="pl-10 h-10 w-full"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
                 </div>
-            </Tabs>
+            </div>
+
+            <div className="bg-card border border-border rounded-xl flex flex-col min-h-[500px]">
+                {isLoading ? (
+                    <div className="flex flex-col flex-1 items-center justify-center py-16 text-muted-foreground">
+                        <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mb-3" />
+                        <p className="text-sm">Loading timesheets...</p>
+                    </div>
+                ) : displayedTimesheets.length === 0 ? (
+                    <div className="flex flex-col flex-1 items-center justify-center py-16">
+                        <p className="text-muted-foreground font-medium">No timesheets found</p>
+                        <p className="text-sm text-muted-foreground/60 mt-1">
+                            All caught up! Check back later when there are timesheets to review or batch.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col h-full">
+                        {/* Actions Bar */}
+                        {selectedIds.length > 0 && (
+                            <div className="bg-primary/5 border-b border-border/50 px-5 py-3 flex items-center justify-between">
+                                <span className="text-sm font-medium text-primary">
+                                    {selectedIds.length} timesheet(s) selected
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-sap-negative text-sap-negative hover:bg-sap-negative/10"
+                                        onClick={() => handleOpenCommentModal('reject')}
+                                        disabled={actionLoading !== null}
+                                    >
+                                        {actionLoading === 'reject' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <X className="h-4 w-4 mr-2" />}
+                                        Reject Selected
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => handleOpenCommentModal('approve')}
+                                        disabled={actionLoading !== null}
+                                        className="bg-sap-positive hover:bg-sap-positive/90 text-white shadow-sm"
+                                    >
+                                        {actionLoading === 'approve' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
+                                        Approve Selected
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => setAdminModal({ open: true, adminId: '' })}
+                                        disabled={actionLoading !== null}
+                                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                                    >
+                                        <Send className="h-4 w-4 mr-2" />
+                                        Submit Batch
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Table */}
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="border-b border-border bg-muted/30">
+                                        <TableHead className="py-3.5 px-5 w-[40px] text-center">
+                                            <Checkbox
+                                                checked={isAllSelected}
+                                                onCheckedChange={handleSelectAll}
+                                                className="translate-y-[2px]"
+                                            />
+                                        </TableHead>
+                                        <TableHead
+                                            className="text-left py-3.5 px-2 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
+                                            onClick={() => toggleSort('name')}
+                                        >
+                                            <span className="inline-flex items-center">
+                                                Employee
+                                                <SortIcon field="name" />
+                                            </span>
+                                        </TableHead>
+                                        <TableHead
+                                            className="text-left py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
+                                            onClick={() => toggleSort('period')}
+                                        >
+                                            <span className="inline-flex items-center">
+                                                Period
+                                                <SortIcon field="period" />
+                                            </span>
+                                        </TableHead>
+                                        <TableHead
+                                            className="text-left py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
+                                            onClick={() => toggleSort('submitDate')}
+                                        >
+                                            <span className="inline-flex items-center">
+                                                Submitted Date
+                                                <SortIcon field="submitDate" />
+                                            </span>
+                                        </TableHead>
+                                        <TableHead
+                                            className="text-right py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
+                                            onClick={() => toggleSort('totalHours')}
+                                        >
+                                            <span className="inline-flex items-center justify-end">
+                                                Total Hours
+                                                <SortIcon field="totalHours" />
+                                            </span>
+                                        </TableHead>
+                                        <TableHead className="text-center py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
+                                            Status
+                                        </TableHead>
+                                        <TableHead className="text-center py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
+                                            Actions
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody className="divide-y divide-border/50">
+                                    {displayedTimesheets.map(ts => {
+                                        const period = `${MONTH_NAMES[ts.month]} ${ts.year}`
+                                        const submittedDate = ts.submitDate
+                                            ? format(new Date(ts.submitDate), 'MMM dd, hh:mm a')
+                                            : '—'
+                                        const initials = getInitials(ts.user?.firstName, ts.user?.lastName)
+
+                                        return (
+                                            <TableRow
+                                                key={ts.id}
+                                                className={cn(
+                                                    "group hover:bg-muted/20 transition-colors",
+                                                    selectedIds.includes(ts.id) && "bg-primary/5"
+                                                )}
+                                            >
+                                                <TableCell className="py-4 px-5 w-[40px] text-center">
+                                                    <Checkbox
+                                                        checked={selectedIds.includes(ts.id)}
+                                                        onCheckedChange={() => toggleSelect(ts.id)}
+                                                        className="translate-y-[2px]"
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="py-4 px-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-sm font-semibold ring-1 ring-primary/10">
+                                                            {initials}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-medium text-sm text-foreground">
+                                                                {ts.user?.firstName} {ts.user?.lastName}
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground">
+                                                                {ts.user?.role || 'Employee'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="py-4 px-4 text-sm text-primary/80 font-medium whitespace-nowrap">
+                                                    {period}
+                                                </TableCell>
+                                                <TableCell className="py-4 px-4 text-sm text-muted-foreground whitespace-nowrap">
+                                                    {submittedDate}
+                                                </TableCell>
+                                                <TableCell className="py-4 px-4 text-sm text-right font-semibold text-foreground">
+                                                    {(ts.totalHours || 0).toFixed(1)}
+                                                </TableCell>
+                                                <TableCell className="py-4 px-4 text-center">
+                                                    <span className={cn(
+                                                        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
+                                                        ts.status === 'Submitted' ? "bg-sap-informative/10 text-sap-informative" : "bg-sap-positive/10 text-sap-positive"
+                                                    )}>
+                                                        {ts.status}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="py-4 px-4">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="text-xs font-medium border-primary/30 text-primary hover:bg-primary/5 hover:text-primary h-8 px-2"
+                                                            onClick={() => handleReview(ts.id)}
+                                                        >
+                                                            <Eye className="h-3.5 w-3.5 mr-1" />
+                                                            Review Details
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between px-5 py-3 border-t border-border mt-auto bg-muted/10">
+                            <span className="text-sm text-primary/70">
+                                Showing <strong className="text-foreground">{displayedTimesheets.length}</strong> records
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {/* Admin Select Modal */}
             <Dialog open={adminModal.open} onOpenChange={(open) => !actionLoading && setAdminModal(prev => ({ ...prev, open }))}>
@@ -522,6 +507,6 @@ export default function ApprovalsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     )
 }
