@@ -1,6 +1,8 @@
 # CAP timesheet-management
 _out
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 connection.properties
 default-*.json
