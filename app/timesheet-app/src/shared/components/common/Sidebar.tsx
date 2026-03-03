@@ -29,8 +29,8 @@ export default function Sidebar() {
     const location = useLocation()
     const navigate = useNavigate()
     const { t } = useTranslation()
-    const { currentUser, switchUser, logout } = useTimesheetStore()
-    const { user: authUser, login } = useAuthStore()
+    const { currentUser, switchUser, logout: timesheetLogout } = useTimesheetStore()
+    const { user: authUser, login, logout: authLogout } = useAuthStore()
     const [isCollapsed, setIsCollapsed] = useState(false)
 
     useEffect(() => {
@@ -154,7 +154,7 @@ export default function Sidebar() {
                             )}
                         </div>
                         {!isCollapsed && (
-                            <Button variant="ghost" size="icon" onClick={() => { logout(); navigate('/') }}>
+                            <Button variant="ghost" size="icon" onClick={() => { timesheetLogout(); authLogout(); navigate('/') }}>
                                 <LogOut className="h-5 w-5" />
                             </Button>
                         )}
