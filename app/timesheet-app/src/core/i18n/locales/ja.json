@@ -1,8 +1,8 @@
 {
     "sidebar": {
         "title": "勤怠管理",
-        "myTimesheet": "タイムシート",
-        "myTimesheets": "タイムシート一覧",
+        "myTimesheet": "タイムシート記録",
+        "myTimesheets": "タイムシートワークリスト",
         "myProjects": "プロジェクト",
         "approvals": "承認",
         "adminDashboard": "管理者ダッシュボード",

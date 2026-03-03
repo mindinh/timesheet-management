@@ -86,6 +86,21 @@ export interface TimesheetBatchDetail extends TimesheetBatch {
             firstName: string
             lastName: string
         }
+        entries?: {
+            ID: string
+            date: string
+            loggedHours: number
+            approvedHours?: number
+            description?: string
+            project?: {
+                ID: string
+                name: string
+            }
+            task?: {
+                ID: string
+                name: string
+            }
+        }[]
         approvalHistory?: {
             ID: string
             action: string
@@ -134,7 +149,7 @@ export async function fetchTimesheetBatches(): Promise<TimesheetBatch[]> {
 
 export async function fetchTimesheetBatchById(id: string): Promise<TimesheetBatchDetail> {
     const data: unknown = await api.get(`${ADMIN_URL.timesheetBatches}('${id}')`, {
-        $expand: 'teamLead($select=ID,firstName,lastName,email),history($expand=actor($select=ID,firstName,lastName);$orderby=timestamp desc),timesheets($expand=user($select=ID,firstName,lastName),approvalHistory($expand=actor($select=ID,firstName,lastName);$orderby=timestamp desc);$select=ID,status,month,year)'
+        $expand: 'teamLead($select=ID,firstName,lastName,email),history($expand=actor($select=ID,firstName,lastName);$orderby=timestamp desc),timesheets($expand=user($select=ID,firstName,lastName),entries($expand=project,task),approvalHistory($expand=actor($select=ID,firstName,lastName);$orderby=timestamp desc))'
     })
     return (data as { value: TimesheetBatchDetail }).value || (data as TimesheetBatchDetail)
 }
