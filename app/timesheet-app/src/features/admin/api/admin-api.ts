@@ -58,6 +58,8 @@ export interface TimesheetBatch {
     timesheets: {
         ID: string
         status: string
+        month?: number
+        year?: number
     }[]
 }
 
@@ -124,7 +126,7 @@ export async function fetchExportLogs(): Promise<ExportLog[]> {
 // ── Batch Submissions ──────────────────────────────────────────────────
 export async function fetchTimesheetBatches(): Promise<TimesheetBatch[]> {
     const data: unknown = await api.get(ADMIN_URL.timesheetBatches, {
-        $expand: 'teamLead($select=ID,firstName,lastName,email),timesheets($select=ID,status)',
+        $expand: 'teamLead($select=ID,firstName,lastName,email),timesheets($select=ID,status,month,year)',
         $orderby: 'createdAt desc'
     })
     return (data as { value: TimesheetBatch[] }).value || (data as TimesheetBatch[])

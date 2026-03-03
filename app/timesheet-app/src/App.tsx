@@ -26,7 +26,7 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="approvals/:timesheetId" element={
-          <ProtectedRoute allowedRoles={['TeamLead']}>
+          <ProtectedRoute allowedRoles={['TeamLead', 'Admin']}>
             <TimesheetReviewPage />
           </ProtectedRoute>
         } />

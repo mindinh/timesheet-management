@@ -137,7 +137,7 @@ export default function AdminBatchPage() {
                         <TableHeader>
                             <TableRow className="bg-muted/40">
                                 <TableHead className="uppercase tracking-wider">
-                                    Period (Created At)
+                                    Timesheet Period (Month/Year)
                                 </TableHead>
                                 <TableHead className="uppercase tracking-wider">
                                     ID
@@ -153,8 +153,16 @@ export default function AdminBatchPage() {
                         <TableBody className="bg-card">
                             {filteredBatches.map(batch => {
                                 const createdDate = batch.createdAt ? new Date(batch.createdAt) : null
-                                const monthName = createdDate ? MONTH_NAMES[createdDate.getMonth() + 1] : 'Unknown Month'
-                                const year = createdDate ? createdDate.getFullYear() : 'Unknown Year'
+
+                                let tsMonth = 0;
+                                let tsYear = 0;
+                                if (batch.timesheets && batch.timesheets.length > 0) {
+                                    tsMonth = batch.timesheets[0].month || 0;
+                                    tsYear = batch.timesheets[0].year || 0;
+                                }
+
+                                const monthName = tsMonth > 0 ? MONTH_NAMES[tsMonth] : (createdDate ? MONTH_NAMES[createdDate.getMonth() + 1] : 'Unknown Month')
+                                const year = tsYear > 0 ? tsYear : (createdDate ? createdDate.getFullYear() : 'Unknown Year')
                                 const isActionLoading = actionLoadingId === batch.ID
 
                                 return (
