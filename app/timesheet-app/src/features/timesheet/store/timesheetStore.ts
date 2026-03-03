@@ -227,7 +227,7 @@ export const useTimesheetStore = create<TimesheetState>((set, get) => ({
 
             await submitTimesheetApi(timesheetId, approverId)
             set({ currentTimesheetStatus: 'Submitted', isLoading: false })
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to submit timesheet:', error)
             set({ isLoading: false })
             throw error

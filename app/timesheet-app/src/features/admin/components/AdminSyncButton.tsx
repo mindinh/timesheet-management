@@ -11,8 +11,9 @@ export function AdminSyncButton() {
         try {
             const resultMsg = await syncProjects()
             alert(`Sync Complete:\n${resultMsg}`)
-        } catch (error: any) {
-            alert(`Sync Failed:\n${error.message || 'Failed to sync projects from Papierkram'}`)
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Failed to sync projects from Papierkram'
+            alert(`Sync Failed:\n${msg}`)
         } finally {
             setIsSyncing(false)
         }

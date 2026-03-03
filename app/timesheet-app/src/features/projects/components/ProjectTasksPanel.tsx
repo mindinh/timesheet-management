@@ -17,10 +17,10 @@ import StatusDialog from '@/shared/components/common/StatusDialog'
 import ConfirmDialog from '@/shared/components/common/ConfirmDialog'
 
 const STATUS_COLORS: Record<string, string> = {
-    Open: 'bg-sap-informative',
-    InProgress: 'bg-sap-critical',
-    Completed: 'bg-sap-positive',
-    Cancelled: 'bg-sap-negative',
+    Open: 'bg-info',
+    InProgress: 'bg-warning',
+    Completed: 'bg-success',
+    Cancelled: 'bg-error',
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -141,7 +141,7 @@ export function ProjectTasksPanel({ projectId }: ProjectTasksPanelProps) {
                     ))}
 
                     {projectTasks.length === 0 && !showAddForm && (
-                        <div className="col-span-full text-center py-4 text-sm text-muted-foreground italic">
+                        <div className="col-span-full text-center py-4 text-sm text-muted-foreground">
                             No tasks yet. Click "+ Add Task" to create one.
                         </div>
                     )}
@@ -189,11 +189,11 @@ export function ProjectTasksPanel({ projectId }: ProjectTasksPanelProps) {
                             </div>
                         </div>
                         <div className="flex gap-2 justify-end">
-                            <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
-                                Cancel
-                            </Button>
                             <Button size="sm" onClick={handleAddTask} disabled={!newTaskName.trim()}>
                                 Add
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
+                                Cancel
                             </Button>
                         </div>
                     </div>

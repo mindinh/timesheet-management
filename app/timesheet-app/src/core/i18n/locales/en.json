@@ -1,8 +1,8 @@
 {
     "sidebar": {
         "title": "Timesheet Mgmt",
-        "myTimesheet": "My Timesheet",
-        "myTimesheets": "My Timesheets",
+        "myTimesheet": "Log Timesheet",
+        "myTimesheets": "Timesheet Worklist",
         "myProjects": "My Projects",
         "approvals": "Approvals",
         "adminDashboard": "Admin Dashboard",

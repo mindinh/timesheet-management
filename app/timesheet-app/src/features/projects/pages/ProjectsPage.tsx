@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash, ChevronDown, ChevronRight, ListTodo } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent } from '@/shared/components/ui/card'
@@ -19,6 +19,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/components/ui/select'
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/shared/components/ui/table'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 import { useProjectStore } from '@/features/projects/store/projectStore'
 import { ProjectTasksPanel } from '@/features/projects/components/ProjectTasksPanel'
@@ -35,8 +43,8 @@ const PROJECT_TYPES: { value: ProjectType; label: string }[] = [
 ]
 
 const TYPE_COLORS: Record<ProjectType, string> = {
-    Papierkram: 'bg-sap-critical/10 text-sap-critical',
-    Internal: 'bg-sap-informative/10 text-sap-informative',
+    Papierkram: 'bg-warning-bg text-warning',
+    Internal: 'bg-info-bg text-info',
     External: 'bg-primary/10 text-primary',
     Other: 'bg-muted text-muted-foreground',
 }
@@ -137,7 +145,7 @@ export default function ProjectsPage() {
                             {t('projects.description')}
                         </p>
                     </div>
-                    <Button onClick={handleCreate} className="bg-primary hover:bg-primary/90">
+                    <Button onClick={handleCreate}>
                         <Plus className="h-4 w-4 mr-2" />
                         {t('projects.create')}
                     </Button>
@@ -149,134 +157,143 @@ export default function ProjectsPage() {
                 ) : (
                     <Card className="border shadow-sm">
                         <CardContent className="p-0">
-                            {/* Table Header */}
-                            <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30">
-                                <div className="col-span-1">{t('projects.table.id')}</div>
-                                <div className="col-span-3">{t('projects.table.name')}</div>
-                                <div className="col-span-2">{t('projects.table.type')}</div>
-                                <div className="col-span-2">{t('projects.table.tasks')}</div>
-                                <div className="col-span-2">{t('projects.table.status')}</div>
-                                <div className="col-span-2 text-right">{t('projects.table.actions')}</div>
-                            </div>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="w-[80px]">{t('projects.table.id')}</TableHead>
+                                        <TableHead>{t('projects.table.name')}</TableHead>
+                                        <TableHead>{t('projects.table.type')}</TableHead>
+                                        <TableHead>{t('projects.table.tasks')}</TableHead>
+                                        <TableHead>{t('projects.table.status')}</TableHead>
+                                        <TableHead className="text-right">{t('projects.table.actions')}</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {projects.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                                                {t('projects.noProjects')}
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        projects.map((project) => {
+                                            const isExpanded = expandedProjectId === project.id
+                                            const taskCount = getTaskCount(project.id)
 
-                            {/* Table Rows */}
-                            {projects.length === 0 ? (
-                                <div className="py-12 text-center text-muted-foreground">
-                                    {t('projects.noProjects')}
-                                </div>
-                            ) : (
-                                projects.map((project) => {
-                                    const isExpanded = expandedProjectId === project.id
-                                    const taskCount = getTaskCount(project.id)
+                                            return (
+                                                <React.Fragment key={project.id}>
+                                                    <TableRow className={isExpanded ? 'bg-muted/10' : ''}>
+                                                        {/* Expand + ID */}
+                                                        <TableCell>
+                                                            <div className="flex items-center gap-1">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-6 w-6"
+                                                                    onClick={() => toggleExpand(project.id)}
+                                                                >
+                                                                    {isExpanded ? (
+                                                                        <ChevronDown className="h-4 w-4" />
+                                                                    ) : (
+                                                                        <ChevronRight className="h-4 w-4" />
+                                                                    )}
+                                                                </Button>
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    #{project.code}
+                                                                </span>
+                                                            </div>
+                                                        </TableCell>
 
-                                    return (
-                                        <div
-                                            key={project.id}
-                                            className={`border-b last:border-b-0 ${isExpanded ? 'bg-muted/10' : ''}`}
-                                        >
-                                            {/* Main Row */}
-                                            <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-muted/20 transition-colors">
-                                                {/* Expand + ID */}
-                                                <div className="col-span-1 flex items-center gap-1">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-6 w-6"
-                                                        onClick={() => toggleExpand(project.id)}
-                                                    >
-                                                        {isExpanded ? (
-                                                            <ChevronDown className="h-4 w-4" />
-                                                        ) : (
-                                                            <ChevronRight className="h-4 w-4" />
-                                                        )}
-                                                    </Button>
-                                                    <span className="text-xs text-muted-foreground font-mono">
-                                                        #{project.code}
-                                                    </span>
-                                                </div>
+                                                        {/* Project Name */}
+                                                        <TableCell>
+                                                            <div className="font-medium">{project.name}</div>
+                                                            {project.description && (
+                                                                <div className="text-xs text-muted-foreground mt-0.5 truncate max-w-[300px]">
+                                                                    {project.description}
+                                                                </div>
+                                                            )}
+                                                        </TableCell>
 
-                                                {/* Project Name */}
-                                                <div className="col-span-3">
-                                                    <div className="font-medium">{project.name}</div>
-                                                    {project.description && (
-                                                        <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                                                            {project.description}
-                                                        </div>
+                                                        {/* Type */}
+                                                        <TableCell>
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className={`text-xs ${TYPE_COLORS[project.type || 'Other']}`}
+                                                            >
+                                                                {project.type || 'Other'}
+                                                            </Badge>
+                                                        </TableCell>
+
+                                                        {/* Tasks Count */}
+                                                        <TableCell>
+                                                            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                                                <ListTodo className="h-3.5 w-3.5" />
+                                                                {taskCount > 0 ? (
+                                                                    <span>{taskCount} task{taskCount !== 1 ? 's' : ''}</span>
+                                                                ) : (
+                                                                    <span>No tasks</span>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+
+                                                        {/* Status */}
+                                                        <TableCell>
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className={
+                                                                    project.isActive
+                                                                        ? 'bg-status-completed text-status-completed-text'
+                                                                        : 'bg-muted text-muted-foreground'
+                                                                }
+                                                            >
+                                                                {project.isActive ? 'Active' : 'Inactive'}
+                                                            </Badge>
+                                                        </TableCell>
+
+                                                        {/* Actions */}
+                                                        <TableCell className="text-right">
+                                                            <div className="flex items-center gap-1 justify-end">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8"
+                                                                    onClick={() => handleEdit(project)}
+                                                                    title="Edit project"
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                                    onClick={() => handleDelete(project.id)}
+                                                                    title="Delete project"
+                                                                >
+                                                                    <Trash className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+
+                                                    {/* Expanded Task Panel */}
+                                                    {isExpanded && (
+                                                        <TableRow className="hover:bg-transparent">
+                                                            <TableCell colSpan={6} className="p-0">
+                                                                <div className="px-6 pb-4">
+                                                                    <ProjectTasksPanel
+                                                                        projectId={project.id}
+                                                                        onClose={() => setExpandedProjectId(null)}
+                                                                    />
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
                                                     )}
-                                                </div>
-
-                                                {/* Type */}
-                                                <div className="col-span-2">
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className={`text-xs ${TYPE_COLORS[project.type || 'Other']}`}
-                                                    >
-                                                        {project.type || 'Other'}
-                                                    </Badge>
-                                                </div>
-
-                                                {/* Tasks Count */}
-                                                <div className="col-span-2">
-                                                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                                        <ListTodo className="h-3.5 w-3.5" />
-                                                        {taskCount > 0 ? (
-                                                            <span>{taskCount} task{taskCount !== 1 ? 's' : ''}</span>
-                                                        ) : (
-                                                            <span className="italic">No tasks</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Status */}
-                                                <div className="col-span-2">
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className={
-                                                            project.isActive
-                                                                ? 'bg-sap-positive/10 text-sap-positive'
-                                                                : 'bg-muted text-muted-foreground'
-                                                        }
-                                                    >
-                                                        {project.isActive ? 'Active' : 'Inactive'}
-                                                    </Badge>
-                                                </div>
-
-                                                {/* Actions */}
-                                                <div className="col-span-2 flex items-center gap-1 justify-end">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8"
-                                                        onClick={() => handleEdit(project)}
-                                                        title="Edit project"
-                                                    >
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                                        onClick={() => handleDelete(project.id)}
-                                                        title="Delete project"
-                                                    >
-                                                        <Trash className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-
-                                            {/* Expanded Task Panel */}
-                                            {isExpanded && (
-                                                <div className="px-6 pb-4">
-                                                    <ProjectTasksPanel
-                                                        projectId={project.id}
-                                                        onClose={() => setExpandedProjectId(null)}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
-                                })
-                            )}
+                                                </React.Fragment>
+                                            )
+                                        })
+                                    )}
+                                </TableBody>
+                            </Table>
                         </CardContent>
                     </Card>
                 )}
@@ -348,11 +365,11 @@ export default function ProjectsPage() {
                                 </Select>
                             </div>
                             <DialogFooter>
+                                <Button type="submit">
+                                    {editingProject ? 'Update' : 'Create'}
+                                </Button>
                                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                                     Cancel
-                                </Button>
-                                <Button type="submit" className="bg-primary hover:bg-primary/90">
-                                    {editingProject ? 'Update' : 'Create'}
                                 </Button>
                             </DialogFooter>
                         </form>

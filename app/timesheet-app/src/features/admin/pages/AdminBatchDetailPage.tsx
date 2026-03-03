@@ -6,6 +6,24 @@ import { format } from 'date-fns'
 import { fetchTimesheetBatchById, markBatchDoneApi, rejectBatchApi, adminModifyEntryHours, type TimesheetBatchDetail } from '../api/admin-api'
 import { getTimesheetDetail, rejectTimesheet } from '@/features/timesheet/api/timesheet-api'
 import type { Timesheet, TimesheetEntry } from '@/shared/types'
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/shared/components/ui/table'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/shared/components/ui/dialog'
+import { Textarea } from '@/shared/components/ui/textarea'
+import { Input } from '@/shared/components/ui/input'
 import StatusDialog from '@/shared/components/common/StatusDialog'
 import ConfirmDialog from '@/shared/components/common/ConfirmDialog'
 
@@ -46,7 +64,7 @@ export default function AdminBatchDetailPage() {
         try {
             const data = await fetchTimesheetBatchById(batchId)
             setBatch(data)
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to load batch:', error)
             setStatusDialog({ open: true, variant: 'error', title: 'Error', description: 'Failed to load batch details.' })
         } finally {
@@ -86,8 +104,9 @@ export default function AdminBatchDetailPage() {
                     await markBatchDoneApi(batchId!)
                     setStatusDialog({ open: true, variant: 'success', title: 'Batch Completed', description: 'Batch marked as Done successfully.' })
                     loadBatch()
-                } catch (error: any) {
-                    setStatusDialog({ open: true, variant: 'error', title: 'Operation Failed', description: error?.message || 'Failed to complete batch.' })
+                } catch (error: unknown) {
+                    const msg = error instanceof Error ? error.message : 'Failed to complete batch.'
+                    setStatusDialog({ open: true, variant: 'error', title: 'Operation Failed', description: msg })
                 }
             }
         })
@@ -104,8 +123,9 @@ export default function AdminBatchDetailPage() {
             setStatusDialog({ open: true, variant: 'success', title: 'Batch Rejected', description: 'Batch rejected and returned to submitted state for Team Lead.' })
             setRejectComment('')
             loadBatch()
-        } catch (error: any) {
-            setStatusDialog({ open: true, variant: 'error', title: 'Operation Failed', description: error?.message || 'Failed to reject batch.' })
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Failed to reject batch.'
+            setStatusDialog({ open: true, variant: 'error', title: 'Operation Failed', description: msg })
         }
     }
 
@@ -120,8 +140,9 @@ export default function AdminBatchDetailPage() {
             setTsRejectComment('')
             setTsRejectId(null)
             loadBatch() // Refresh batch to see updated timesheet statuses
-        } catch (error: any) {
-            setStatusDialog({ open: true, variant: 'error', title: 'Operation Failed', description: error?.message || 'Failed to reject timesheet.' })
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Failed to reject timesheet.'
+            setStatusDialog({ open: true, variant: 'error', title: 'Operation Failed', description: msg })
         }
     }
 
@@ -143,8 +164,9 @@ export default function AdminBatchDetailPage() {
             // We should also theoretically reload the batch if total hours change, but since admin just wants to modify, partial reload is ok.
             // Let's reload batch just to be safe and keep UI in sync (e.g. if we show total batch hours later).
             loadBatch()
-        } catch (error: any) {
-            setStatusDialog({ open: true, variant: 'error', title: 'Operation Failed', description: error?.message || 'Failed to update hours.' })
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Failed to update hours.'
+            setStatusDialog({ open: true, variant: 'error', title: 'Operation Failed', description: msg })
         } finally {
             setIsSavingEntry(false)
         }
@@ -355,64 +377,68 @@ export default function AdminBatchDetailPage() {
                                                     <p className="text-sm italic text-muted-foreground py-2">No entries found for this timesheet.</p>
                                                 ) : (
                                                     <div className="rounded-md border border-border overflow-hidden bg-background">
-                                                        <table className="w-full text-sm text-left">
-                                                            <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
-                                                                <tr>
-                                                                    <th className="px-4 py-3 font-medium">Date</th>
-                                                                    <th className="px-4 py-3 font-medium">Project / Task</th>
-                                                                    <th className="px-4 py-3 font-medium text-right">Logged</th>
-                                                                    <th className="px-4 py-3 font-medium text-right">Approved</th>
-                                                                    <th className="px-4 py-3 font-medium">Description</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody className="divide-y divide-border/50">
+                                                        <Table className="w-full text-sm text-left">
+                                                            <TableHeader className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
+                                                                <TableRow>
+                                                                    <TableHead className="px-4 py-3 font-medium">Date</TableHead>
+                                                                    <TableHead className="px-4 py-3 font-medium">Project / Task</TableHead>
+                                                                    <TableHead className="px-4 py-3 font-medium text-right">Logged</TableHead>
+                                                                    <TableHead className="px-4 py-3 font-medium text-right">Approved</TableHead>
+                                                                    <TableHead className="px-4 py-3 font-medium">Description</TableHead>
+                                                                </TableRow>
+                                                            </TableHeader>
+                                                            <TableBody className="divide-y divide-border/50">
                                                                 {timesheetDetails[ts.ID].entries.map((entry) => (
-                                                                    <tr key={entry.id} className="hover:bg-muted/20">
-                                                                        <td className="px-4 py-3 whitespace-nowrap">{entry.date}</td>
-                                                                        <td className="px-4 py-3">
+                                                                    <TableRow key={entry.id} className="hover:bg-muted/20">
+                                                                        <TableCell className="px-4 py-3 whitespace-nowrap">{entry.date}</TableCell>
+                                                                        <TableCell className="px-4 py-3">
                                                                             <div className="font-medium text-foreground">{entry.projectName}</div>
                                                                             {entry.taskName && <div className="text-xs text-muted-foreground mt-0.5">{entry.taskName}</div>}
-                                                                        </td>
-                                                                        <td className="px-4 py-3 text-right font-mono text-muted-foreground whitespace-nowrap">
+                                                                        </TableCell>
+                                                                        <TableCell className="px-4 py-3 text-right font-mono text-muted-foreground whitespace-nowrap">
                                                                             {entry.hours}
-                                                                        </td>
-                                                                        <td className="px-4 py-3 text-right whitespace-nowrap">
+                                                                        </TableCell>
+                                                                        <TableCell className="px-4 py-3 text-right whitespace-nowrap">
                                                                             {editingEntry?.entryId === entry.id ? (
                                                                                 <div className="flex flex-col items-end gap-2 min-w-[140px]">
-                                                                                    <input
+                                                                                    <Input
                                                                                         type="number"
                                                                                         step="0.5"
                                                                                         min="0"
                                                                                         max="24"
                                                                                         value={editingEntry.hours}
                                                                                         onChange={(e) => setEditingEntry({ ...editingEntry, hours: e.target.value })}
-                                                                                        className="w-20 px-2 py-1 text-sm border border-input rounded text-right bg-background focus:ring-1 focus:ring-primary focus:outline-none"
+                                                                                        className="w-20 px-2 py-1 text-sm text-right h-8"
                                                                                         autoFocus
                                                                                         disabled={isSavingEntry}
                                                                                     />
-                                                                                    <input
+                                                                                    <Input
                                                                                         type="text"
                                                                                         placeholder="Reason (optional)"
                                                                                         value={editingEntry.note}
                                                                                         onChange={(e) => setEditingEntry({ ...editingEntry, note: e.target.value })}
-                                                                                        className="w-full min-w-[150px] px-2 py-1 text-xs border border-input rounded bg-background focus:ring-1 focus:ring-primary focus:outline-none"
+                                                                                        className="w-full min-w-[150px] px-2 py-1 text-xs h-8"
                                                                                         disabled={isSavingEntry}
                                                                                     />
                                                                                     <div className="flex gap-1 justify-end w-full">
-                                                                                        <button
-                                                                                            className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-medium hover:bg-emerald-200 disabled:opacity-50"
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            variant="outline"
+                                                                                            className="h-6 text-[10px] px-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-none"
                                                                                             onClick={() => handleSaveEntryHours(ts.ID, entry.id)}
                                                                                             disabled={isSavingEntry}
                                                                                         >
                                                                                             Save
-                                                                                        </button>
-                                                                                        <button
-                                                                                            className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded hover:bg-slate-200 disabled:opacity-50"
+                                                                                        </Button>
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            variant="outline"
+                                                                                            className="h-6 text-[10px] px-2 bg-slate-100 text-slate-700 hover:bg-slate-200 border-none"
                                                                                             onClick={() => setEditingEntry(null)}
                                                                                             disabled={isSavingEntry}
                                                                                         >
                                                                                             Cancel
-                                                                                        </button>
+                                                                                        </Button>
                                                                                     </div>
                                                                                 </div>
                                                                             ) : (
@@ -439,21 +465,21 @@ export default function AdminBatchDetailPage() {
                                                                                     )}
                                                                                 </div>
                                                                             )}
-                                                                        </td>
-                                                                        <td className="px-4 py-3 text-muted-foreground truncate max-w-[200px]" title={entry.description || ''}>
+                                                                        </TableCell>
+                                                                        <TableCell className="px-4 py-3 text-muted-foreground truncate max-w-[200px]" title={entry.description || ''}>
                                                                             {entry.description || '-'}
-                                                                        </td>
-                                                                    </tr>
+                                                                        </TableCell>
+                                                                    </TableRow>
                                                                 ))}
-                                                            </tbody>
+                                                            </TableBody>
                                                             <tfoot className="bg-muted/30 border-t border-border">
-                                                                <tr>
-                                                                    <td colSpan={2} className="px-4 py-3 font-medium text-right">Total Logged:</td>
-                                                                    <td className="px-4 py-3 font-bold font-mono text-right">{timesheetDetails[ts.ID].totalHours}</td>
-                                                                    <td colSpan={2}></td>
-                                                                </tr>
+                                                                <TableRow>
+                                                                    <TableCell colSpan={2} className="px-4 py-3 font-medium text-right">Total Logged:</TableCell>
+                                                                    <TableCell className="px-4 py-3 font-bold font-mono text-right">{timesheetDetails[ts.ID].totalHours}</TableCell>
+                                                                    <TableCell colSpan={2}></TableCell>
+                                                                </TableRow>
                                                             </tfoot>
-                                                        </table>
+                                                        </Table>
                                                     </div>
                                                 )}
 
@@ -528,90 +554,70 @@ export default function AdminBatchDetailPage() {
                 destructive={confirmDialog.destructive}
             />
 
-            {/* Reject Batch Custom Dialog */}
-            {isRejectDialogOpen && (
-                <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95">
-                        <div className="p-6">
-                            <h2 className="text-xl font-bold flex items-center gap-2 text-destructive mb-2">
-                                <AlertTriangle className="h-5 w-5" />
-                                Reject Batch
-                            </h2>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                Rejecting this batch will return all its timesheets to the "Submitted" state, sending them back to the Team Lead for review.
-                            </p>
-                            <div className="space-y-2 mb-6">
-                                <label className="text-sm font-medium text-foreground">Rejection Reason</label>
-                                <textarea
-                                    className="w-full min-h-[100px] p-3 rounded-md border border-input bg-transparent text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                    placeholder="Please provide a reason why this batch is being rejected..."
-                                    value={rejectComment}
-                                    onChange={(e) => setRejectComment(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex items-center justify-end gap-3 pb-1">
-                                <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>Cancel</Button>
-                                <Button variant="destructive" onClick={executeReject} disabled={!rejectComment.trim()}>
-                                    Reject Batch
-                                </Button>
-                            </div>
+            <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-destructive">
+                            <XCircle className="h-5 w-5" />
+                            Reject Batch
+                        </DialogTitle>
+                        <DialogDescription>
+                            Rejecting this batch will return all its timesheets to the "Submitted" state, sending them back to the Team Lead for review.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground">Rejection Reason</label>
+                            <Textarea
+                                className="min-h-[100px] resize-none"
+                                placeholder="Please provide a reason why this batch is being rejected..."
+                                value={rejectComment}
+                                onChange={(e) => setRejectComment(e.target.value)}
+                            />
                         </div>
                     </div>
-                </div>
-            )}
-            {/* Reject Single Timesheet Dialog */}
-            {!!tsRejectId && (
-                <div className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95">
-                        <div className="p-6">
-                            <h2 className="text-xl font-bold flex items-center gap-2 text-destructive mb-2">
-                                <AlertTriangle className="h-5 w-5" />
-                                Reject Timesheet
-                            </h2>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                You are about to reject this specific timesheet. It will be sent back to the employee, and removed from this batch's final approval.
-                            </p>
-                            <div className="space-y-2 mb-6">
-                                <label className="text-sm font-medium text-foreground">Rejection Reason <span className="text-destructive">*</span></label>
-                                <textarea
-                                    className="w-full min-h-[100px] p-3 rounded-md border border-input bg-transparent text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                    placeholder="Please provide a mandatory reason explaining why this timesheet is being rejected..."
-                                    value={tsRejectComment}
-                                    onChange={(e) => setTsRejectComment(e.target.value)}
-                                    autoFocus
-                                />
-                            </div>
-                            <div className="flex items-center justify-end gap-3 pb-1">
-                                <Button variant="outline" onClick={() => { setTsRejectId(null); setTsRejectComment(''); }}>Cancel</Button>
-                                <Button variant="destructive" onClick={executeRejectTimesheet} disabled={!tsRejectComment.trim()}>
-                                    Reject Timesheet
-                                </Button>
-                            </div>
+                    <DialogFooter className="sm:justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={() => setIsRejectDialogOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={executeReject} disabled={!rejectComment.trim()}>
+                            Reject Batch
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!tsRejectId} onOpenChange={(open) => { if (!open) { setTsRejectId(null); setTsRejectComment(''); } }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-destructive">
+                            <XCircle className="h-5 w-5" />
+                            Reject Timesheet
+                        </DialogTitle>
+                        <DialogDescription>
+                            You are about to reject this specific timesheet. It will be sent back to the employee, and removed from this batch's final approval.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground">Rejection Reason <span className="text-destructive">*</span></label>
+                            <Textarea
+                                className="min-h-[100px] resize-none"
+                                placeholder="Please provide a mandatory reason explaining why this timesheet is being rejected..."
+                                value={tsRejectComment}
+                                onChange={(e) => setTsRejectComment(e.target.value)}
+                                autoFocus
+                            />
                         </div>
                     </div>
-                </div>
-            )}
+                    <DialogFooter className="sm:justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={() => { setTsRejectId(null); setTsRejectComment(''); }}>Cancel</Button>
+                        <Button variant="destructive" onClick={executeRejectTimesheet} disabled={!tsRejectComment.trim()}>
+                            Reject Timesheet
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
 
-function AlertTriangle(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-            <path d="M12 9v4" />
-            <path d="M12 17h.01" />
-        </svg>
-    )
-}
+

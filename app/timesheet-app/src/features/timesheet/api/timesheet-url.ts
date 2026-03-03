@@ -14,3 +14,16 @@ export const TIMESHEET_URL = {
     exportToExcel: `${SERVICE_URL.timesheet}/exportToExcel`,
     approvable: `${SERVICE_URL.timesheet}/getApprovableTimesheets()`,
 } as const
+
+// TeamLead endpoints
+export const TEAMLEAD_URL = {
+    pendingTimesheets: `${SERVICE_URL.teamlead}/getPendingTimesheets()`,
+    approve: `${SERVICE_URL.teamlead}/approveTimesheet`,
+    reject: `${SERVICE_URL.teamlead}/rejectTimesheet`,
+    bulkApprove: `${SERVICE_URL.teamlead}/bulkApproveTimesheets`,
+    bulkReject: `${SERVICE_URL.teamlead}/bulkRejectTimesheets`,
+    modifyEntryHours: `${SERVICE_URL.teamlead}/modifyEntryHours`,
+    createBatch: `${SERVICE_URL.teamlead}/createBatch`,
+    timesheets: `${SERVICE_URL.teamlead}/Timesheets`,
+    users: `${SERVICE_URL.teamlead}/Users`,
+} as const

@@ -28,7 +28,7 @@ export function AdminChartsPanel() {
             try {
                 const data = await fetchDashboardStats(currentMonth, currentYear)
                 setStats(data)
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Failed to load chart stats", err)
             } finally {
                 setIsLoading(false)
@@ -84,7 +84,7 @@ export function AdminChartsPanel() {
                                     ))}
                                 </Pie>
                                 <RechartsTooltip
-                                    formatter={(value: any) => [`${value} Timesheets`, 'Count']}
+                                    formatter={(value: unknown) => [`${value} Timesheets`, 'Count']}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
                                 <Legend layout="horizontal" verticalAlign="bottom" align="center" />
@@ -124,7 +124,7 @@ export function AdminChartsPanel() {
                                 />
                                 <RechartsTooltip
                                     cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}
-                                    formatter={(value: any) => [`${value} Hours`, 'Total Logged']}
+                                    formatter={(value: unknown) => [`${value} Hours`, 'Total Logged']}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
                                 <Bar
@@ -172,7 +172,7 @@ export function AdminChartsPanel() {
                                     ))}
                                 </Pie>
                                 <RechartsTooltip
-                                    formatter={(value: any) => [`${value} Hours`, 'Logged']}
+                                    formatter={(value: unknown) => [`${value} Hours`, 'Logged']}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
                                 <Legend layout="horizontal" verticalAlign="bottom" align="center" />
@@ -217,7 +217,7 @@ export function AdminChartsPanel() {
                                 />
                                 <RechartsTooltip
                                     cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}
-                                    formatter={(value: any) => [`${value} Hours`, 'Total Logged']}
+                                    formatter={(value: unknown) => [`${value} Hours`, 'Total Logged']}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
                                 <Bar

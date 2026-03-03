@@ -21,8 +21,8 @@ export function AdminExportPanel({ onExportComplete }: { onExportComplete?: () =
     const [toDate, setToDate] = useState<string>('')
 
     // Data for dropdowns
-    const [users, setUsers] = useState<any[]>([])
-    const [projects, setProjects] = useState<any[]>([])
+    const [users, setUsers] = useState<{ id: string; firstName: string; lastName: string }[]>([])
+    const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
 
     useEffect(() => {
         // Load users and projects for the filter dropdowns
@@ -54,8 +54,9 @@ export function AdminExportPanel({ onExportComplete }: { onExportComplete?: () =
 
             alert('Export Successful:\nThe Excel file is downloading and history has been saved.')
             if (onExportComplete) onExportComplete()
-        } catch (error: any) {
-            alert(`Export Failed:\n${error.message || 'An error occurred during export.'}`)
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'An error occurred during export.'
+            alert(`Export Failed:\n${msg}`)
         } finally {
             setIsExporting(false)
         }

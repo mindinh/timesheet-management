@@ -138,8 +138,8 @@ export default function DocsViewer({ content, title }: DocsViewerProps) {
                             {children}
                         </a>
                     ),
-                    code: ({ className, children, ...props }: any) => {
-                        const isInline = !className
+                    code: ({ className, children, inline, ...props }: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { inline?: boolean }) => {
+                        const isInline = inline ?? !className
                         const match = /language-(\w+)/.exec(className || '')
 
                         if (!isInline && match && match[1] === 'mermaid') {
@@ -156,9 +156,9 @@ export default function DocsViewer({ content, title }: DocsViewerProps) {
                             </code>
                         )
                     },
-                    pre: ({ children }: any) => {
+                    pre: ({ children }: React.DetailedHTMLProps<React.HTMLAttributes<HTMLPreElement>, HTMLPreElement>) => {
                         const child = Array.isArray(children) ? children[0] : children
-                        const childClassName = child?.props?.className || ''
+                        const childClassName = (child as React.ReactElement<{ className?: string }>)?.props?.className || ''
                         if (childClassName.includes('language-mermaid')) {
                             // Render without grey background for mermaid charts
                             return <div className="my-8 w-full">{children}</div>

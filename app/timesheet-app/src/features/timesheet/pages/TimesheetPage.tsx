@@ -11,6 +11,8 @@ import { getUserWithManager, getPotentialApprovers } from '@/features/auth/api/a
 import { exportToExcel } from '@/features/timesheet/api/timesheet-api'
 import type { TimesheetEntry } from '@/shared/types'
 import { AlertTriangle, History } from 'lucide-react'
+import { Alert, AlertTitle, AlertDescription } from '@/shared/components/ui/alert'
+import { Button } from '@/shared/components/ui/button'
 import { AuditHistoryDialog } from '@/features/timesheet/components/AuditHistoryDialog'
 import StatusDialog from '@/shared/components/common/StatusDialog'
 import ConfirmDialog from '@/shared/components/common/ConfirmDialog'
@@ -304,27 +306,26 @@ export default function TimesheetPage() {
             {/* Audit History Button — placed after the header */}
             {currentTimesheetStatus !== 'Draft' && (
                 <div className="flex justify-end -mt-2">
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setShowAuditHistory(true)}
-                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                         <History className="h-4 w-4" />
                         View History
-                    </button>
+                    </Button>
                 </div>
             )}
 
             {/* Rejection Alert */}
             {currentTimesheetStatus === 'Rejected' && (
-                <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-                    <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
-                    <div>
-                        <p className="text-sm font-semibold text-destructive">Timesheet Rejected</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            {currentTimesheetComment || 'Your timesheet has been rejected. Please review and resubmit.'}
-                        </p>
-                    </div>
-                </div>
+                <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Timesheet Rejected</AlertTitle>
+                    <AlertDescription>
+                        {currentTimesheetComment || 'Your timesheet has been rejected. Please review and resubmit.'}
+                    </AlertDescription>
+                </Alert>
             )}
 
             {/* Stats Cards */}

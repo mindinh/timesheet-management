@@ -4,30 +4,30 @@ import type { Task } from '@/shared/types'
 
 // ---------- Helpers ----------
 
-function mapTask(t: any): Task {
+function mapTask(t: Record<string, unknown>): Task {
     return {
-        id: t.ID,
-        projectId: t.project_ID,
-        name: t.name,
-        description: t.description || '',
-        startDate: t.startDate,
-        endDate: t.endDate,
-        status: t.status || 'Open',
+        id: String(t.ID),
+        projectId: String(t.project_ID),
+        name: String(t.name),
+        description: (t.description as string) || '',
+        startDate: String(t.startDate),
+        endDate: String(t.endDate),
+        status: (t.status as Task['status']) || 'Open',
     }
 }
 
 // ---------- CRUD ----------
 
 export async function getTasksByProject(projectId: string): Promise<Task[]> {
-    const data: any = await api.get(TASK_URL.tasks, {
+    const data: unknown = await api.get(TASK_URL.tasks, {
         $filter: `project_ID eq ${projectId}`,
     })
-    const list = data.value || data
-    return list.map(mapTask)
+    const list = (data && typeof data === 'object' && 'value' in data ? (data as Record<string, unknown>).value : data) as Record<string, unknown>[]
+    return list.map((t) => mapTask(t as Record<string, unknown>))
 }
 
 export async function createTask(task: Omit<Task, 'id'>): Promise<Task> {
-    const data: any = await api.post(TASK_URL.tasks, {
+    const data: unknown = await api.post(TASK_URL.tasks, {
         project_ID: task.projectId,
         name: task.name,
         description: task.description || '',
@@ -35,19 +35,19 @@ export async function createTask(task: Omit<Task, 'id'>): Promise<Task> {
         endDate: task.endDate,
         status: task.status || 'Open',
     })
-    return mapTask(data)
+    return mapTask(data as Record<string, unknown>)
 }
 
 export async function updateTask(id: string, task: Partial<Task>): Promise<Task> {
-    const payload: any = {}
+    const payload: Record<string, unknown> = {}
     if (task.name !== undefined) payload.name = task.name
     if (task.description !== undefined) payload.description = task.description
     if (task.startDate !== undefined) payload.startDate = task.startDate
     if (task.endDate !== undefined) payload.endDate = task.endDate
     if (task.status !== undefined) payload.status = task.status
 
-    const data: any = await api.patch(TASK_URL.taskById(id), payload)
-    return mapTask(data)
+    const data: unknown = await api.patch(TASK_URL.taskById(id), payload)
+    return mapTask(data as Record<string, unknown>)
 }
 
 export async function deleteTask(id: string): Promise<void> {

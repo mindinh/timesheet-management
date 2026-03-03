@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { format, isToday, isYesterday, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from 'date-fns'
 import { Copy, Plus, Trash, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
@@ -32,7 +32,7 @@ interface DailyEntryListProps {
     readOnly?: boolean
 }
 
-const INITIAL_DAYS_TO_SHOW = 5
+
 
 export function DailyEntryList({
     currentMonth,
@@ -49,7 +49,7 @@ export function DailyEntryList({
     onDeleteSelectedForDay,
     readOnly = false,
 }: DailyEntryListProps) {
-    const [visibleDays, setVisibleDays] = useState(INITIAL_DAYS_TO_SHOW)
+
 
     // Generate all days in the current month
     const allDaysInMonth = useMemo(() => {
@@ -82,9 +82,7 @@ export function DailyEntryList({
         return dayEntries.reduce((sum, e) => sum + e.hours, 0).toFixed(2)
     }
 
-    const handleLoadMore = () => {
-        setVisibleDays(prev => Math.min(prev + 10, allDaysInMonth.length))
-    }
+
 
     const handleDuplicateDay = (dateStr: string) => {
         if (onDuplicateDay) {
@@ -114,8 +112,7 @@ export function DailyEntryList({
 
     // Count selected entries for a specific day
 
-    const visibleDaysList = allDaysInMonth.slice(0, visibleDays)
-    const hasMore = visibleDays < allDaysInMonth.length
+
 
     return (
         <div className="space-y-1">
@@ -130,7 +127,7 @@ export function DailyEntryList({
             </div>
 
             {/* Daily Entries */}
-            {visibleDaysList.map((day) => {
+            {allDaysInMonth.map((day) => {
                 const dateStr = format(day, 'yyyy-MM-dd')
                 const dayEntries = groupedEntries[dateStr] || []
                 const dailyTotal = getDailyTotal(dateStr)
@@ -148,15 +145,15 @@ export function DailyEntryList({
                                     <div className="text-sm font-semibold">
                                         {format(day, 'MMM dd, EEE')}
                                     </div>
-                                    <div className={`text-[11px] font-semibold ${isToday(day) ? 'text-sap-informative' :
+                                    <div className={`text-[11px] font-semibold ${isToday(day) ? 'text-info' :
                                         isWeekendDay ? '' :
-                                            'text-sap-informative'
+                                            'text-info'
                                         }`}>
                                         {dateLabel}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <div className="text-lg font-bold text-sap-informative tabular-nums min-w-[60px] text-right">
+                                    <div className="text-lg font-bold text-info tabular-nums min-w-[60px] text-right">
                                         {dailyTotal}
                                     </div>
                                     {!readOnly && (
@@ -309,7 +306,7 @@ export function DailyEntryList({
                                 </div>
                             ) : (
                                 <div className="py-4 text-center">
-                                    <p className="text-sm text-muted-foreground italic">
+                                    <p className="text-sm text-muted-foreground">
                                         No activities logged
                                     </p>
                                 </div>
@@ -319,18 +316,7 @@ export function DailyEntryList({
                 )
             })}
 
-            {/* Load More Button */}
-            {hasMore && (
-                <div className="flex justify-center pt-4">
-                    <Button
-                        variant="outline"
-                        onClick={handleLoadMore}
-                        className="min-w-[200px]"
-                    >
-                        Load More ({allDaysInMonth.length - visibleDays} days remaining)
-                    </Button>
-                </div>
-            )}
+
         </div>
     )
 }

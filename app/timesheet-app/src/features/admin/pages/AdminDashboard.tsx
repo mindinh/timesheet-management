@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FolderKanban, Users, ClipboardCheck, ArrowRight, Layers } from 'lucide-react'
+import { FolderKanban, ArrowRight, Layers } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { getAllProjects } from '@/features/projects/api/project-api'
-import { getPotentialApprovers } from '@/features/auth/api/auth-api'
-import { useApprovalStore } from '@/features/approvals/store/approvalStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 
 import { AdminSyncButton } from '../components/AdminSyncButton'
@@ -16,9 +14,7 @@ import { AdminChartsPanel } from '../components/AdminChartsPanel'
 export default function AdminDashboard() {
     const navigate = useNavigate()
     const { currentUser, fetchCurrentUser } = useTimesheetStore()
-    const { timesheets, fetchApprovableTimesheets } = useApprovalStore()
     const [projectCount, setProjectCount] = useState(0)
-    const [userCount, setUserCount] = useState(0)
     const [exportRefreshTrigger, setExportRefreshTrigger] = useState(0)
 
     useEffect(() => {
@@ -27,13 +23,10 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         if (currentUser) {
-            fetchApprovableTimesheets()
-            getAllProjects().then(data => setProjectCount(data.length)).catch(() => { })
-            getPotentialApprovers().then(data => setUserCount(data.length)).catch(() => { })
+            getAllProjects().then(data => setProjectCount(data.length)).catch(console.error)
         }
-    }, [currentUser, fetchApprovableTimesheets])
+    }, [currentUser])
 
-    const pendingCount = timesheets.filter(ts => ts.status === 'Submitted' || ts.status === 'Approved_By_TeamLead').length
 
     const cards = [
         {
@@ -44,22 +37,6 @@ export default function AdminDashboard() {
             bg: 'bg-sap-informative/10',
             action: () => navigate('/projects'),
             actionLabel: 'Manage Projects',
-        },
-        {
-            title: 'Active Users',
-            value: userCount,
-            icon: Users,
-            color: 'text-sap-positive',
-            bg: 'bg-sap-positive/10',
-        },
-        {
-            title: 'Pending Approvals',
-            value: pendingCount,
-            icon: ClipboardCheck,
-            color: pendingCount > 0 ? 'text-sap-critical' : 'text-sap-positive',
-            bg: pendingCount > 0 ? 'bg-sap-critical/10' : 'bg-sap-positive/10',
-            action: () => navigate('/approvals'),
-            actionLabel: 'Review Timesheets',
         },
         {
             title: 'Batch Submissions',

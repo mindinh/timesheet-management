@@ -48,8 +48,9 @@ export function AdminExportHistory({ refreshTrigger }: { refreshTrigger: number 
             const result = await sendEmailToGermany(selectedExport.ID, email || undefined)
             alert(`Email Sent:\n${result}`)
             setIsEmailModalOpen(false)
-        } catch (error: any) {
-            alert(`Email Failed:\n${error.message || 'Failed to send email. Check SMTP settings.'}`)
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Failed to send email. Check SMTP settings.'
+            alert(`Email Failed:\n${msg}`)
         } finally {
             setIsSending(false)
         }

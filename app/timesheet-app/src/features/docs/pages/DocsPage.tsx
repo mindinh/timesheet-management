@@ -19,12 +19,25 @@ export default function DocsPage() {
     useEffect(() => {
         if (!filePath) return
 
-        setLoading(true)
-        loadContent(filePath).then((text) => {
-            setContent(text)
-            setLoading(false)
-        })
-    }, [filePath])
+        let isMounted = true
+        const fetchContent = async () => {
+            setLoading(true)
+            try {
+                const text = await loadContent(filePath)
+                if (isMounted) {
+                    setContent(text)
+                }
+            } finally {
+                if (isMounted) setLoading(false)
+            }
+        }
+
+        fetchContent()
+
+        return () => {
+            isMounted = false
+        }
+    }, [filePath, loadContent])
 
     const handleDocSelect = (path: string) => {
         setSearchParams({ file: path })

@@ -41,6 +41,13 @@
   "private": true,
   "cds": {
     "requires": {
+      "db": {
+        "kind": "sqlite",
+        "impl": "@cap-js/sqlite",
+        "credentials": {
+          "url": "timesheet.db"
+        }
+      },
       "auth": {
         "kind": "mocked",
         "users": {

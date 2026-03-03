@@ -18,18 +18,19 @@ export async function getUserInfo(): Promise<UserInfoResponse> {
 }
 
 export async function getUserWithManager(userId: string): Promise<Omit<User, 'email'>> {
-    const data: any = await api.get(AUTH_URL.userById(userId), { $expand: 'manager' })
+    const data: unknown = await api.get(AUTH_URL.userById(userId), { $expand: 'manager' })
+    const user = data as { ID: string; firstName: string; lastName: string; role: string; manager?: { ID: string; firstName: string; lastName: string; role: string } }
     return {
-        id: data.ID,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        role: data.role,
-        manager: data.manager
+        id: user.ID,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        manager: user.manager
             ? {
-                id: data.manager.ID,
-                firstName: data.manager.firstName,
-                lastName: data.manager.lastName,
-                role: data.manager.role,
+                id: user.manager.ID,
+                firstName: user.manager.firstName,
+                lastName: user.manager.lastName,
+                role: user.manager.role,
             }
             : undefined,
     }
@@ -40,11 +41,11 @@ export async function getUserWithManager(userId: string): Promise<Omit<User, 'em
 export async function getPotentialApprovers(): Promise<
     { id: string; firstName: string; lastName: string; role: string; email: string }[]
 > {
-    const data: any = await api.get(AUTH_URL.users, {
+    const data: unknown = await api.get(AUTH_URL.users, {
         $filter: `role eq 'TeamLead' or role eq 'Admin'`,
     })
-    const list = data.value || data
-    return list.map((u: any) => ({
+    const list = (data && typeof data === 'object' && 'value' in data ? (data as any).value : data) as { ID: string; firstName: string; lastName: string; role: string; email: string }[]
+    return list.map(u => ({
         id: u.ID,
         firstName: u.firstName,
         lastName: u.lastName,

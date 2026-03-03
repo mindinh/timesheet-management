@@ -3,6 +3,7 @@
 interface ServiceUrlMap {
     readonly timesheet: string
     readonly admin: string
+    readonly teamlead: string
 }
 
 export declare const SERVICE_URL: ServiceUrlMap
