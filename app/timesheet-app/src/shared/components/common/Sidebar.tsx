@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight, CheckSquare, BookOpen } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
@@ -14,6 +14,7 @@ import {
 import LanguageSwitcher from '@/shared/components/common/LanguageSwitcher'
 import { useTimesheetStore, MOCK_USERS } from '@/features/timesheet/store/timesheetStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { useSidebarStore } from '@/shared/store/sidebarStore'
 import type { UserRole } from '@/shared/types'
 
 const navigation: { nameKey: string; href: string; icon: any; roles: UserRole[] }[] = [
@@ -29,19 +30,17 @@ export default function Sidebar() {
     const location = useLocation()
     const navigate = useNavigate()
     const { t } = useTranslation()
-    const { currentUser, switchUser, logout } = useTimesheetStore()
-    const { user: authUser, login } = useAuthStore()
-    const [isCollapsed, setIsCollapsed] = useState(false)
+    const { currentUser, switchUser, logout: timesheetLogout } = useTimesheetStore()
+    const { user: authUser, login, logout: authLogout } = useAuthStore()
+    const { isCollapsed, toggle: toggleCollapsed } = useSidebarStore()
 
     useEffect(() => {
-        // Hydrate timesheet store based on auth store if timesheet store is empty
         if (!currentUser && authUser) {
             const matchedUser = MOCK_USERS.find(u => u.role === authUser.role)
             if (matchedUser) {
                 switchUser(matchedUser.id)
             }
         } else if (!authUser && !currentUser) {
-            // Default fallback if somehow both are empty
             login('Employee')
             switchUser(MOCK_USERS[0].id)
         }
@@ -55,30 +54,30 @@ export default function Sidebar() {
         switchUser(userId)
     }
 
-    // Filter navigation items based on current user's role
     const userRole = (currentUser?.role as UserRole) || 'Employee'
     const visibleNavigation = navigation.filter(item => item.roles.includes(userRole))
 
     return (
         <div className={cn(
-            "flex flex-col border-r bg-card transition-all duration-300",
+            "relative flex flex-col border-r bg-card transition-all duration-300",
             isCollapsed ? "w-20" : "w-64"
         )}>
-            <div className="flex h-16 items-center border-b px-4 justify-between">
+            {/* Header */}
+            <div className="flex h-16 items-center border-b px-4 justify-center">
                 {!isCollapsed ? <h1 className="text-xl font-bold text-primary">{t('sidebar.title')}</h1> : <img src="/logo.jpg" alt="logo" className='w-10 h-10' />}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    className={cn(isCollapsed && "mx-auto")}
-                >
-                    {isCollapsed ? (
-                        <ChevronRight className="h-5 w-5" />
-                    ) : (
-                        <ChevronLeft className="h-5 w-5" />
-                    )}
-                </Button>
             </div>
+
+            {/* Collapse toggle — circle vertically centered on the right border */}
+            <button
+                onClick={toggleCollapsed}
+                className="absolute top-1/2 -translate-y-1/2 -right-3 z-30 flex h-6 w-6 items-center justify-center rounded-full border bg-card shadow-sm hover:bg-accent transition-colors"
+            >
+                {isCollapsed ? (
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                ) : (
+                    <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+            </button>
 
             {/* Navigation */}
             <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
@@ -108,7 +107,7 @@ export default function Sidebar() {
             {/* Language Switcher */}
             <LanguageSwitcher isCollapsed={isCollapsed} />
 
-            {/* Mock User Switcher - Hidden when collapsed */}
+            {/* Mock User Switcher */}
             {!isCollapsed && currentUser && (
                 <div className="px-4 pb-2">
                     <label className="text-xs font-medium text-muted-foreground mb-1 block">
@@ -154,7 +153,7 @@ export default function Sidebar() {
                             )}
                         </div>
                         {!isCollapsed && (
-                            <Button variant="ghost" size="icon" onClick={() => { logout(); navigate('/') }}>
+                            <Button variant="ghost" size="icon" onClick={() => { timesheetLogout(); authLogout(); navigate('/') }}>
                                 <LogOut className="h-5 w-5" />
                             </Button>
                         )}
