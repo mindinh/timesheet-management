@@ -1,7 +1,6 @@
 import cds from '@sap/cds'
 import { resolveUser } from '../../lib/user-resolver'
-
-const ExcelService = require('../../lib/utils/ExcelService')
+import { generateTimesheetExcel } from '../../lib/utils/ExcelService'
 
 /**
  * AdminExportHandler
@@ -123,7 +122,7 @@ export class AdminExportHandler {
 
         let buffer: Buffer
         try {
-            buffer = await ExcelService.generateTimesheetExcel({
+            buffer = await generateTimesheetExcel({
                 timesheet: synthTs,
                 user: excelUser,
                 entries: enriched,
