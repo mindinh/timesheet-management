@@ -19,6 +19,7 @@ export class TeamLeadBatchHandler {
         this.srv.on('bulkApproveTimesheets', this.onBulkApproveTimesheets.bind(this));
         this.srv.on('bulkRejectTimesheets', this.onBulkRejectTimesheets.bind(this));
         this.srv.on('modifyEntryHours', this.onModifyEntryHours.bind(this));
+        this.srv.on('reviewEntry', this.onReviewEntry.bind(this));
         this.srv.on('createBatch', this.onCreateBatch.bind(this));
     }
 
@@ -118,7 +119,12 @@ export class TeamLeadBatchHandler {
             throw new Error('Not authorized to approve/reject this timesheet');
         }
 
-        if (ts.status !== 'Submitted') {
+        // If already in the target status, gracefully skip
+        if (ts.status === action && action === 'Approved') {
+            return `Timesheet is already ${action.toLowerCase()}`;
+        }
+
+        if (ts.status !== 'Submitted' && ts.status !== 'Approved') {
             throw new Error(`Cannot change status from "${ts.status}"`);
         }
 
@@ -127,6 +133,17 @@ export class TeamLeadBatchHandler {
             comment: comment || ts.comment,
             approveDate: action === 'Approved' ? new Date().toISOString() : null
         };
+
+        if (action === 'Approved') {
+            const { TimesheetEntry } = db.entities('sap.timesheet');
+            const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: timesheetId });
+            let totalHrs = 0;
+            for (const e of entries) {
+                totalHrs += (e.approvedHours !== null && e.approvedHours !== undefined) ? Number(e.approvedHours) : (Number(e.loggedHours) || 0);
+            }
+            updateData.totalHours = totalHrs;
+            updateData.mainDays = Number((totalHrs / 8).toFixed(2));
+        }
 
         if (action === 'Rejected') {
             // Send back to employee
@@ -175,6 +192,17 @@ export class TeamLeadBatchHandler {
             hoursModifiedAt: new Date().toISOString()
         }).where({ ID: entryId });
 
+        // Recalculate total hours and mainDays for the timesheet
+        const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: ts.ID });
+        let totalHrs = 0;
+        for (const e of entries) {
+            totalHrs += (e.approvedHours !== null && e.approvedHours !== undefined) ? Number(e.approvedHours) : (Number(e.loggedHours) || 0);
+        }
+        await UPDATE(Timesheet).set({
+            totalHours: totalHrs,
+            mainDays: Number((totalHrs / 8).toFixed(2))
+        }).where({ ID: ts.ID });
+
         await INSERT.into(AuditLog).entries({
             entity_: 'TimesheetEntry',
             entityId: entryId,
@@ -186,7 +214,64 @@ export class TeamLeadBatchHandler {
         return 'Entry hours adjusted successfully';
     }
 
-    // ── createBatch ──
+    // ── reviewEntry ──
+    private async onReviewEntry(req: any) {
+        const { entryId, status, approvedHours, approverComment } = req.data;
+        const user = await resolveUser(req);
+        if (!user) return req.reject(401, 'User not found');
+
+        const db = cds.db || await cds.connect.to('db');
+        const { TimesheetEntry, Timesheet, AuditLog } = db.entities('sap.timesheet');
+
+        const [entry] = await SELECT.from(TimesheetEntry).where({ ID: entryId });
+        if (!entry) return req.reject(404, 'Entry not found');
+
+        const [ts] = await SELECT.from(Timesheet).where({ ID: entry.timesheet_ID });
+
+        // Team lead can only adjust if it's currently submitted to them
+        if (ts.currentApprover_ID !== user.ID && user.role !== 'Admin') {
+            return req.reject(403, 'Not authorized to review this entry');
+        }
+
+        const oldVal = entry.approvedHours !== null ? entry.approvedHours : entry.loggedHours;
+        const oldStatus = entry.status;
+        const oldComment = entry.approverComment;
+
+        await UPDATE(TimesheetEntry).set({
+            approvedHours: approvedHours,
+            status: status || entry.status,
+            approverComment: approverComment !== undefined ? approverComment : entry.approverComment,
+            hoursModifiedBy_ID: user.ID,
+            hoursModifiedAt: new Date().toISOString()
+        }).where({ ID: entryId });
+
+        // Recalculate total hours and mainDays for the timesheet
+        const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: ts.ID });
+        let totalHrs = 0;
+        for (const e of entries) {
+            totalHrs += (e.approvedHours !== null && e.approvedHours !== undefined) ? Number(e.approvedHours) : (Number(e.loggedHours) || 0);
+        }
+        await UPDATE(Timesheet).set({
+            totalHours: totalHrs,
+            mainDays: Number((totalHrs / 8).toFixed(2))
+        }).where({ ID: ts.ID });
+
+        await INSERT.into(AuditLog).entries({
+            entity_: 'TimesheetEntry',
+            entityId: entryId,
+            action: 'Reviewed',
+            userId: user.ID,
+            changes: JSON.stringify({
+                field: 'review',
+                old: { status: oldStatus, hours: oldVal, comment: oldComment },
+                new: { status, hours: approvedHours, comment: approverComment }
+            })
+        });
+
+        return 'Entry reviewed successfully';
+    }
+
+    // ── submitBatch ──
     private async onCreateBatch(req: any) {
         const { timesheetIds, adminId } = req.data;
         const user = await resolveUser(req);
@@ -205,36 +290,38 @@ export class TeamLeadBatchHandler {
 
         // Check if all timesheets are valid
         const timesheets = await SELECT.from(Timesheet).where({ ID: { 'in': timesheetIds } });
+        const batchIdsToUpdate = new Set<string>();
+
         for (const ts of timesheets) {
             if (ts.status !== 'Approved' && ts.status !== 'Submitted') {
                 return req.reject(400, `Timesheet ${ts.ID} has invalid status (Status: ${ts.status})`);
             }
-            if (ts.batch_ID) {
-                return req.reject(400, `Timesheet ${ts.ID} is already in a batch`);
+            if (!ts.batch_ID) {
+                return req.reject(400, `Timesheet ${ts.ID} does not belong to a batch. It must be re-submitted.`);
             }
+            batchIdsToUpdate.add(ts.batch_ID);
         }
 
         const now = new Date().toISOString();
 
-        // Create Batch
-        const batchId = cds.utils.uuid();
-        await INSERT.into(TimesheetBatch).entries({
-            ID: batchId,
-            teamLead_ID: user.ID,
-            admin_ID: adminId,
-            status: 'Pending'
-        });
+        // Update Existing Batches
+        for (const batchId of batchIdsToUpdate) {
+            await UPDATE(TimesheetBatch).set({
+                admin_ID: adminId,
+                status: 'SubmittedToAdmin'
+            }).where({ ID: batchId });
 
-        await INSERT.into(BatchHistory).entries({
-            batch_ID: batchId,
-            actor_ID: user.ID,
-            action: 'Created',
-            status: 'Pending',
-            comment: `Batch created with ${timesheets.length} timesheets`,
-            timestamp: now
-        });
+            await INSERT.into(BatchHistory).entries({
+                batch_ID: batchId,
+                actor_ID: user.ID,
+                action: 'SubmittedToAdmin',
+                status: 'SubmittedToAdmin',
+                comment: `Batch submitted to Admin`,
+                timestamp: now
+            });
+        }
 
-        // Log approvals if they were submitted
+        // Log approvals if they were submitted and auto-approve
         for (const ts of timesheets) {
             if (ts.status === 'Submitted') {
                 await INSERT.into('sap.timesheet.ApprovalHistory').entries({
@@ -243,20 +330,19 @@ export class TeamLeadBatchHandler {
                     action: 'Approved',
                     fromStatus: 'Submitted',
                     toStatus: 'Approved',
-                    comment: 'Auto-approved during batch creation',
+                    comment: 'Auto-approved during batch submission',
                     timestamp: now,
                 });
             }
         }
 
-        // Assign to Batch, update currentApprover to Admin, and status to Approved
+        // Update currentApprover to Admin, and status to Approved
         await UPDATE(Timesheet).set({
             status: 'Approved',
             approveDate: now,
-            batch_ID: batchId,
             currentApprover_ID: adminId
         }).where({ ID: { 'in': timesheetIds } });
 
-        return `Batch ${batchId} created and forwarded to Admin successfully`;
+        return `Successfully submitted ${timesheets.length} timesheets to Admin across ${batchIdsToUpdate.size} batches.`;
     }
 }

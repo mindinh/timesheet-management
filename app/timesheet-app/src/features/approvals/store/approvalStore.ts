@@ -3,7 +3,6 @@ import type { Timesheet, TimesheetEntry } from '@/shared/types'
 import {
     getTimesheetsByMonthYear,
     getTimesheetDetailByTeamLead,
-    modifyEntryHoursByTeamLead,
     approveTimesheetByTeamLead,
     rejectTimesheetByTeamLead,
     createBatch,
@@ -24,6 +23,8 @@ interface ApprovalState {
     selectedTimesheet: (Timesheet & { entries: TimesheetEntry[] }) | null
     isDetailLoading: boolean
     modifiedHours: Record<string, number> // entryId → approvedHours
+    entryStatus: Record<string, string> // entryId -> status
+    entryComments: Record<string, string> // entryId -> approverComment
     comment: string
     admins: { id: string; firstName: string; lastName: string; role: string }[] // Store list of admins for TeamLead to select
 
@@ -33,6 +34,8 @@ interface ApprovalState {
     fetchApprovableTimesheets: () => Promise<void>
     fetchTimesheetDetail: (timesheetId: string) => Promise<void>
     setModifiedHours: (entryId: string, hours: number) => void
+    setEntryStatus: (entryId: string, status: string) => void
+    setEntryComment: (entryId: string, comment: string) => void
     setComment: (comment: string) => void
     fetchAdmins: () => Promise<void>
 
@@ -55,6 +58,8 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     selectedTimesheet: null,
     isDetailLoading: false,
     modifiedHours: {},
+    entryStatus: {},
+    entryComments: {},
     comment: '',
     admins: [],
 
@@ -78,15 +83,20 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     },
 
     fetchTimesheetDetail: async (timesheetId: string) => {
-        set({ isDetailLoading: true, modifiedHours: {}, comment: '' })
+        set({ isDetailLoading: true, modifiedHours: {}, entryStatus: {}, entryComments: {}, comment: '' })
         try {
             const ts = await getTimesheetDetailByTeamLead(timesheetId)
-            // Pre-populate modifiedHours with existing approvedHours
+            // Pre-populate state with existing values
             const modifiedHours: Record<string, number> = {}
+            const entryStatus: Record<string, string> = {}
+            const entryComments: Record<string, string> = {}
+
             ts.entries.forEach(e => {
                 modifiedHours[e.id] = e.approvedHours != null ? e.approvedHours : e.hours
+                entryStatus[e.id] = e.status || 'Pending'
+                entryComments[e.id] = e.approverComment || ''
             })
-            set({ selectedTimesheet: ts, isDetailLoading: false, modifiedHours, comment: ts.comment || '' })
+            set({ selectedTimesheet: ts, isDetailLoading: false, modifiedHours, entryStatus, entryComments, comment: ts.comment || '' })
         } catch (error) {
             console.error('Failed to fetch timesheet detail:', error)
             set({ isDetailLoading: false })
@@ -96,6 +106,18 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     setModifiedHours: (entryId, hours) => {
         set((state) => ({
             modifiedHours: { ...state.modifiedHours, [entryId]: hours },
+        }))
+    },
+
+    setEntryStatus: (entryId, status) => {
+        set((state) => ({
+            entryStatus: { ...state.entryStatus, [entryId]: status },
+        }))
+    },
+
+    setEntryComment: (entryId, comment) => {
+        set((state) => ({
+            entryComments: { ...state.entryComments, [entryId]: comment },
         }))
     },
 
@@ -115,15 +137,23 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     },
 
     saveModifiedHours: async () => {
-        const { modifiedHours, selectedTimesheet } = get()
+        const { modifiedHours, entryStatus, entryComments, selectedTimesheet } = get()
         if (!selectedTimesheet) return
 
         try {
-            const promises = Object.entries(modifiedHours).map(([entryId, hours]) => {
-                const original = selectedTimesheet.entries.find(e => e.id === entryId)
-                // Only save if hours were actually modified
-                if (original && hours !== original.hours) {
-                    return modifyEntryHoursByTeamLead(entryId, hours)
+            // Check all entries for changes in hours, status, or comments
+            const promises = selectedTimesheet.entries.map(e => {
+                const newHours = modifiedHours[e.id] ?? e.hours
+                const newStatus = entryStatus[e.id] ?? e.status ?? 'Pending'
+                const newComment = entryComments[e.id] ?? e.approverComment ?? ''
+
+                const hoursChanged = newHours !== e.hours && newHours !== e.approvedHours
+                const statusChanged = newStatus !== (e.status || 'Pending')
+                const commentChanged = newComment !== (e.approverComment || '')
+
+                if (hoursChanged || statusChanged || commentChanged) {
+                    // Import `reviewEntryByTeamLead` into the current file at the top or rely on it being added
+                    return import('@/features/approvals/api/teamlead-api').then(m => m.reviewEntryByTeamLead(e.id, newStatus, newHours, newComment))
                 }
                 return Promise.resolve('')
             })

@@ -3,9 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import {
-    ArrowUpDown,
-    ArrowUp,
-    ArrowDown,
     Eye,
     Send,
     Loader2,
@@ -21,33 +18,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/components/ui/select'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/shared/components/ui/table'
-import { Checkbox } from '@/shared/components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/shared/components/ui/dialog'
 import { Textarea } from '@/shared/components/ui/textarea'
+import { Badge } from '@/shared/components/ui/badge'
+import DataTable, { type DataTableColumn } from '@/shared/components/common/DataTable'
+import { TableActionBar } from '@/shared/components/common/TableActionBar'
 import { useApprovalStore } from '@/features/approvals/store/approvalStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 import { FilterBar, type FilterFieldConfig, type FilterValues } from '@/shared/components/filterbar'
 import { cn } from '@/shared/lib/utils'
 
 
-type SortField = 'name' | 'period' | 'submitDate' | 'totalHours'
-type SortDir = 'asc' | 'desc'
 
 export default function ApprovalsPage() {
     const navigate = useNavigate()
     const { t } = useTranslation()
     const { timesheets, isLoading, currentMonth, currentYear, setPeriod, fetchApprovableTimesheets, bulkApproveTimesheets, bulkRejectTimesheets, bulkBatchToAdmin, admins, fetchAdmins } = useApprovalStore()
     const { currentUser, fetchCurrentUser } = useTimesheetStore()
-    const [sortField, setSortField] = useState<SortField>('submitDate')
-    const [sortDir, setSortDir] = useState<SortDir>('desc')
 
     // FilterBar state
     const [filterValues, setFilterValues] = useState<FilterValues>(() => ({
@@ -116,21 +103,109 @@ export default function ApprovalsPage() {
         }
     }, [currentUser, fetchApprovableTimesheets, fetchAdmins])
 
-    const toggleSort = (field: SortField) => {
-        if (sortField === field) {
-            setSortDir(prev => prev === 'asc' ? 'desc' : 'asc')
-        } else {
-            setSortField(field)
-            setSortDir('asc')
-        }
+    const getInitials = (firstName?: string, lastName?: string) => {
+        return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || '??'
     }
 
-    const SortIcon = ({ field }: { field: SortField }) => {
-        if (sortField !== field) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />
-        return sortDir === 'asc'
-            ? <ArrowUp className="h-3 w-3 ml-1 text-primary" />
-            : <ArrowDown className="h-3 w-3 ml-1 text-primary" />
-    }
+    const columns: DataTableColumn<any>[] = useMemo(() => [
+        {
+            key: 'employee',
+            labelKey: 'approvalsPage.table.employee',
+            width: 250,
+            renderType: 'custom',
+            render: (_val, row) => {
+                const initials = getInitials(row.user?.firstName, row.user?.lastName)
+                return (
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-sm font-semibold ring-1 ring-primary/10">
+                            {initials}
+                        </div>
+                        <div>
+                            <div className="font-medium text-sm text-foreground">
+                                {row.user?.firstName} {row.user?.lastName}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                                {row.user?.role || 'Employee'}
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        },
+        {
+            key: 'period',
+            labelKey: 'approvalsPage.table.period',
+            width: 150,
+            renderType: 'custom',
+            render: (_val, row) => (
+                <span className="text-sm text-primary/80 font-medium whitespace-nowrap">
+                    {t(`approvalsPage.months.${row.month}`)} {row.year}
+                </span>
+            )
+        },
+        {
+            key: 'submitDate',
+            labelKey: 'approvalsPage.table.submittedDate',
+            width: 180,
+            renderType: 'custom',
+            render: (_val, row) => (
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    {row.submitDate ? format(new Date(row.submitDate), 'MMM dd, hh:mm a') : '—'}
+                </span>
+            )
+        },
+        {
+            key: 'totalHours',
+            labelKey: 'approvalsPage.table.totalHours',
+            width: 120,
+            renderType: 'custom',
+            className: 'text-right',
+            render: (_val, row) => (
+                <span className="text-sm font-semibold text-foreground text-right block w-full">
+                    {(row.totalHours || 0).toFixed(1)}
+                </span>
+            )
+        },
+        {
+            key: 'status',
+            labelKey: 'approvalsPage.table.status',
+            width: 150,
+            renderType: 'custom',
+            className: 'text-center',
+            render: (_val, row) => (
+                <div className="text-center w-full block">
+                    <Badge
+                        variant={row.status === 'Submitted' ? 'secondary' : 'default'}
+                        className={cn(
+                            row.status === 'Submitted' ? "bg-sap-informative/10 text-sap-informative hover:bg-sap-informative/10" : "bg-sap-positive/10 text-sap-positive hover:bg-sap-positive/10"
+                        )}
+                    >
+                        {row.status}
+                    </Badge>
+                </div>
+            )
+        },
+        {
+            key: 'actions',
+            labelKey: 'approvalsPage.table.actions',
+            width: 150,
+            renderType: 'custom',
+            className: 'text-center',
+            render: (_val, row) => (
+                <div className="text-center w-full block bg-transparent">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs font-medium text-primary hover:text-primary h-8 px-2"
+                        onClick={(e) => { e.stopPropagation(); handleReview(row.id); }}
+                    >
+                        <Eye className="h-4 w-4 mr-1" />
+                        {t('approvalsPage.reviewDetails')}
+                    </Button>
+                </div>
+            )
+        }
+    ], [t])
 
     const displayedTimesheets = useMemo(() => {
         let list = [...timesheets]
@@ -145,46 +220,13 @@ export default function ApprovalsPage() {
             )
         }
 
-        // Sort
+        // Sort by submitDate desc by default since custom sorting is removed
         list = [...list].sort((a, b) => {
-            const dir = sortDir === 'asc' ? 1 : -1
-            switch (sortField) {
-                case 'name': {
-                    const nameA = `${a.user?.firstName || ''} ${a.user?.lastName || ''}`.toLowerCase()
-                    const nameB = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.toLowerCase()
-                    return nameA.localeCompare(nameB) * dir
-                }
-                case 'period': {
-                    const pA = (a.year * 100) + a.month
-                    const pB = (b.year * 100) + b.month
-                    return (pA - pB) * dir
-                }
-                case 'submitDate':
-                    return (new Date(a.submitDate || 0).getTime() - new Date(b.submitDate || 0).getTime()) * dir
-                case 'totalHours':
-                    return ((a.totalHours || 0) - (b.totalHours || 0)) * dir
-                default:
-                    return 0
-            }
+            return new Date(b.submitDate || 0).getTime() - new Date(a.submitDate || 0).getTime()
         })
 
         return list
-    }, [timesheets, filterValues.searchQuery, sortField, sortDir])
-
-    const isAllSelected = displayedTimesheets.length > 0 && displayedTimesheets.every(ts => selectedIds.includes(ts.id))
-
-    const handleSelectAll = () => {
-        if (isAllSelected) {
-            setSelectedIds([])
-        } else {
-            setSelectedIds(displayedTimesheets.map(ts => ts.id))
-        }
-    }
-
-    const toggleSelect = (id: string) => {
-        setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
-    }
-
+    }, [timesheets, filterValues.searchQuery])
     const resetSelection = () => {
         setSelectedIds([])
     }
@@ -200,9 +242,6 @@ export default function ApprovalsPage() {
         setActionLoading(commentModal.action)
         try {
             if (commentModal.action === 'approve') {
-                // In store, bulkApproveTimesheets doesn't take comment currently, but TEAMLEAD_URL.bulkApprove does.
-                // We'll just call the store action for now. If store needs updating to pass comment, we can do it later.
-                // For reject, comment is highly recommended.
                 await bulkApproveTimesheets(selectedIds)
             } else {
                 await bulkRejectTimesheets(selectedIds)
@@ -234,10 +273,6 @@ export default function ApprovalsPage() {
         navigate(`/approvals/${timesheetId}`)
     }
 
-    const getInitials = (firstName?: string, lastName?: string) => {
-        return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || '??'
-    }
-
     return (
         <div className="max-w-7xl mx-auto space-y-6 pb-20">
             {/* Header */}
@@ -264,206 +299,65 @@ export default function ApprovalsPage() {
                 className="mb-4"
             />
 
-            <div className="bg-card border border-border rounded-xl flex flex-col min-h-[500px]">
-                {isLoading ? (
-                    <div className="flex flex-col flex-1 items-center justify-center py-16 text-muted-foreground">
-                        <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mb-3" />
-                        <p className="text-sm">{t('approvalsPage.loading')}</p>
-                    </div>
-                ) : displayedTimesheets.length === 0 ? (
-                    <div className="flex flex-col flex-1 items-center justify-center py-16">
-                        <p className="text-muted-foreground font-medium">{t('approvalsPage.noTimesheets')}</p>
-                        <p className="text-sm text-muted-foreground/60 mt-1">
-                            {t('approvalsPage.allCaughtUp')}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="flex flex-col h-full">
-                        {/* Summary Toolbar */}
-                        <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-card text-foreground rounded-t-xl">
-                            <h2 className="text-base font-semibold">
-                                {t('approvalsPage.badge')} <span className="text-primary">({timesheets.length})</span>
-                            </h2>
-                        </div>
-
-                        {/* Actions Bar */}
-                        {selectedIds.length > 0 && (
-                            <div className="bg-primary/5 border-b border-border/50 px-5 py-3 flex items-center justify-between">
-                                <span className="text-sm font-medium text-primary">
-                                    {t('approvalsPage.selectedCount', { count: selectedIds.length })}
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="border-sap-negative text-sap-negative hover:bg-sap-negative/10"
-                                        onClick={() => handleOpenCommentModal('reject')}
-                                        disabled={actionLoading !== null}
-                                    >
-                                        {actionLoading === 'reject' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <X className="h-4 w-4 mr-2" />}
-                                        {t('approvalsPage.rejectSelected')}
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        onClick={() => handleOpenCommentModal('approve')}
-                                        disabled={actionLoading !== null}
-                                    // className="bg-sap-positive hover:bg-sap-positive/90 text-white shadow-sm"
-                                    >
-                                        {actionLoading === 'approve' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
-                                        {t('approvalsPage.approveSelected')}
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        onClick={() => setAdminModal({ open: true, adminId: '' })}
-                                        disabled={actionLoading !== null}
-                                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
-                                    >
-                                        <Send className="h-4 w-4 mr-2" />
-                                        {t('approvalsPage.submitBatch')}
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Table */}
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="border-b border-border bg-muted/30">
-                                        <TableHead className="py-3.5 px-5 w-[40px] text-center">
-                                            <Checkbox
-                                                checked={isAllSelected}
-                                                onCheckedChange={handleSelectAll}
-                                                className="translate-y-[2px]"
-                                            />
-                                        </TableHead>
-                                        <TableHead
-                                            className="text-left py-3.5 px-2 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
-                                            onClick={() => toggleSort('name')}
-                                        >
-                                            <span className="inline-flex items-center">
-                                                {t('approvalsPage.table.employee')}
-                                                <SortIcon field="name" />
-                                            </span>
-                                        </TableHead>
-                                        <TableHead
-                                            className="text-left py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
-                                            onClick={() => toggleSort('period')}
-                                        >
-                                            <span className="inline-flex items-center">
-                                                {t('approvalsPage.table.period')}
-                                                <SortIcon field="period" />
-                                            </span>
-                                        </TableHead>
-                                        <TableHead
-                                            className="text-left py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
-                                            onClick={() => toggleSort('submitDate')}
-                                        >
-                                            <span className="inline-flex items-center">
-                                                {t('approvalsPage.table.submittedDate')}
-                                                <SortIcon field="submitDate" />
-                                            </span>
-                                        </TableHead>
-                                        <TableHead
-                                            className="text-right py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider cursor-pointer select-none hover:text-primary/80 transition-colors"
-                                            onClick={() => toggleSort('totalHours')}
-                                        >
-                                            <span className="inline-flex items-center justify-end">
-                                                {t('approvalsPage.table.totalHours')}
-                                                <SortIcon field="totalHours" />
-                                            </span>
-                                        </TableHead>
-                                        <TableHead className="text-center py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
-                                            {t('approvalsPage.table.status')}
-                                        </TableHead>
-                                        <TableHead className="text-center py-3.5 px-4 text-xs font-semibold text-primary uppercase tracking-wider">
-                                            {t('approvalsPage.table.actions')}
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody className="divide-y divide-border/50">
-                                    {displayedTimesheets.map(ts => {
-                                        const period = `${t(`approvalsPage.months.${ts.month}`)} ${ts.year}`
-                                        const submittedDate = ts.submitDate
-                                            ? format(new Date(ts.submitDate), 'MMM dd, hh:mm a')
-                                            : '—'
-                                        const initials = getInitials(ts.user?.firstName, ts.user?.lastName)
-
-                                        return (
-                                            <TableRow
-                                                key={ts.id}
-                                                className={cn(
-                                                    "group hover:bg-muted/20 transition-colors",
-                                                    selectedIds.includes(ts.id) && "bg-primary/5"
-                                                )}
-                                            >
-                                                <TableCell className="py-4 px-5 w-[40px] text-center">
-                                                    <Checkbox
-                                                        checked={selectedIds.includes(ts.id)}
-                                                        onCheckedChange={() => toggleSelect(ts.id)}
-                                                        className="translate-y-[2px]"
-                                                    />
-                                                </TableCell>
-                                                <TableCell className="py-4 px-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-sm font-semibold ring-1 ring-primary/10">
-                                                            {initials}
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-medium text-sm text-foreground">
-                                                                {ts.user?.firstName} {ts.user?.lastName}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground">
-                                                                {ts.user?.role || 'Employee'}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="py-4 px-4 text-sm text-primary/80 font-medium whitespace-nowrap">
-                                                    {period}
-                                                </TableCell>
-                                                <TableCell className="py-4 px-4 text-sm text-muted-foreground whitespace-nowrap">
-                                                    {submittedDate}
-                                                </TableCell>
-                                                <TableCell className="py-4 px-4 text-sm text-right font-semibold text-foreground">
-                                                    {(ts.totalHours || 0).toFixed(1)}
-                                                </TableCell>
-                                                <TableCell className="py-4 px-4 text-center">
-                                                    <span className={cn(
-                                                        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
-                                                        ts.status === 'Submitted' ? "bg-sap-informative/10 text-sap-informative" : "bg-sap-positive/10 text-sap-positive"
-                                                    )}>
-                                                        {ts.status}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className="py-4 px-4">
-                                                    <div className="flex items-center justify-center gap-2">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="text-xs font-medium border-primary/30 text-primary hover:bg-primary/5 hover:text-primary h-8 px-2"
-                                                            onClick={() => handleReview(ts.id)}
-                                                        >
-                                                            <Eye className="h-3.5 w-3.5 mr-1" />
-                                                            {t('approvalsPage.reviewDetails')}
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        )
-                                    })}
-                                </TableBody>
-                            </Table>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex items-center justify-between px-5 py-3 border-t border-border mt-auto bg-muted/10">
-                            <span className="text-sm text-primary/70">
-                                {t('approvalsPage.showing')} <strong className="text-foreground">{displayedTimesheets.length}</strong> {t('approvalsPage.records')}
-                            </span>
-                        </div>
+            <div className="flex flex-col space-y-4">
+                {selectedIds.length > 0 && (
+                    <div className="bg-primary/5 border border-border/50 rounded-lg px-5 py-2 flex items-center justify-between">
+                        <span className="text-sm font-medium text-primary">
+                            {t('approvalsPage.selectedCount', { count: selectedIds.length })}
+                        </span>
+                        <TableActionBar
+                            align="right"
+                            actions={[
+                                {
+                                    id: 'reject',
+                                    labelKey: 'approvalsPage.rejectSelected',
+                                    icon: X,
+                                    size: 'sm',
+                                    variant: 'outline',
+                                    className: 'border-sap-negative text-sap-negative hover:bg-sap-negative/10 px-4',
+                                    onClick: () => handleOpenCommentModal('reject'),
+                                    disabled: actionLoading !== null,
+                                },
+                                {
+                                    id: 'approve',
+                                    labelKey: 'approvalsPage.approveSelected',
+                                    icon: Check,
+                                    size: 'sm',
+                                    variant: 'default',
+                                    className: 'px-4',
+                                    onClick: () => handleOpenCommentModal('approve'),
+                                    disabled: actionLoading !== null,
+                                },
+                                {
+                                    id: 'submitBatch',
+                                    labelKey: 'approvalsPage.submitBatch',
+                                    icon: Send,
+                                    size: 'sm',
+                                    variant: 'default',
+                                    className: 'bg-primary hover:bg-primary/90 text-primary-foreground px-4',
+                                    onClick: () => setAdminModal({ open: true, adminId: '' }),
+                                    disabled: actionLoading !== null,
+                                }
+                            ]}
+                        />
                     </div>
                 )}
+                <DataTable
+                    data={displayedTimesheets}
+                    columns={columns}
+                    isLoading={isLoading}
+                    title={`${t('approvalsPage.badge')} (${timesheets.length})`}
+                    selection={{
+                        enabled: true,
+                        mode: 'multiple',
+                        selectedIds: new Set(selectedIds),
+                        onSelectionChange: (ids) => setSelectedIds(Array.from(ids)),
+                        getRowId: (row) => row.id
+                    }}
+                    onRowClick={(row) => handleReview(row.id)}
+                    showFooter={false}
+                    emptyMessageKey="approvalsPage.noTimesheets"
+                />
             </div>
 
             {/* Admin Select Modal */}

@@ -41,6 +41,8 @@ export async function getTimesheetDetailByTeamLead(
         date: String(e.date),
         hours: Number(e.loggedHours) || 0,
         approvedHours: e.approvedHours != null ? Number(e.approvedHours) : undefined,
+        status: e.status as string,
+        approverComment: e.approverComment as string | undefined,
         description: e.description as string | undefined,
         projectId: String(e.project_ID),
         projectName: e.project?.name || '',
@@ -151,6 +153,11 @@ export async function bulkRejectTimesheets(timesheetIds: string[], comment?: str
 
 export async function modifyEntryHoursByTeamLead(entryId: string, approvedHours: number): Promise<string> {
     const data: unknown = await api.post(TEAMLEAD_URL.modifyEntryHours, { entryId, approvedHours })
+    return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
+}
+
+export async function reviewEntryByTeamLead(entryId: string, status: string, approvedHours: number, approverComment: string): Promise<string> {
+    const data: unknown = await api.post('/api/teamlead/reviewEntry', { entryId, status, approvedHours, approverComment })
     return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
 }
 
