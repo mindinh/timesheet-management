@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/button'
-import { ArrowLeft, CheckCircle, FileText, UserCircle, Calendar, XCircle, Clock, ChevronDown, ChevronRight, History } from 'lucide-react'
+import { ArrowLeft, CheckCircle, FileText, UserCircle, Calendar, XCircle, Clock, ChevronDown, ChevronRight, History, Eye } from 'lucide-react'
 import { format } from 'date-fns'
 import { fetchTimesheetBatchById, markBatchDoneApi, rejectBatchApi, adminModifyEntryHours, type TimesheetBatchDetail } from '../api/admin-api'
 import { getTimesheetDetail, rejectTimesheet } from '@/features/timesheet/api/timesheet-api'
@@ -350,6 +350,15 @@ export default function AdminBatchDetailPage() {
                                             }`}>
                                             {ts.status}
                                         </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary z-10 hidden sm:flex"
+                                            onClick={(e) => { e.stopPropagation(); navigate(`/approvals/${ts.ID}`) }}
+                                        >
+                                            <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                            Full Review
+                                        </Button>
                                         {status === 'Pending' && ts.status === 'Approved' && (
                                             <Button
                                                 variant="outline"

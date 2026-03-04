@@ -16,5 +16,60 @@
         "Rejected": "Đã từ chối",
         "Modified": "Đã sửa đổi",
         "Finished": "Đã hoàn thành"
+    },
+    "approvalsPage": {
+        "title": "Phê duyệt & Đóng gói",
+        "description": "Xem xét timesheet của nhân viên hoặc đóng gói gửi quản trị viên cuối cùng.",
+        "badge": "Phê duyệt",
+        "searchPlaceholder": "Tìm kiếm nhân viên...",
+        "loading": "Đang tải timesheet...",
+        "noTimesheets": "Không tìm thấy timesheet",
+        "allCaughtUp": "Tất cả đã hoàn tất! Vui lòng quay lại sau khi có timesheet để xem xét hoặc đóng gói.",
+        "selectedCount": "Đã chọn {{count}} timesheet",
+        "rejectSelected": "Từ chối đã chọn",
+        "approveSelected": "Phê duyệt đã chọn",
+        "submitBatch": "Gửi gói (Batch)",
+        "table": {
+            "employee": "Nhân viên",
+            "period": "Kỳ",
+            "submittedDate": "Ngày gửi",
+            "totalHours": "Tổng giờ",
+            "status": "Trạng thái",
+            "actions": "Hành động"
+        },
+        "reviewDetails": "Xem chi tiết",
+        "showing": "Hiển thị",
+        "records": "bản ghi",
+        "adminModal": {
+            "title": "Chọn Quản trị viên cuối cùng",
+            "description": "Chọn Quản trị viên mà gói gồm {{count}} timesheet này sẽ được chuyển tiếp để phê duyệt cuối cùng.",
+            "placeholder": "Chọn một quản trị viên...",
+            "cancel": "Hủy bỏ",
+            "createBatch": "Tạo gói"
+        },
+        "commentModal": {
+            "titleApprove": "Phê duyệt Timesheet",
+            "titleReject": "Từ chối Timesheet",
+            "descApprove": "Bạn sắp phê duyệt {{count}} timesheet. Bạn có thể thêm bình luận (tùy chọn).",
+            "descReject": "Bạn sắp từ chối {{count}} timesheet. Vui lòng cung cấp lý do.",
+            "placeholder": "Thêm bình luận hoặc lý do...",
+            "cancel": "Hủy bỏ",
+            "confirmApprove": "Xác nhận Phê duyệt",
+            "confirmReject": "Xác nhận Từ chối"
+        },
+        "months": {
+            "1": "Tháng 1",
+            "2": "Tháng 2",
+            "3": "Tháng 3",
+            "4": "Tháng 4",
+            "5": "Tháng 5",
+            "6": "Tháng 6",
+            "7": "Tháng 7",
+            "8": "Tháng 8",
+            "9": "Tháng 9",
+            "10": "Tháng 10",
+            "11": "Tháng 11",
+            "12": "Tháng 12"
+        }
     }
 }

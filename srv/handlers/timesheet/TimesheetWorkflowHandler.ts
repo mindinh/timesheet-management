@@ -33,12 +33,43 @@ export class TimesheetWorkflowHandler {
             return req.reject(400, `Cannot submit – status is "${ts.status}"`)
         }
 
+        const { TimesheetEntry } = db.entities('sap.timesheet')
+        const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: timesheetId })
+        let totalHrs = 0
+        for (const e of entries) {
+            totalHrs += Number(e.loggedHours) || 0
+        }
+
         const updateData: any = {
             status: 'Submitted',
             submitDate: new Date().toISOString(),
+            totalHours: totalHrs,
+            mainDays: Number((totalHrs / 8).toFixed(2))
         }
         if (approverId) {
             updateData.currentApprover_ID = approverId
+
+            // Auto-assign to/create a Pending batch for the teamlead, month, year
+            const [existingBatch] = await SELECT.from('sap.timesheet.TimesheetBatch').where({
+                teamLead_ID: approverId,
+                month: ts.month,
+                year: ts.year,
+                status: 'Pending'
+            })
+
+            if (existingBatch) {
+                updateData.batch_ID = existingBatch.ID
+            } else {
+                const batchId = cds.utils.uuid()
+                await INSERT.into('sap.timesheet.TimesheetBatch').entries({
+                    ID: batchId,
+                    teamLead_ID: approverId,
+                    month: ts.month,
+                    year: ts.year,
+                    status: 'Pending'
+                })
+                updateData.batch_ID = batchId
+            }
         }
 
         await UPDATE(Timesheet).set(updateData).where({ ID: timesheetId })
@@ -71,6 +102,10 @@ export class TimesheetWorkflowHandler {
             return req.reject(403, 'You are not the designated approver for this timesheet')
         }
 
+        if (ts.status === 'Approved') {
+            return `Timesheet is already approved`
+        }
+
         if (ts.status !== 'Submitted') {
             return req.reject(400, `Cannot approve – status is "${ts.status}"`)
         }
@@ -78,10 +113,19 @@ export class TimesheetWorkflowHandler {
         // TeamLead/Admin/Manager → Approved
         let newStatus = 'Approved'
 
+        const { TimesheetEntry } = db.entities('sap.timesheet')
+        const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: timesheetId })
+        let totalHrs = 0
+        for (const e of entries) {
+            totalHrs += (e.approvedHours !== null && e.approvedHours !== undefined) ? Number(e.approvedHours) : (Number(e.loggedHours) || 0)
+        }
+
         const updateData: any = {
             status: newStatus,
             approveDate: new Date().toISOString(),
             comment: comment || ts.comment,
+            totalHours: totalHrs,
+            mainDays: Number((totalHrs / 8).toFixed(2))
         }
 
         await UPDATE(Timesheet).set(updateData).where({ ID: timesheetId })

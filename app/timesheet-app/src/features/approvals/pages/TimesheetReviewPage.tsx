@@ -5,6 +5,8 @@ import { ArrowLeft, Check, X, Send, MessageSquare, User as UserIcon, Calendar, P
 import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/shared/components/ui/dialog'
 import { Input } from '@/shared/components/ui/input'
+import { Badge } from '@/shared/components/ui/badge'
+import { Card, CardContent } from '@/shared/components/ui/card'
 import { Label } from '@/shared/components/ui/label'
 import {
     Select,
@@ -43,9 +45,13 @@ export default function TimesheetReviewPage() {
         selectedTimesheet: ts,
         isDetailLoading,
         modifiedHours,
+        entryStatus,
+        entryComments,
         comment,
         admins,
         setModifiedHours,
+        setEntryStatus,
+        setEntryComment,
         setComment,
         fetchTimesheetDetail,
         approveTimesheet,
@@ -93,8 +99,8 @@ export default function TimesheetReviewPage() {
     const variance = totalModified - totalSubmitted
     const variancePercent = totalSubmitted > 0 ? ((variance / totalSubmitted) * 100).toFixed(1) : '0.0'
 
-    const isApprover = currentUser && ts && ts.currentApprover?.id === currentUser.id
     const isTeamLead = currentUser?.role === 'TeamLead'
+    const isApprover = (currentUser && ts && ts.currentApprover?.id === currentUser.id) || isTeamLead
 
     const handleApprove = async () => {
         if (!timesheetId) return
@@ -102,8 +108,9 @@ export default function TimesheetReviewPage() {
         try {
             await approveTimesheet(timesheetId)
             navigate('/approvals')
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
+            setStatusDialog({ open: true, variant: 'error', title: 'Approval Failed', description: err.response?.data?.error?.message || err.message || 'An error occurred during approval.' })
         } finally {
             setActionLoading(null)
         }
@@ -118,8 +125,9 @@ export default function TimesheetReviewPage() {
         try {
             await rejectTimesheet(timesheetId)
             navigate('/approvals')
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
+            setStatusDialog({ open: true, variant: 'error', title: 'Rejection Failed', description: err.response?.data?.error?.message || err.message || 'An error occurred during rejection.' })
         } finally {
             setActionLoading(null)
         }
@@ -131,8 +139,9 @@ export default function TimesheetReviewPage() {
         try {
             await submitToAdmin(timesheetId, selectedAdminId)
             navigate('/approvals')
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
+            setStatusDialog({ open: true, variant: 'error', title: 'Submission Failed', description: err.response?.data?.error?.message || err.message || 'An error occurred while submitting to Admin.' })
         } finally {
             setActionLoading(null)
             setShowAdminDialog(false)
@@ -202,54 +211,62 @@ export default function TimesheetReviewPage() {
 
             {/* Summary Cards */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-card border border-border rounded-xl p-5">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Total Submitted</p>
-                    <p className="text-3xl font-bold text-foreground">{totalSubmitted.toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">hours</p>
-                </div>
-                <div className="bg-card border border-border rounded-xl p-5">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Modified Hours</p>
-                    <p className={cn(
-                        'text-3xl font-bold',
-                        variance !== 0 ? 'text-sap-informative' : 'text-foreground'
-                    )}>
-                        {totalModified.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        {variance !== 0 && (
-                            <span className={cn(
-                                variance < 0 ? 'text-sap-negative' : 'text-sap-positive'
-                            )}>
-                                {variance > 0 ? '↗' : '↘'} {variancePercent}% change
-                            </span>
-                        )}
-                        {variance === 0 && 'hours'}
-                    </p>
-                </div>
-                <div className="bg-card border border-border rounded-xl p-5">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Variance</p>
-                    <p className={cn(
-                        'text-3xl font-bold',
-                        variance < 0 ? 'text-sap-negative' : variance > 0 ? 'text-sap-positive' : 'text-foreground'
-                    )}>
-                        {variance >= 0 ? '+' : ''}{variance.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">hours</p>
-                </div>
+                <Card className="gap-0">
+                    <CardContent className="p-5 !pb-5">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Total Submitted</p>
+                        <p className="text-3xl font-bold text-foreground">{totalSubmitted.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">hours</p>
+                    </CardContent>
+                </Card>
+                <Card className="gap-0">
+                    <CardContent className="p-5 !pb-5">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Modified Hours</p>
+                        <p className={cn(
+                            'text-3xl font-bold',
+                            variance !== 0 ? 'text-sap-informative' : 'text-foreground'
+                        )}>
+                            {totalModified.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {variance !== 0 && (
+                                <span className={cn(
+                                    variance < 0 ? 'text-sap-negative' : 'text-sap-positive'
+                                )}>
+                                    {variance > 0 ? '↗' : '↘'} {variancePercent}% change
+                                </span>
+                            )}
+                            {variance === 0 && 'hours'}
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card className="gap-0">
+                    <CardContent className="p-5 !pb-5">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Variance</p>
+                        <p className={cn(
+                            'text-3xl font-bold',
+                            variance < 0 ? 'text-sap-negative' : variance > 0 ? 'text-sap-positive' : 'text-foreground'
+                        )}>
+                            {variance >= 0 ? '+' : ''}{variance.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">hours</p>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Entry Details Table */}
             <div className="bg-card border border-border rounded-xl overflow-hidden mb-6">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                     <h2 className="font-semibold text-foreground">Daily Entry Details</h2>
-                    <span className={cn(
-                        'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border',
-                        ts.status === 'Submitted' ? 'bg-sap-informative/10 text-sap-informative border-sap-informative/20'
-                            : ts.status === 'Approved' ? 'bg-sap-positive/10 text-sap-positive border-sap-positive/20'
-                                : 'bg-muted text-muted-foreground border-border'
-                    )}>
+                    <Badge
+                        variant={ts.status === 'Submitted' ? 'secondary' : 'default'}
+                        className={cn(
+                            ts.status === 'Submitted' ? 'bg-sap-informative/10 text-sap-informative hover:bg-sap-informative/10'
+                                : ts.status === 'Approved' ? 'bg-sap-positive/10 text-sap-positive hover:bg-sap-positive/10'
+                                    : 'bg-muted text-muted-foreground'
+                        )}
+                    >
                         {ts.status === 'Submitted' ? 'Pending Approval' : ts.status}
-                    </span>
+                    </Badge>
                 </div>
                 <div className="overflow-x-auto">
                     <Table>
@@ -260,7 +277,8 @@ export default function TimesheetReviewPage() {
                                 <TableHead className="text-center w-[100px]">Submitted</TableHead>
                                 <TableHead className="text-center w-[120px]">Modified Hours</TableHead>
                                 <TableHead className="text-center w-[100px]">Variance</TableHead>
-                                <TableHead className="text-center w-[80px]">Status</TableHead>
+                                <TableHead className="w-[130px]">Approval Status</TableHead>
+                                <TableHead className="min-w-[150px]">Comment / Reason</TableHead>
                                 {currentUser?.role === 'Admin' && (
                                     <TableHead className="text-right w-[80px]">Override</TableHead>
                                 )}
@@ -321,11 +339,47 @@ export default function TimesheetReviewPage() {
                                                     {entryVariance > 0 ? '+' : ''}{entryVariance !== 0 ? entryVariance.toFixed(2) : '—'}
                                                 </span>
                                             </TableCell>
-                                            <TableCell className="text-center">
-                                                {isModified ? (
-                                                    <Send className="h-4 w-4 mx-auto text-sap-informative" />
+                                            <TableCell>
+                                                {isApprover && (ts.status === 'Submitted' || ts.status === 'Approved') ? (
+                                                    <Select
+                                                        value={entryStatus[entry.id] || 'Pending'}
+                                                        onValueChange={(val) => setEntryStatus(entry.id, val)}
+                                                    >
+                                                        <SelectTrigger className={cn(
+                                                            "h-8 text-xs",
+                                                            entryStatus[entry.id] === 'Approved' ? 'bg-sap-positive/10 text-sap-positive border-sap-positive/30' :
+                                                                entryStatus[entry.id] === 'Rejected' ? 'bg-sap-negative/10 text-sap-negative border-sap-negative/30' : ''
+                                                        )}>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="Pending">Pending</SelectItem>
+                                                            <SelectItem value="Approved">Approved</SelectItem>
+                                                            <SelectItem value="Rejected">Rejected</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
                                                 ) : (
-                                                    <Check className="h-4 w-4 mx-auto text-sap-positive" />
+                                                    <Badge variant="outline" className={cn(
+                                                        "text-xs font-normal",
+                                                        entryStatus[entry.id] === 'Approved' ? 'bg-sap-positive/10 text-sap-positive border-sap-positive/30' :
+                                                            entryStatus[entry.id] === 'Rejected' ? 'bg-sap-negative/10 text-sap-negative border-sap-negative/30' : ''
+                                                    )}>
+                                                        {entryStatus[entry.id] || 'Pending'}
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {isApprover && (ts.status === 'Submitted' || ts.status === 'Approved') ? (
+                                                    <Input
+                                                        value={entryComments[entry.id] || ''}
+                                                        onChange={(e) => setEntryComment(entry.id, e.target.value)}
+                                                        placeholder="Add reason..."
+                                                        className="h-8 text-xs"
+                                                    />
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {entryComments[entry.id] || '—'}
+                                                    </span>
                                                 )}
                                             </TableCell>
 
@@ -371,6 +425,7 @@ export default function TimesheetReviewPage() {
                                     {variance > 0 ? '+' : ''}{variance !== 0 ? variance.toFixed(2) : '-'}
                                 </TableCell>
                                 <TableCell></TableCell>
+                                <TableCell></TableCell>
                                 {currentUser?.role === 'Admin' && <TableCell></TableCell>}
                             </TableRow>
                         </tfoot>
@@ -379,25 +434,27 @@ export default function TimesheetReviewPage() {
             </div>
 
             {/* Notes Section */}
-            <div className="bg-card border border-border rounded-xl p-6 mb-6">
-                <div className="flex items-center gap-2 mb-3">
+            <Card className="mb-6">
+                <div className="flex items-center gap-2 px-6 pt-6 mb-3">
                     <MessageSquare className="h-5 w-5 text-primary" />
                     <h2 className="font-semibold text-foreground">Manager Notes & Feedback</h2>
                 </div>
-                {isApprover && (ts.status === 'Submitted' || ts.status === 'Approved') ? (
-                    <Textarea
-                        className="w-full min-h-[100px] resize-y"
-                        placeholder="Add notes about this timesheet review..."
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        rows={4}
-                    />
-                ) : (
-                    <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
-                        {comment || 'No notes provided.'}
-                    </div>
-                )}
-            </div>
+                <CardContent>
+                    {isApprover && (ts.status === 'Submitted' || ts.status === 'Approved') ? (
+                        <Textarea
+                            className="w-full min-h-[100px] resize-y"
+                            placeholder="Add notes about this timesheet review..."
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            rows={4}
+                        />
+                    ) : (
+                        <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
+                            {comment || 'No notes provided.'}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
             {/* Action Bar */}
             {isApprover && (ts.status === 'Submitted' || ts.status === 'Approved') && (
@@ -414,7 +471,7 @@ export default function TimesheetReviewPage() {
                                 onClick={handleReject}
                                 disabled={actionLoading !== null}
                             >
-                                <X className="h-4 w-4 mr-1" />
+                                {actionLoading === 'reject' ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <X className="h-4 w-4 mr-1" />}
                                 Reject
                             </Button>
                             <Button
@@ -422,27 +479,17 @@ export default function TimesheetReviewPage() {
                                 onClick={handleApprove}
                                 disabled={actionLoading !== null}
                             >
-                                <Check className="h-4 w-4 mr-1" />
+                                {actionLoading === 'approve' ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
                                 Approve
                             </Button>
-                            {isTeamLead && ts.status === 'Approved' && (
+
+                            {isTeamLead && (ts.status === 'Approved' || ts.status === 'Submitted') && (
                                 <Button
-                                    className="bg-primary hover:bg-primary/90"
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
                                     onClick={() => setShowAdminDialog(true)}
                                     disabled={actionLoading !== null}
                                 >
-                                    <Send className="h-4 w-4 mr-1" />
-                                    Submit to Final Admin
-                                </Button>
-                            )}
-                            {/* Team Lead can also submit to admin right after approve */}
-                            {isTeamLead && ts.status === 'Submitted' && (
-                                <Button
-                                    variant="default"
-                                    onClick={() => setShowAdminDialog(true)}
-                                    disabled={actionLoading !== null}
-                                >
-                                    <Send className="h-4 w-4 mr-1" />
+                                    {actionLoading === 'submitToAdmin' ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
                                     Submit to Final Admin
                                 </Button>
                             )}

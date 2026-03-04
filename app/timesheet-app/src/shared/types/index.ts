@@ -12,6 +12,8 @@ export interface TimesheetEntry {
     timesheetId?: string
     hours: number
     approvedHours?: number
+    status?: string // Pending, Approved, Rejected
+    approverComment?: string
     description?: string
 }
 

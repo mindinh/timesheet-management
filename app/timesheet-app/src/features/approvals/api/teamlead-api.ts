@@ -41,6 +41,8 @@ export async function getTimesheetDetailByTeamLead(
         date: String(e.date),
         hours: Number(e.loggedHours) || 0,
         approvedHours: e.approvedHours != null ? Number(e.approvedHours) : undefined,
+        status: e.status as string,
+        approverComment: e.approverComment as string | undefined,
         description: e.description as string | undefined,
         projectId: String(e.project_ID),
         projectName: e.project?.name || '',
@@ -101,6 +103,32 @@ export async function getApprovedTimesheets(): Promise<Timesheet[]> {
     }))
 }
 
+export async function getTimesheetsByMonthYear(month: number, year: number): Promise<Timesheet[]> {
+    const data: unknown = await api.get(TEAMLEAD_URL.timesheets, {
+        $filter: `month eq ${month} and year eq ${year} and status ne 'Draft'`,
+        $expand: 'user'
+    })
+    const list = (data && typeof data === 'object' && 'value' in data ? (data as any).value : data) as Record<string, unknown>[]
+    return list.map((ts) => ({
+        id: String(ts.ID || ts.id),
+        month: Number(ts.month),
+        year: Number(ts.year),
+        status: ts.status as TimesheetStatusType,
+        entries: [],
+        submitDate: ts.submitDate as string | undefined,
+        approveDate: ts.approveDate as string | undefined,
+        totalHours: Number(ts.totalLoggedHours || ts.totalHours) || 0,
+        comment: ts.comment as string | undefined,
+        user: ts.user ? {
+            id: String((ts.user as Record<string, any>).ID || (ts.user as Record<string, any>).id),
+            firstName: String((ts.user as Record<string, any>).firstName),
+            lastName: String((ts.user as Record<string, any>).lastName),
+            email: String((ts.user as Record<string, any>).email),
+            role: String((ts.user as Record<string, any>).role)
+        } : undefined,
+    }))
+}
+
 // ---------- Actions ----------
 
 export async function approveTimesheetByTeamLead(timesheetId: string, comment?: string): Promise<string> {
@@ -125,6 +153,11 @@ export async function bulkRejectTimesheets(timesheetIds: string[], comment?: str
 
 export async function modifyEntryHoursByTeamLead(entryId: string, approvedHours: number): Promise<string> {
     const data: unknown = await api.post(TEAMLEAD_URL.modifyEntryHours, { entryId, approvedHours })
+    return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
+}
+
+export async function reviewEntryByTeamLead(entryId: string, status: string, approvedHours: number, approverComment: string): Promise<string> {
+    const data: unknown = await api.post('/api/teamlead/reviewEntry', { entryId, status, approvedHours, approverComment })
     return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
 }
 

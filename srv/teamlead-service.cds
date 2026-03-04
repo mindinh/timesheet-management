@@ -37,24 +37,27 @@ service TeamLeadService @(
     // ── Workflow Actions ──────────────────────────────────────────────────────
 
     /** View timesheets that are submitted and need approval by the current Team Lead */
-    function getPendingTimesheets()                                                returns array of Timesheets;
+    function getPendingTimesheets()                                                                        returns array of Timesheets;
 
     /** Approve a single timesheet */
-    action   approveTimesheet(timesheetId: String, comment: String)                returns String;
+    action   approveTimesheet(timesheetId: String, comment: String)                                        returns String;
 
     /** Reject a single timesheet back to the employee */
-    action   rejectTimesheet(timesheetId: String, comment: String)                 returns String;
+    action   rejectTimesheet(timesheetId: String, comment: String)                                         returns String;
 
     /** Bulk approve multiple timesheets */
-    action   bulkApproveTimesheets(timesheetIds: array of String, comment: String) returns String;
+    action   bulkApproveTimesheets(timesheetIds: array of String, comment: String)                         returns String;
 
     /** Bulk reject multiple timesheets */
-    action   bulkRejectTimesheets(timesheetIds: array of String, comment: String)  returns String;
+    action   bulkRejectTimesheets(timesheetIds: array of String, comment: String)                          returns String;
 
-    /** Modify logged hours on a specific entry before approving */
-    action   modifyEntryHours(entryId: String, approvedHours: Decimal)             returns String;
+    /** Modify logged hours on a specific entry before approving (Legacy, keep if needed) */
+    action   modifyEntryHours(entryId: String, approvedHours: Decimal)                                     returns String;
+
+    /** Review a specific timesheet entry (Accept/Reject, modify hours, comment) */
+    action   reviewEntry(entryId: String, status: String, approvedHours: Decimal, approverComment: String) returns String;
 
     /** Group approved timesheets into a batch and forward to final Admin */
-    action   createBatch(timesheetIds: array of String, adminId: String)           returns String;
+    action   createBatch(timesheetIds: array of String, adminId: String)                                   returns String;
 
 }

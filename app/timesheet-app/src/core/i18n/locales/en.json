@@ -33,5 +33,60 @@
             "status": "Status",
             "actions": "Actions"
         }
+    },
+    "approvalsPage": {
+        "title": "Approvals & Batching",
+        "description": "Review employee timesheets or batch them to final admins.",
+        "badge": "Approvals",
+        "searchPlaceholder": "Search employee...",
+        "loading": "Loading timesheets...",
+        "noTimesheets": "No timesheets found",
+        "allCaughtUp": "All caught up! Check back later when there are timesheets to review or batch.",
+        "selectedCount": "{{count}} timesheet(s) selected",
+        "rejectSelected": "Reject Selected",
+        "approveSelected": "Approve Selected",
+        "submitBatch": "Submit Batch",
+        "table": {
+            "employee": "Employee",
+            "period": "Period",
+            "submittedDate": "Submitted Date",
+            "totalHours": "Total Hours",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "reviewDetails": "Review Details",
+        "showing": "Showing",
+        "records": "records",
+        "adminModal": {
+            "title": "Select Final Admin",
+            "description": "Select the Admin to whom this batch of {{count}} timesheets will be forwarded for final approval.",
+            "placeholder": "Select an admin...",
+            "cancel": "Cancel",
+            "createBatch": "Create Batch"
+        },
+        "commentModal": {
+            "titleApprove": "Approve Timesheets",
+            "titleReject": "Reject Timesheets",
+            "descApprove": "You are about to approve {{count}} timesheet(s). You can optionally provide a comment.",
+            "descReject": "You are about to reject {{count}} timesheet(s). Please provide a reason.",
+            "placeholder": "Add a comment or reason...",
+            "cancel": "Cancel",
+            "confirmApprove": "Confirm Approval",
+            "confirmReject": "Confirm Rejection"
+        },
+        "months": {
+            "1": "January",
+            "2": "February",
+            "3": "March",
+            "4": "April",
+            "5": "May",
+            "6": "June",
+            "7": "July",
+            "8": "August",
+            "9": "September",
+            "10": "October",
+            "11": "November",
+            "12": "December"
+        }
     }
 }

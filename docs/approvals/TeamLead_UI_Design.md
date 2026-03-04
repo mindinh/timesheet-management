@@ -14,6 +14,7 @@ The User Interface (UI) for the `TeamLeadService` feature is designed to allow T
   - Checkbox at the beginning of each row (For Bulk Actions).
   - Action buttons on each row: `View Details`, `Approve`, `Reject`.
 - **Top Bar / Actions:**
+  - **FilterBar**: Integrates "Year", "Month" dropdowns, and "Search" text input into a single, cohesive, standard component to seamlessly filter the timesheets presented.
   - **Reject** button: Enabled when items are selected.
   - **Approve Selected** button: Enabled when items are selected.
   - **Submit Batch** button: Group selected timesheets (both pending and approved), prompt for a final Admin, and forward them seamlessly.
