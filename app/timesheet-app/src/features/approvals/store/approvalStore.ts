@@ -1,8 +1,7 @@
 import { create } from 'zustand'
 import type { Timesheet, TimesheetEntry } from '@/shared/types'
 import {
-    getPendingTimesheets,
-    getApprovedTimesheets,
+    getTimesheetsByMonthYear,
     getTimesheetDetailByTeamLead,
     modifyEntryHoursByTeamLead,
     approveTimesheetByTeamLead,
@@ -18,6 +17,8 @@ interface ApprovalState {
     timesheets: Timesheet[]
     isLoading: boolean
     filter: 'All' | 'Submitted' | 'Approved' | 'Rejected' | 'Finished'
+    currentMonth: number
+    currentYear: number
 
     // Detail view
     selectedTimesheet: (Timesheet & { entries: TimesheetEntry[] }) | null
@@ -28,6 +29,7 @@ interface ApprovalState {
 
     // Actions
     setFilter: (filter: ApprovalState['filter']) => void
+    setPeriod: (month: number, year: number) => void
     fetchApprovableTimesheets: () => Promise<void>
     fetchTimesheetDetail: (timesheetId: string) => Promise<void>
     setModifiedHours: (entryId: string, hours: number) => void
@@ -47,6 +49,8 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
     timesheets: [],
     isLoading: false,
     filter: 'All',
+    currentMonth: new Date().getMonth() + 1,
+    currentYear: new Date().getFullYear(),
 
     selectedTimesheet: null,
     isDetailLoading: false,
@@ -56,14 +60,17 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
 
     setFilter: (filter) => set({ filter }),
 
+    setPeriod: (month, year) => {
+        set({ currentMonth: month, currentYear: year })
+        get().fetchApprovableTimesheets()
+    },
+
     fetchApprovableTimesheets: async () => {
         set({ isLoading: true })
         try {
-            const [pending, approved] = await Promise.all([
-                getPendingTimesheets(),
-                getApprovedTimesheets()
-            ])
-            set({ timesheets: [...pending, ...approved], isLoading: false })
+            const { currentMonth, currentYear } = get()
+            const timesheets = await getTimesheetsByMonthYear(currentMonth, currentYear)
+            set({ timesheets, isLoading: false })
         } catch (error) {
             console.error('Failed to fetch approvable timesheets:', error)
             set({ isLoading: false })

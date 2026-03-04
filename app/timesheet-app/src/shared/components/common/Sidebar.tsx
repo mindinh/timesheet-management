@@ -12,7 +12,7 @@ import {
     SelectValue,
 } from '@/shared/components/ui/select'
 import LanguageSwitcher from '@/shared/components/common/LanguageSwitcher'
-import { useTimesheetStore, MOCK_USERS } from '@/features/timesheet/store/timesheetStore'
+import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useSidebarStore } from '@/shared/store/sidebarStore'
 import type { UserRole } from '@/shared/types'
@@ -30,24 +30,33 @@ export default function Sidebar() {
     const location = useLocation()
     const navigate = useNavigate()
     const { t } = useTranslation()
-    const { currentUser, switchUser, logout: timesheetLogout } = useTimesheetStore()
+    const { currentUser, switchUser, logout: timesheetLogout, availableUsers, fetchAvailableUsers } = useTimesheetStore()
     const { user: authUser, login, logout: authLogout } = useAuthStore()
     const { isCollapsed, toggle: toggleCollapsed } = useSidebarStore()
 
     useEffect(() => {
-        if (!currentUser && authUser) {
-            const matchedUser = MOCK_USERS.find(u => u.role === authUser.role)
+        const initUsers = async () => {
+            if (availableUsers.length === 0) {
+                await fetchAvailableUsers()
+            }
+        }
+        initUsers()
+    }, [availableUsers.length, fetchAvailableUsers])
+
+    useEffect(() => {
+        if (!currentUser && authUser && availableUsers.length > 0) {
+            const matchedUser = availableUsers.find(u => u.role === authUser.role)
             if (matchedUser) {
                 switchUser(matchedUser.id)
             }
-        } else if (!authUser && !currentUser) {
+        } else if (!authUser && !currentUser && availableUsers.length > 0) {
             login('Employee')
-            switchUser(MOCK_USERS[0].id)
+            switchUser(availableUsers[0].id)
         }
-    }, [authUser, currentUser, switchUser, login])
+    }, [authUser, currentUser, switchUser, login, availableUsers])
 
     const handleUserChange = (userId: string) => {
-        const user = MOCK_USERS.find(u => u.id === userId)
+        const user = availableUsers.find(u => u.id === userId)
         if (user) {
             login(user.role as UserRole)
         }
@@ -118,7 +127,7 @@ export default function Sidebar() {
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            {MOCK_USERS.map((user) => (
+                            {availableUsers.map((user) => (
                                 <SelectItem key={user.id} value={user.id}>
                                     {user.firstName} {user.lastName} ({user.role})
                                 </SelectItem>

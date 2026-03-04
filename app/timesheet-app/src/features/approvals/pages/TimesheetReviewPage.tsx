@@ -93,8 +93,8 @@ export default function TimesheetReviewPage() {
     const variance = totalModified - totalSubmitted
     const variancePercent = totalSubmitted > 0 ? ((variance / totalSubmitted) * 100).toFixed(1) : '0.0'
 
-    const isApprover = currentUser && ts && ts.currentApprover?.id === currentUser.id
     const isTeamLead = currentUser?.role === 'TeamLead'
+    const isApprover = (currentUser && ts && ts.currentApprover?.id === currentUser.id) || isTeamLead
 
     const handleApprove = async () => {
         if (!timesheetId) return
@@ -102,8 +102,9 @@ export default function TimesheetReviewPage() {
         try {
             await approveTimesheet(timesheetId)
             navigate('/approvals')
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
+            setStatusDialog({ open: true, variant: 'error', title: 'Approval Failed', description: err.response?.data?.error?.message || err.message || 'An error occurred during approval.' })
         } finally {
             setActionLoading(null)
         }
@@ -118,8 +119,9 @@ export default function TimesheetReviewPage() {
         try {
             await rejectTimesheet(timesheetId)
             navigate('/approvals')
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
+            setStatusDialog({ open: true, variant: 'error', title: 'Rejection Failed', description: err.response?.data?.error?.message || err.message || 'An error occurred during rejection.' })
         } finally {
             setActionLoading(null)
         }
@@ -131,8 +133,9 @@ export default function TimesheetReviewPage() {
         try {
             await submitToAdmin(timesheetId, selectedAdminId)
             navigate('/approvals')
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
+            setStatusDialog({ open: true, variant: 'error', title: 'Submission Failed', description: err.response?.data?.error?.message || err.message || 'An error occurred while submitting to Admin.' })
         } finally {
             setActionLoading(null)
             setShowAdminDialog(false)
@@ -414,7 +417,7 @@ export default function TimesheetReviewPage() {
                                 onClick={handleReject}
                                 disabled={actionLoading !== null}
                             >
-                                <X className="h-4 w-4 mr-1" />
+                                {actionLoading === 'reject' ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <X className="h-4 w-4 mr-1" />}
                                 Reject
                             </Button>
                             <Button
@@ -422,27 +425,17 @@ export default function TimesheetReviewPage() {
                                 onClick={handleApprove}
                                 disabled={actionLoading !== null}
                             >
-                                <Check className="h-4 w-4 mr-1" />
+                                {actionLoading === 'approve' ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
                                 Approve
                             </Button>
-                            {isTeamLead && ts.status === 'Approved' && (
+
+                            {isTeamLead && (ts.status === 'Approved' || ts.status === 'Submitted') && (
                                 <Button
-                                    className="bg-primary hover:bg-primary/90"
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
                                     onClick={() => setShowAdminDialog(true)}
                                     disabled={actionLoading !== null}
                                 >
-                                    <Send className="h-4 w-4 mr-1" />
-                                    Submit to Final Admin
-                                </Button>
-                            )}
-                            {/* Team Lead can also submit to admin right after approve */}
-                            {isTeamLead && ts.status === 'Submitted' && (
-                                <Button
-                                    variant="default"
-                                    onClick={() => setShowAdminDialog(true)}
-                                    disabled={actionLoading !== null}
-                                >
-                                    <Send className="h-4 w-4 mr-1" />
+                                    {actionLoading === 'submitToAdmin' ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
                                     Submit to Final Admin
                                 </Button>
                             )}
