@@ -8,6 +8,7 @@
     "@sap/xssec": "^4",
     "exceljs": "^4.4.0",
     "express": "^4",
+    "uuid": "^13.0.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
@@ -17,6 +18,7 @@
     "@sap/cds-dk": "^9",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.3",
+    "@types/uuid": "^10.0.0",
     "concurrently": "^9",
     "eslint": "^9",
     "eslint-config-prettier": "^10",
@@ -40,6 +42,17 @@
   },
   "private": true,
   "cds": {
+    "server": {
+      "parsers": {
+        "json": {
+          "limit": "50mb"
+        },
+        "urlencoded": {
+          "limit": "50mb",
+          "extended": true
+        }
+      }
+    },
     "requires": {
       "db": {
         "kind": "sqlite",

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Calendar, Eye, History, FileText, Download, SlidersHorizontal, ArrowUp, Settings } from 'lucide-react'
+import { Calendar, Eye, History, FileText, Download, ArrowUp, Settings } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Badge } from '@/shared/components/ui/badge'

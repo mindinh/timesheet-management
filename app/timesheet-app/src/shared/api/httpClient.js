@@ -13,9 +13,30 @@ export async function apiFetch(
     const mockUserId = getMockUserId();
     const mockUserHeader = mockUserId ? { "x-mock-user": mockUserId } : {};
 
+    // Provide an actual Authorization header so CDS doesn't bounce with 401 Basic challenge
+    // The exact credentials depend on the mock user. 
+    // We try to match the mock users created: diana/diana, alice/alice, bob/bob, etc.
+    let authHeader = {};
+    if (mockUserId) {
+        // e.g. mapping internal ID back to username, or just deriving from mockUserId
+        // We know 'e6a003c4-5d78-6f90-b023-c3d4e5f6a7b8' is diana
+        let userPass = "";
+        if (mockUserId === 'e6a003c4-5d78-6f90-b023-c3d4e5f6a7b8') userPass = "diana:diana";
+        else if (mockUserId === '2b7a2d96-0e94-4d13-8a03-7f8a70562590') userPass = "alice:alice";
+        else if (mockUserId === 'c4e8f1a2-3b56-4d78-9e01-a1b2c3d4e5f6') userPass = "bob:bob";
+        else if (mockUserId === 'd5f902b3-4c67-5e89-af12-b2c3d4e5f6a7') userPass = "charlie:charlie";
+        else userPass = "diana:diana"; // fallback
+
+        authHeader = { "Authorization": `Basic ${btoa(userPass)}` };
+    } else {
+        // If not impersonating, use Diana as default to avoid popup
+        authHeader = { "Authorization": `Basic ${btoa('diana:diana')}` };
+    }
+
     const headers = {
         ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...mockUserHeader,
+        ...authHeader,
         ...(options?.headers ?? {}),
     };
 
