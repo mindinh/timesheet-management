@@ -46,6 +46,12 @@ service AdminService @(path: '/api/admin', requires: 'Admin', impl: './admin-ser
   ) returns LargeBinary;
 
   /**
+   * Import data from an Excel file (Base64 encoded) and seed the database.
+   * This action processes the uploaded Excel file to populate User, Project, Task, Timesheet, and TimesheetEntry tables.
+   */
+  action runreport(base64Data: LargeString) returns String;
+
+  /**
    * Trigger a manual sync of projects from the Papierkram API.
    * Requires PAPIERKRAM_API_KEY environment variable to be set.
    */
@@ -81,4 +87,10 @@ service AdminService @(path: '/api/admin', requires: 'Admin', impl: './admin-ser
    * Returns a JSON string containing OT metrics, missing timesheets, and an activity feed.
    */
   action getDashboardStats(month: Integer, year: Integer) returns String;
+
+  /**
+   * Clear all data from the database (dev/test only).
+   * Deletes all records from every entity in the correct order to respect FK constraints.
+   */
+  action clearDatabase() returns String;
 }

@@ -203,6 +203,20 @@ export async function syncProjects(): Promise<string> {
     return (data as { value: string }).value || (data as string)
 }
 
+// ── Run Report (Excel Data Seeding) ───────────────────────────────────────
+export async function runReport(base64Data: string): Promise<string> {
+    const data: unknown = await api.post(`${ADMIN_URL.base}/runreport`, {
+        base64Data
+    })
+    return (data as { value: string }).value || (data as string)
+}
+
+// ── Clear Database ────────────────────────────────────────────────────────
+export async function clearDatabase(): Promise<string> {
+    const data: unknown = await api.post(`${ADMIN_URL.base}/clearDatabase`, {})
+    return (data as { value: string }).value || (data as string)
+}
+
 // ── Modify Entry Hours ────────────────────────────────────────────────────
 export async function adminModifyEntryHours(entryId: string, approvedHours: number, note?: string): Promise<string> {
     const data: unknown = await api.post(ADMIN_URL.adminModifyEntryHours, {
@@ -240,3 +254,64 @@ export async function fetchDashboardStats(month: number, year: number): Promise<
     const parsedData = typeof dataValue === 'string' ? JSON.parse(dataValue) : dataValue
     return parsedData as DashboardStats
 }
+
+// ── Admin Timesheet Detail (uses admin service, not user-scoped) ─────────
+export async function getAdminTimesheetDetail(timesheetId: string) {
+    const data: unknown = await api.get(`${ADMIN_URL.base}/Timesheets('${timesheetId}')`, {
+        $expand: 'entries($expand=project,task),currentApprover,user,approvalHistory($expand=actor)'
+    })
+    const ts = data as Record<string, any>
+    const entries = (ts.entries || []).map((e: Record<string, any>) => ({
+        id: String(e.ID),
+        date: String(e.date),
+        hours: Number(e.loggedHours) || 0,
+        approvedHours: e.approvedHours != null ? Number(e.approvedHours) : undefined,
+        description: e.description as string | undefined,
+        projectId: String(e.project_ID),
+        projectName: e.project?.name || '',
+        taskId: String(e.task_ID),
+        taskName: e.task?.name || '',
+    }))
+    const approvalHistory = (ts.approvalHistory || []).map((h: Record<string, any>) => ({
+        id: String(h.ID),
+        action: String(h.action),
+        fromStatus: String(h.fromStatus),
+        toStatus: String(h.toStatus),
+        comment: h.comment as string | undefined,
+        timestamp: String(h.timestamp || h.createdAt),
+        actor: h.actor ? {
+            id: h.actor.ID,
+            firstName: h.actor.firstName,
+            lastName: h.actor.lastName,
+            role: h.actor.role,
+        } : undefined,
+    }))
+
+    return {
+        id: String(ts.ID),
+        month: Number(ts.month),
+        year: Number(ts.year),
+        status: ts.status,
+        entries,
+        submitDate: ts.submitDate as string | undefined,
+        approveDate: ts.approveDate as string | undefined,
+        finishedDate: ts.finishedDate as string | undefined,
+        totalHours: entries.reduce((sum: number, e: any) => sum + e.hours, 0),
+        comment: ts.comment as string | undefined,
+        approvalHistory,
+        currentApprover: ts.currentApprover ? {
+            id: String(ts.currentApprover.ID),
+            firstName: String(ts.currentApprover.firstName),
+            lastName: String(ts.currentApprover.lastName),
+            role: String(ts.currentApprover.role),
+        } : undefined,
+        user: ts.user ? {
+            id: String(ts.user.ID),
+            firstName: String(ts.user.firstName),
+            lastName: String(ts.user.lastName),
+            email: String(ts.user.email),
+            role: String(ts.user.role),
+        } : undefined,
+    }
+}
+
