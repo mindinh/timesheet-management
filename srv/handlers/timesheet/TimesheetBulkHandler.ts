@@ -212,16 +212,16 @@ export class TimesheetBulkHandler {
                 }
 
                 await UPDATE(Timesheet).set({
-                    status: 'Rejected',
+                    status: 'Reopened',
                     comment: comment,
                 }).where({ ID: timesheetId })
 
                 await INSERT.into(ApprovalHistory).entries({
                     timesheet_ID: timesheetId,
                     actor_ID: user.ID,
-                    action: 'Rejected',
+                    action: 'Reopened',
                     fromStatus: ts.status,
-                    toStatus: 'Rejected',
+                    toStatus: 'Reopened',
                     comment: comment,
                     timestamp: new Date().toISOString(),
                 })

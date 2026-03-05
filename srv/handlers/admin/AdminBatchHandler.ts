@@ -110,10 +110,10 @@ export class AdminBatchHandler {
 
         const now = new Date().toISOString()
 
-        // 2. Update timesheets to Rejected
+        // 2. Update timesheets to Reopened
         await UPDATE(Timesheet)
             .set({
-                status: 'Rejected',
+                status: 'Reopened',
                 comment: comment
             })
             .where({ batch_ID: batchId })
@@ -122,10 +122,10 @@ export class AdminBatchHandler {
         const historyEntries = timesheets.map((ts: any) => ({
             timesheet_ID: ts.ID,
             actor_ID: admin.ID,
-            action: 'Rejected',
+            action: 'Reopened',
             fromStatus: ts.status,
-            toStatus: 'Rejected',
-            comment: `Batch Rejected: ${comment}`,
+            toStatus: 'Reopened',
+            comment: `Batch Reopened: ${comment}`,
             timestamp: now
         }))
 
@@ -134,18 +134,18 @@ export class AdminBatchHandler {
         }
 
         // 4. Update Batch status
-        await UPDATE(TimesheetBatch).set({ status: 'Rejected' }).where({ ID: batchId })
+        await UPDATE(TimesheetBatch).set({ status: 'Reopened' }).where({ ID: batchId })
 
         // 5. Log batch history
         await INSERT.into(BatchHistory).entries({
             batch_ID: batchId,
             actor_ID: admin.ID,
-            action: 'Rejected',
-            status: 'Rejected',
+            action: 'Reopened',
+            status: 'Reopened',
             comment: comment,
             timestamp: now
         })
 
-        return `Batch rejected. ${timesheets.length} timesheets marked as Rejected.`
+        return `Batch rejected. ${timesheets.length} timesheets marked as Reopened.`
     }
 }

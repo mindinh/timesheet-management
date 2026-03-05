@@ -21,7 +21,7 @@ export function TimesheetStats({ entries, currentMonth, status = 'Draft', workin
         if (status === 'Approved' || status === 'Finished') return 'Approved'
         if (status === 'Approved_By_TeamLead') return 'Partial'
         if (status === 'Submitted') return 'Pending'
-        if (status === 'Rejected') return 'Rejected'
+        if (status === 'Reopened') return 'Reopened'
         return 'Pending'
     }
 

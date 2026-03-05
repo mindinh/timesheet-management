@@ -52,8 +52,8 @@ export function TimesheetFooter({
 
     const selectedApprover = filteredApprovers.find(a => a.id === selectedApproverId)
 
-    const canSubmit = status === 'Draft' || status === 'Rejected'
-    const submitLabel = status === 'Rejected' ? 'Resubmit Timesheet' : 'Submit Timesheet'
+    const canSubmit = status === 'Draft' || status === 'Reopened'
+    const submitLabel = status === 'Reopened' ? 'Resubmit Timesheet' : 'Submit Timesheet'
 
     return (
         <div className="space-y-4">

@@ -4,10 +4,10 @@ import {
     getTimesheetsByMonthYear,
     getTimesheetDetailByTeamLead,
     approveTimesheetByTeamLead,
-    rejectTimesheetByTeamLead,
+    reopenTimesheetByTeamLead,
     createBatch,
     bulkApproveTimesheets as bulkApproveApi,
-    bulkRejectTimesheets as bulkRejectApi
+    bulkReopenTimesheets as bulkReopenApi
 } from '@/features/approvals/api/teamlead-api'
 import { api } from '@/shared/api/http'
 
@@ -15,7 +15,7 @@ interface ApprovalState {
     // List of timesheets pending this user's approval
     timesheets: Timesheet[]
     isLoading: boolean
-    filter: 'All' | 'Submitted' | 'Approved' | 'Rejected' | 'Finished'
+    filter: 'All' | 'Submitted' | 'Approved' | 'Reopened' | 'Finished'
     currentMonth: number
     currentYear: number
 
@@ -40,9 +40,9 @@ interface ApprovalState {
     fetchAdmins: () => Promise<void>
 
     approveTimesheet: (timesheetId: string) => Promise<void>
-    rejectTimesheet: (timesheetId: string) => Promise<void>
+    reopenTimesheetForEdit: (timesheetId: string) => Promise<void>
     bulkApproveTimesheets: (timesheetIds: string[], comment?: string) => Promise<void>
-    bulkRejectTimesheets: (timesheetIds: string[], comment?: string) => Promise<void>
+    bulkReopenTimesheetsForEdit: (timesheetIds: string[], comment?: string) => Promise<void>
     submitToAdmin: (timesheetId: string, adminId: string) => Promise<void>
     bulkBatchToAdmin: (timesheetIds: string[], adminId: string) => Promise<void>
     saveModifiedHours: () => Promise<void>
@@ -178,13 +178,13 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
         }
     },
 
-    rejectTimesheet: async (timesheetId: string) => {
+    reopenTimesheetForEdit: async (timesheetId: string) => {
         const { comment } = get()
         try {
-            await rejectTimesheetByTeamLead(timesheetId, comment || undefined)
+            await reopenTimesheetByTeamLead(timesheetId, comment || undefined)
             await get().fetchApprovableTimesheets()
         } catch (error) {
-            console.error('Failed to reject timesheet:', error)
+            console.error('Failed to reopen timesheet:', error)
             throw error
         }
     },
@@ -199,12 +199,12 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
         }
     },
 
-    bulkRejectTimesheets: async (timesheetIds: string[], comment?: string) => {
+    bulkReopenTimesheetsForEdit: async (timesheetIds: string[], comment?: string) => {
         try {
-            await bulkRejectApi(timesheetIds, comment)
+            await bulkReopenApi(timesheetIds, comment)
             await get().fetchApprovableTimesheets()
         } catch (error) {
-            console.error('Failed to bulk reject timesheets:', error)
+            console.error('Failed to bulk reopen timesheets:', error)
             throw error
         }
     },

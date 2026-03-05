@@ -66,8 +66,8 @@ export default function TimesheetPage() {
         }
     }, [searchParams])
 
-    // Determine if editing is allowed (Draft or Rejected)
-    const isReadOnly = currentTimesheetStatus !== 'Draft' && currentTimesheetStatus !== 'Rejected'
+    // Determine if editing is allowed (Draft or Reopened)
+    const isReadOnly = currentTimesheetStatus !== 'Draft' && currentTimesheetStatus !== 'Reopened'
 
     // Handle URL query params for month/year (from TimesheetListPage navigation)
     useEffect(() => {
@@ -318,12 +318,12 @@ export default function TimesheetPage() {
             )}
 
             {/* Rejection Alert */}
-            {currentTimesheetStatus === 'Rejected' && (
+            {currentTimesheetStatus === 'Reopened' && (
                 <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Timesheet Rejected</AlertTitle>
+                    <AlertTitle>Timesheet Reopened for Edit</AlertTitle>
                     <AlertDescription>
-                        {currentTimesheetComment || 'Your timesheet has been rejected. Please review and resubmit.'}
+                        {currentTimesheetComment || 'Your timesheet has been reopened for edit. Please review and resubmit.'}
                     </AlertDescription>
                 </Alert>
             )}

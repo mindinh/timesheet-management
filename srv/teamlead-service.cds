@@ -42,14 +42,14 @@ service TeamLeadService @(
     /** Approve a single timesheet */
     action   approveTimesheet(timesheetId: String, comment: String)                                        returns String;
 
-    /** Reject a single timesheet back to the employee */
-    action   rejectTimesheet(timesheetId: String, comment: String)                                         returns String;
+    /** Reopen a single timesheet back to the employee for edit */
+    action   reopenForEdit(timesheetId: String, comment: String)                                           returns String;
 
     /** Bulk approve multiple timesheets */
     action   bulkApproveTimesheets(timesheetIds: array of String, comment: String)                         returns String;
 
-    /** Bulk reject multiple timesheets */
-    action   bulkRejectTimesheets(timesheetIds: array of String, comment: String)                          returns String;
+    /** Bulk reopen multiple timesheets for edit */
+    action   bulkReopenForEdit(timesheetIds: array of String, comment: String)                             returns String;
 
     /** Modify logged hours on a specific entry before approving (Legacy, keep if needed) */
     action   modifyEntryHours(entryId: String, approvedHours: Decimal)                                     returns String;

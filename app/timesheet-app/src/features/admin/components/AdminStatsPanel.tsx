@@ -179,7 +179,7 @@ export function AdminStatsPanel() {
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-1 font-mono">
                                                     <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-semibold ${activity.action === 'Created' ? 'bg-emerald-100 text-emerald-700' :
-                                                        activity.action === 'Rejected' ? 'bg-destructive/10 text-destructive' :
+                                                        activity.action === 'Reopened' ? 'bg-destructive/10 text-destructive' :
                                                             activity.action === 'Finished' || activity.action === 'Approved' ? 'bg-blue-100 text-blue-700' :
                                                                 'bg-slate-100 text-slate-700'
                                                         }`}>

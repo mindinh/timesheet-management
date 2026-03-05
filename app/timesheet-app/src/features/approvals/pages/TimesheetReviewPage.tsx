@@ -55,7 +55,7 @@ export default function TimesheetReviewPage() {
         setComment,
         fetchTimesheetDetail,
         approveTimesheet,
-        rejectTimesheet,
+        reopenTimesheetForEdit,
         submitToAdmin,
         fetchAdmins,
     } = useApprovalStore()
@@ -116,18 +116,18 @@ export default function TimesheetReviewPage() {
         }
     }
 
-    const handleReject = async () => {
+    const handleReopen = async () => {
         if (!timesheetId || !comment.trim()) {
-            setStatusDialog({ open: true, variant: 'warning', title: 'Comment Required', description: 'Please provide a reason for rejection in the notes section.' })
+            setStatusDialog({ open: true, variant: 'warning', title: 'Comment Required', description: 'Please provide a reason for reopening to edit in the notes section.' })
             return
         }
-        setActionLoading('reject')
+        setActionLoading('reopen')
         try {
-            await rejectTimesheet(timesheetId)
+            await reopenTimesheetForEdit(timesheetId)
             navigate('/approvals')
         } catch (err: any) {
             console.error(err)
-            setStatusDialog({ open: true, variant: 'error', title: 'Rejection Failed', description: err.response?.data?.error?.message || err.message || 'An error occurred during rejection.' })
+            setStatusDialog({ open: true, variant: 'error', title: 'Reopen Failed', description: err.response?.data?.error?.message || err.message || 'An error occurred.' })
         } finally {
             setActionLoading(null)
         }
@@ -348,21 +348,21 @@ export default function TimesheetReviewPage() {
                                                         <SelectTrigger className={cn(
                                                             "h-8 text-xs",
                                                             entryStatus[entry.id] === 'Approved' ? 'bg-sap-positive/10 text-sap-positive border-sap-positive/30' :
-                                                                entryStatus[entry.id] === 'Rejected' ? 'bg-sap-negative/10 text-sap-negative border-sap-negative/30' : ''
+                                                                entryStatus[entry.id] === 'Reopened' ? 'bg-sap-negative/10 text-sap-negative border-sap-negative/30' : ''
                                                         )}>
                                                             <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             <SelectItem value="Pending">Pending</SelectItem>
                                                             <SelectItem value="Approved">Approved</SelectItem>
-                                                            <SelectItem value="Rejected">Rejected</SelectItem>
+                                                            <SelectItem value="Reopened">Reopened</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 ) : (
                                                     <Badge variant="outline" className={cn(
                                                         "text-xs font-normal",
                                                         entryStatus[entry.id] === 'Approved' ? 'bg-sap-positive/10 text-sap-positive border-sap-positive/30' :
-                                                            entryStatus[entry.id] === 'Rejected' ? 'bg-sap-negative/10 text-sap-negative border-sap-negative/30' : ''
+                                                            entryStatus[entry.id] === 'Reopened' ? 'bg-sap-negative/10 text-sap-negative border-sap-negative/30' : ''
                                                     )}>
                                                         {entryStatus[entry.id] || 'Pending'}
                                                     </Badge>
@@ -468,14 +468,14 @@ export default function TimesheetReviewPage() {
                             <Button
                                 variant="outline"
                                 className="border-sap-negative text-sap-negative hover:bg-sap-negative/10"
-                                onClick={handleReject}
+                                onClick={handleReopen}
                                 disabled={actionLoading !== null}
                             >
-                                {actionLoading === 'reject' ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <X className="h-4 w-4 mr-1" />}
-                                Reject
+                                {actionLoading === 'reopen' ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <X className="h-4 w-4 mr-1" />}
+                                Reopen for Edit
                             </Button>
                             <Button
-                                className="bg-sap-positive hover:bg-sap-positive/90 text-white"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
                                 onClick={handleApprove}
                                 disabled={actionLoading !== null}
                             >

@@ -153,7 +153,7 @@ export class AdminDashboardHandler {
             { name: 'Submitted', value: 0 },
             { name: 'Approved', value: 0 },
             { name: 'Finished', value: 0 },
-            { name: 'Rejected', value: 0 }
+            { name: 'Reopened', value: 0 }
         ]
 
         timesheets.forEach((ts: any) => {

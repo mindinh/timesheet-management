@@ -18,7 +18,7 @@ type TimesheetStatus : String(30) enum {
   Draft; // User is editing
   Submitted; // Waiting for Team Lead review
   Approved; // Team Lead approved – finalised (ready for batching)
-  Rejected; // Returned to employee
+  Reopened; // Returned to employee
   Finished; // Archived / done (Admin marked batch as Done)
 };
 
@@ -144,7 +144,7 @@ entity TimesheetEntry : cuid, managed {
   project         : Association to Project   @mandatory;
   task            : Association to Task; // optional – finer granularity
   date            : Date                     @mandatory;
-  status          : String(20) default 'Pending'; // Pending, Approved, Rejected
+  status          : String(20) default 'Pending'; // Pending, Approved, Reopened
   approverComment : String(500); // Reason for rejection or modification
   loggedHours     : Decimal(5, 2)            @mandatory; // employee's original value
   approvedHours   : Decimal(5, 2); // modified by approver (nullable)
@@ -161,7 +161,7 @@ entity TimesheetEntry : cuid, managed {
 entity ApprovalHistory : cuid, managed {
   timesheet  : Association to Timesheet @mandatory;
   actor      : Association to User      @mandatory; // who performed the action
-  action     : String(30)               @mandatory; // Submitted, Approved, Rejected, Modified, Finished
+  action     : String(30)               @mandatory; // Submitted, Approved, Reopened, Modified, Finished
   fromStatus : TimesheetStatus;
   toStatus   : TimesheetStatus;
   comment    : String(1000);
@@ -176,8 +176,8 @@ entity ApprovalHistory : cuid, managed {
 entity BatchHistory : cuid, managed {
   batch     : Association to TimesheetBatch @mandatory;
   actor     : Association to User           @mandatory; // who performed the action
-  action    : String(30)                    @mandatory; // Created, Finished, Rejected
-  status    : String(20); // Pending, Processed, Rejected
+  action    : String(30)                    @mandatory; // Created, Finished, Reopened
+  status    : String(20); // Pending, Processed, Reopened
   comment   : String(1000);
   timestamp : DateTime                      @mandatory;
 }

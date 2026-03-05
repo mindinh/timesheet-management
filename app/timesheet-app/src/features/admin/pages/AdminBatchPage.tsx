@@ -46,7 +46,7 @@ const BASE_FILTER_CONFIG: Partial<FilterFieldConfig>[] = [
         options: [
             { label: 'Pending', value: 'Pending' },
             { label: 'Done', value: 'Done' },
-            { label: 'Rejected', value: 'Rejected' },
+            { label: 'Reopened', value: 'Reopened' },
         ],
     },
 ]

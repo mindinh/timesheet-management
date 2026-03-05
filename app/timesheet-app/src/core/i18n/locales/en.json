@@ -13,7 +13,7 @@
         "title": "Audit History",
         "Submitted": "Submitted",
         "Approved": "Approved",
-        "Rejected": "Rejected",
+        "Reopened": "Reopened for Edit",
         "Modified": "Modified",
         "Finished": "Finished"
     },
@@ -58,7 +58,7 @@
         "noTimesheets": "No timesheets found",
         "allCaughtUp": "All caught up! Check back later when there are timesheets to review or batch.",
         "selectedCount": "{{count}} timesheet(s) selected",
-        "rejectSelected": "Reject Selected",
+        "rejectSelected": "Reopen Selected for Edit",
         "approveSelected": "Approve Selected",
         "submitBatch": "Submit Batch",
         "table": {
@@ -81,13 +81,13 @@
         },
         "commentModal": {
             "titleApprove": "Approve Timesheets",
-            "titleReject": "Reject Timesheets",
+            "titleReject": "Reopen Timesheets for Edit",
             "descApprove": "You are about to approve {{count}} timesheet(s). You can optionally provide a comment.",
-            "descReject": "You are about to reject {{count}} timesheet(s). Please provide a reason.",
+            "descReject": "You are about to reopen {{count}} timesheet(s) for edit. Please provide a mandatory reason.",
             "placeholder": "Add a comment or reason...",
             "cancel": "Cancel",
             "confirmApprove": "Confirm Approval",
-            "confirmReject": "Confirm Rejection"
+            "confirmReject": "Confirm Reopen"
         },
         "months": {
             "1": "January",

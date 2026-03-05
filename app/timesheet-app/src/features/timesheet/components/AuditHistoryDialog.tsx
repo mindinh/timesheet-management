@@ -40,12 +40,12 @@ const ACTION_CONFIG: Record<string, {
         borderColor: 'border-success/30',
         label: 'Approved',
     },
-    Rejected: {
+    Reopened: {
         icon: XCircle,
         color: 'text-error',
         bgColor: 'bg-error-bg',
         borderColor: 'border-error/30',
-        label: 'Rejected',
+        label: 'Reopened for Edit',
     },
     Modified: {
         icon: RotateCcw,
@@ -71,7 +71,7 @@ const DEFAULT_CONFIG = {
     label: 'Action',
 }
 
-const FILTER_OPTIONS = ['All', 'Submitted', 'Approved', 'Rejected', 'Modified', 'Finished'] as const
+const FILTER_OPTIONS = ['All', 'Submitted', 'Approved', 'Reopened', 'Modified', 'Finished'] as const
 
 export function AuditHistoryDialog({
     open,
@@ -205,7 +205,7 @@ export function AuditHistoryDialog({
                                             {event.comment && (
                                                 <div className={cn(
                                                     'mt-3 rounded-md px-3 py-2 text-sm border',
-                                                    event.action === 'Rejected'
+                                                    event.action === 'Reopened'
                                                         ? 'bg-error-bg border-error/20 text-error'
                                                         : 'bg-muted/30 border-border text-muted-foreground'
                                                 )}>

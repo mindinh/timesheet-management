@@ -1,5 +1,5 @@
 export type ProjectType = 'Papierkram' | 'Internal' | 'External' | 'Other'
-export type TimesheetStatusType = 'Draft' | 'Submitted' | 'Approved_By_TeamLead' | 'Approved' | 'Rejected' | 'Finished'
+export type TimesheetStatusType = 'Draft' | 'Submitted' | 'Approved_By_TeamLead' | 'Approved' | 'Reopened' | 'Finished'
 export type UserRole = 'Employee' | 'TeamLead' | 'Admin'
 
 export interface TimesheetEntry {
@@ -12,14 +12,14 @@ export interface TimesheetEntry {
     timesheetId?: string
     hours: number
     approvedHours?: number
-    status?: string // Pending, Approved, Rejected
+    status?: string // Pending, Approved, Reopened
     approverComment?: string
     description?: string
 }
 
 export interface ApprovalHistory {
     id: string
-    action: string          // Submitted, Approved, Rejected, Modified, Finished
+    action: string          // Submitted, Approved, Reopened, Modified, Finished
     fromStatus?: string
     toStatus?: string
     comment?: string

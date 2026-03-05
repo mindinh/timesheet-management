@@ -19,7 +19,7 @@ const statusColors: Record<string, string> = {
     Submitted: 'bg-status-sent text-status-sent-text border-status-sent-border',
     Approved_By_TeamLead: 'bg-status-completed text-status-completed-text border-status-completed-border',
     Approved: 'bg-status-completed text-status-completed-text border-status-completed-border',
-    Rejected: 'bg-status-new text-status-new-text border-status-new-border',
+    Reopened: 'bg-status-new text-status-new-text border-status-new-border',
     Finished: 'bg-status-completed text-status-completed-text border-status-completed-border',
 }
 
@@ -45,7 +45,7 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
     { value: 'Draft', label: 'Draft' },
     { value: 'Submitted', label: 'Submitted' },
     { value: 'Approved', label: 'Approved' },
-    { value: 'Rejected', label: 'Rejected' },
+    { value: 'Reopened', label: 'Reopened for Edit' },
     { value: 'Finished', label: 'Finished' },
 ]
 
@@ -138,6 +138,14 @@ export default function TimesheetListPage() {
                 result = result.filter(ts => ts.status === statusVal)
             }
         }
+
+        // Sort: Reopened first, then default year desc, month desc
+        result.sort((a, b) => {
+            if (a.status === 'Reopened' && b.status !== 'Reopened') return -1;
+            if (b.status === 'Reopened' && a.status !== 'Reopened') return 1;
+            if (a.year !== b.year) return b.year - a.year;
+            return b.month - a.month;
+        });
 
         return result
     }, [timesheets, filterValues])

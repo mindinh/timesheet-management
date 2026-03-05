@@ -19,9 +19,9 @@ export const TIMESHEET_URL = {
 export const TEAMLEAD_URL = {
     pendingTimesheets: `${SERVICE_URL.teamlead}/getPendingTimesheets()`,
     approve: `${SERVICE_URL.teamlead}/approveTimesheet`,
-    reject: `${SERVICE_URL.teamlead}/rejectTimesheet`,
+    reopen: `${SERVICE_URL.teamlead}/reopenForEdit`,
     bulkApprove: `${SERVICE_URL.teamlead}/bulkApproveTimesheets`,
-    bulkReject: `${SERVICE_URL.teamlead}/bulkRejectTimesheets`,
+    bulkReopen: `${SERVICE_URL.teamlead}/bulkReopenForEdit`,
     modifyEntryHours: `${SERVICE_URL.teamlead}/modifyEntryHours`,
     createBatch: `${SERVICE_URL.teamlead}/createBatch`,
     timesheets: `${SERVICE_URL.teamlead}/Timesheets`,

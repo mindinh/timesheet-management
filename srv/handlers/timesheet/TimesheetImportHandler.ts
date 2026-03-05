@@ -47,8 +47,8 @@ export class TimesheetImportHandler {
         if (ts.user_ID !== user.ID && user.role !== 'Admin' && user.role !== 'Manager') {
             return req.reject(403, 'You do not have access to import entries into this timesheet')
         }
-        if (ts.status !== 'Draft' && ts.status !== 'Rejected') {
-            return req.reject(400, `Cannot import – timesheet is "${ts.status}". Only Draft or Rejected timesheets can be edited.`)
+        if (ts.status !== 'Draft' && ts.status !== 'Reopened') {
+            return req.reject(400, `Cannot import – timesheet is "${ts.status}". Only Draft or Reopened timesheets can be edited.`)
         }
 
         // Parse Excel

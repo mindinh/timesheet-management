@@ -26,7 +26,7 @@ export function CalendarHeader({
         Submitted: 'bg-status-sent text-status-sent-text',
         Approved_By_TeamLead: 'bg-status-completed text-status-completed-text',
         Approved: 'bg-status-completed text-status-completed-text',
-        Rejected: 'bg-status-new text-status-new-text',
+        Reopened: 'bg-status-new text-status-new-text',
         Finished: 'bg-status-completed text-status-completed-text',
     }
 
@@ -85,9 +85,9 @@ export function CalendarHeader({
                         <Button
                             onClick={() => { }}
                             className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6"
-                            disabled={status !== 'Draft' && status !== 'Rejected'}
+                            disabled={status !== 'Draft' && status !== 'Reopened'}
                         >
-                            {status === 'Rejected' ? 'Resubmit' : 'Submit'}
+                            {status === 'Reopened' ? 'Resubmit' : 'Submit'}
                         </Button>
                     )} */}
                 </div>

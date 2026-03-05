@@ -29,7 +29,7 @@ export class TimesheetWorkflowHandler {
 
         const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId })
         if (!ts) return req.reject(404, 'Timesheet not found')
-        if (ts.status !== 'Draft' && ts.status !== 'Rejected') {
+        if (ts.status !== 'Draft' && ts.status !== 'Reopened') {
             return req.reject(400, `Cannot submit – status is "${ts.status}"`)
         }
 
@@ -164,16 +164,16 @@ export class TimesheetWorkflowHandler {
         }
 
         await UPDATE(Timesheet).set({
-            status: 'Rejected',
+            status: 'Reopened',
             comment: comment || null,
         }).where({ ID: timesheetId })
 
         await INSERT.into(ApprovalHistory).entries({
             timesheet_ID: timesheetId,
             actor_ID: user.ID,
-            action: 'Rejected',
+            action: 'Reopened',
             fromStatus: ts.status,
-            toStatus: 'Rejected',
+            toStatus: 'Reopened',
             comment: comment || null,
             timestamp: new Date().toISOString(),
         })

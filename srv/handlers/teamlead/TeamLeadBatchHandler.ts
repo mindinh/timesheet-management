@@ -15,9 +15,9 @@ export class TeamLeadBatchHandler {
     register() {
         this.srv.on('getPendingTimesheets', this.onGetPendingTimesheets.bind(this));
         this.srv.on('approveTimesheet', this.onApproveTimesheet.bind(this));
-        this.srv.on('rejectTimesheet', this.onRejectTimesheet.bind(this));
+        this.srv.on('reopenForEdit', this.onReopenForEdit.bind(this));
         this.srv.on('bulkApproveTimesheets', this.onBulkApproveTimesheets.bind(this));
-        this.srv.on('bulkRejectTimesheets', this.onBulkRejectTimesheets.bind(this));
+        this.srv.on('bulkReopenForEdit', this.onBulkReopenForEdit.bind(this));
         this.srv.on('modifyEntryHours', this.onModifyEntryHours.bind(this));
         this.srv.on('reviewEntry', this.onReviewEntry.bind(this));
         this.srv.on('createBatch', this.onCreateBatch.bind(this));
@@ -68,10 +68,10 @@ export class TeamLeadBatchHandler {
         return this.processApproval(req, timesheetId, 'Approved', comment);
     }
 
-    // ── rejectTimesheet ──
-    private async onRejectTimesheet(req: any) {
+    // ── reopenForEdit ──
+    private async onReopenForEdit(req: any) {
         const { timesheetId, comment } = req.data;
-        return this.processApproval(req, timesheetId, 'Rejected', comment);
+        return this.processApproval(req, timesheetId, 'Reopened', comment);
     }
 
     // ── bulkApproveTimesheets ──
@@ -89,23 +89,23 @@ export class TeamLeadBatchHandler {
         return `Successfully approved ${count} timesheets`;
     }
 
-    // ── bulkRejectTimesheets ──
-    private async onBulkRejectTimesheets(req: any) {
+    // ── bulkReopenForEdit ──
+    private async onBulkReopenForEdit(req: any) {
         const { timesheetIds, comment } = req.data;
         let count = 0;
         for (const id of timesheetIds) {
             try {
-                await this.processApproval(req, id, 'Rejected', comment);
+                await this.processApproval(req, id, 'Reopened', comment);
                 count++;
             } catch (err: any) {
-                req.warn(400, `Failed to reject ${id}: ${err.message}`);
+                req.warn(400, `Failed to reopen ${id}: ${err.message}`);
             }
         }
-        return `Successfully rejected ${count} timesheets`;
+        return `Successfully reopened ${count} timesheets for edit`;
     }
 
     // ── Internal Action Processor ──
-    private async processApproval(req: any, timesheetId: string, action: 'Approved' | 'Rejected', comment?: string) {
+    private async processApproval(req: any, timesheetId: string, action: 'Approved' | 'Reopened', comment?: string) {
         const user = await resolveUser(req);
         if (!user) throw new Error('User not found');
 
@@ -128,6 +128,10 @@ export class TeamLeadBatchHandler {
             throw new Error(`Cannot change status from "${ts.status}"`);
         }
 
+        if (action === 'Reopened' && !comment?.trim()) {
+            throw new Error('A reason is required when reopening a timesheet for edit.');
+        }
+
         const updateData: any = {
             status: action,
             comment: comment || ts.comment,
@@ -145,7 +149,7 @@ export class TeamLeadBatchHandler {
             updateData.mainDays = Number((totalHrs / 8).toFixed(2));
         }
 
-        if (action === 'Rejected') {
+        if (action === 'Reopened') {
             // Send back to employee
             updateData.currentApprover_ID = ts.user_ID;
         }

@@ -33,7 +33,7 @@ import { cn } from '@/shared/lib/utils'
 export default function ApprovalsPage() {
     const navigate = useNavigate()
     const { t } = useTranslation()
-    const { timesheets, isLoading, currentMonth, currentYear, setPeriod, fetchApprovableTimesheets, bulkApproveTimesheets, bulkRejectTimesheets, bulkBatchToAdmin, admins, fetchAdmins } = useApprovalStore()
+    const { timesheets, isLoading, currentMonth, currentYear, setPeriod, fetchApprovableTimesheets, bulkApproveTimesheets, bulkReopenTimesheetsForEdit, bulkBatchToAdmin, admins, fetchAdmins } = useApprovalStore()
     const { currentUser, fetchCurrentUser } = useTimesheetStore()
 
     // FilterBar state
@@ -88,7 +88,7 @@ export default function ApprovalsPage() {
     const [adminModal, setAdminModal] = useState<{ open: boolean, adminId: string }>({
         open: false, adminId: ''
     })
-    const [commentModal, setCommentModal] = useState<{ open: boolean, action: 'approve' | 'reject', comment: string }>({
+    const [commentModal, setCommentModal] = useState<{ open: boolean, action: 'approve' | 'reopen', comment: string }>({
         open: false, action: 'approve', comment: ''
     })
 
@@ -232,7 +232,7 @@ export default function ApprovalsPage() {
     }
 
     // ---- Handlers ----
-    const handleOpenCommentModal = (action: 'approve' | 'reject') => {
+    const handleOpenCommentModal = (action: 'approve' | 'reopen') => {
         if (selectedIds.length === 0) return
         setCommentModal({ open: true, action, comment: '' })
     }
@@ -244,7 +244,7 @@ export default function ApprovalsPage() {
             if (commentModal.action === 'approve') {
                 await bulkApproveTimesheets(selectedIds)
             } else {
-                await bulkRejectTimesheets(selectedIds)
+                await bulkReopenTimesheetsForEdit(selectedIds, commentModal.comment)
             }
             setCommentModal({ open: false, action: 'approve', comment: '' })
             resetSelection()
@@ -309,13 +309,13 @@ export default function ApprovalsPage() {
                             align="right"
                             actions={[
                                 {
-                                    id: 'reject',
+                                    id: 'reopen',
                                     labelKey: 'approvalsPage.rejectSelected',
                                     icon: X,
                                     size: 'sm',
                                     variant: 'outline',
                                     className: 'border-sap-negative text-sap-negative hover:bg-sap-negative/10 px-4',
-                                    onClick: () => handleOpenCommentModal('reject'),
+                                    onClick: () => handleOpenCommentModal('reopen'),
                                     disabled: actionLoading !== null,
                                 },
                                 {
@@ -425,8 +425,8 @@ export default function ApprovalsPage() {
                         </Button>
                         <Button
                             onClick={confirmBulkAction}
-                            disabled={actionLoading !== null || (commentModal.action === 'reject' && !commentModal.comment.trim())}
-                            className={commentModal.action === 'reject' ? 'bg-sap-negative hover:bg-sap-negative/90 text-white' : 'bg-sap-positive hover:bg-sap-positive/90 text-white'}
+                            disabled={actionLoading !== null || (commentModal.action === 'reopen' && !commentModal.comment.trim())}
+                            className={commentModal.action === 'reopen' ? 'bg-sap-negative hover:bg-sap-negative/90 text-white' : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm'}
                         >
                             {actionLoading !== null && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {commentModal.action === 'approve' ? t('approvalsPage.commentModal.confirmApprove') : t('approvalsPage.commentModal.confirmReject')}

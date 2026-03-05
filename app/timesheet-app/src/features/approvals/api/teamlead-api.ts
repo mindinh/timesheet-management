@@ -136,8 +136,8 @@ export async function approveTimesheetByTeamLead(timesheetId: string, comment?: 
     return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
 }
 
-export async function rejectTimesheetByTeamLead(timesheetId: string, comment?: string): Promise<string> {
-    const data: unknown = await api.post(TEAMLEAD_URL.reject, { timesheetId, comment: comment || '' })
+export async function reopenTimesheetByTeamLead(timesheetId: string, comment?: string): Promise<string> {
+    const data: unknown = await api.post(TEAMLEAD_URL.reopen, { timesheetId, comment: comment || '' })
     return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
 }
 
@@ -146,8 +146,8 @@ export async function bulkApproveTimesheets(timesheetIds: string[], comment?: st
     return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
 }
 
-export async function bulkRejectTimesheets(timesheetIds: string[], comment?: string): Promise<string> {
-    const data: unknown = await api.post(TEAMLEAD_URL.bulkReject, { timesheetIds, comment: comment || '' })
+export async function bulkReopenTimesheets(timesheetIds: string[], comment?: string): Promise<string> {
+    const data: unknown = await api.post(TEAMLEAD_URL.bulkReopen, { timesheetIds, comment: comment || '' })
     return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
 }
 
@@ -157,7 +157,7 @@ export async function modifyEntryHoursByTeamLead(entryId: string, approvedHours:
 }
 
 export async function reviewEntryByTeamLead(entryId: string, status: string, approvedHours: number, approverComment: string): Promise<string> {
-    const data: unknown = await api.post('/api/teamlead/reviewEntry', { entryId, status, approvedHours, approverComment })
+    const data: unknown = await api.post('/teamlead/reviewEntry', { entryId, status, approvedHours, approverComment })
     return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
 }
 

@@ -13,7 +13,7 @@
         "title": "Lịch sử thay đổi",
         "Submitted": "Đã gửi",
         "Approved": "Đã phê duyệt",
-        "Rejected": "Đã từ chối",
+        "Reopened": "Đã mở lại để sửa",
         "Modified": "Đã sửa đổi",
         "Finished": "Đã hoàn thành"
     },
@@ -41,7 +41,7 @@
         "noTimesheets": "Không tìm thấy timesheet",
         "allCaughtUp": "Tất cả đã hoàn tất! Vui lòng quay lại sau khi có timesheet để xem xét hoặc đóng gói.",
         "selectedCount": "Đã chọn {{count}} timesheet",
-        "rejectSelected": "Từ chối đã chọn",
+        "rejectSelected": "Mở lại đã chọn để sửa",
         "approveSelected": "Phê duyệt đã chọn",
         "submitBatch": "Gửi gói (Batch)",
         "table": {
@@ -64,13 +64,13 @@
         },
         "commentModal": {
             "titleApprove": "Phê duyệt Timesheet",
-            "titleReject": "Từ chối Timesheet",
+            "titleReject": "Mở lại Timesheet để sửa",
             "descApprove": "Bạn sắp phê duyệt {{count}} timesheet. Bạn có thể thêm bình luận (tùy chọn).",
-            "descReject": "Bạn sắp từ chối {{count}} timesheet. Vui lòng cung cấp lý do.",
+            "descReject": "Bạn sắp mở lại {{count}} timesheet để chỉnh sửa. Vui lòng cung cấp lý do bắt buộc.",
             "placeholder": "Thêm bình luận hoặc lý do...",
             "cancel": "Hủy bỏ",
             "confirmApprove": "Xác nhận Phê duyệt",
-            "confirmReject": "Xác nhận Từ chối"
+            "confirmReject": "Xác nhận Mở lại"
         },
         "months": {
             "1": "Tháng 1",

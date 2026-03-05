@@ -15,7 +15,7 @@ export class TimesheetEntryHandler {
     register() {
         const { TimesheetEntries } = this.srv.entities
 
-        // ── Draft/Rejected enforcement for TimesheetEntries ──
+        // ── Draft/Reopened enforcement for TimesheetEntries ──
         this.srv.before(['CREATE'], TimesheetEntries, this.assertTimesheetIsEditable)
         this.srv.before(['UPDATE'], TimesheetEntries, this.assertTimesheetIsEditable)
         this.srv.before(['DELETE'], TimesheetEntries, this.assertTimesheetIsEditable)
@@ -60,8 +60,8 @@ export class TimesheetEntryHandler {
         if (!timesheetId) return
 
         const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId })
-        if (ts && ts.status !== 'Draft' && ts.status !== 'Rejected') {
-            return req.reject(403, `Cannot modify entries – timesheet is "${ts.status}". Only Draft or Rejected timesheets can be edited.`)
+        if (ts && ts.status !== 'Draft' && ts.status !== 'Reopened') {
+            return req.reject(403, `Cannot modify entries – timesheet is "${ts.status}". Only Draft or Reopened timesheets can be edited.`)
         }
     }
 }

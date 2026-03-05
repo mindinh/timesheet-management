@@ -13,7 +13,7 @@ export interface StatusItem {
 const STATUS_OPTIONS: StatusItem[] = [
     { id: 'Pending', name: 'Pending' },
     { id: 'Done', name: 'Done' },
-    { id: 'Rejected', name: 'Rejected' },
+    { id: 'Reopened', name: 'Reopened' },
 ];
 
 export function StatusValueHelp({ open, onClose, onSelect, selectedIds }: ValueHelpComponentProps<StatusItem>) {

@@ -120,7 +120,7 @@ export default function AdminBatchDetailPage() {
         setIsRejectDialogOpen(false)
         try {
             await rejectBatchApi(batchId!, rejectComment)
-            setStatusDialog({ open: true, variant: 'success', title: 'Batch Rejected', description: 'Batch rejected and returned to submitted state for Team Lead.' })
+            setStatusDialog({ open: true, variant: 'success', title: 'Batch Reopened', description: 'Batch rejected and returned to submitted state for Team Lead.' })
             setRejectComment('')
             loadBatch()
         } catch (error: unknown) {
@@ -136,7 +136,7 @@ export default function AdminBatchDetailPage() {
         }
         try {
             await rejectTimesheet(tsRejectId, tsRejectComment)
-            setStatusDialog({ open: true, variant: 'success', title: 'Timesheet Rejected', description: 'Timesheet has been rejected individually.' })
+            setStatusDialog({ open: true, variant: 'success', title: 'Timesheet Reopened', description: 'Timesheet has been rejected individually.' })
             setTsRejectComment('')
             setTsRejectId(null)
             loadBatch() // Refresh batch to see updated timesheet statuses
@@ -284,7 +284,7 @@ export default function AdminBatchDetailPage() {
                                             <span className="font-normal text-muted-foreground ml-1">
                                                 {log.action === 'Created' ? 'created this batch' :
                                                     log.action === 'Finished' ? 'marked this batch as done' :
-                                                        log.action === 'Rejected' ? 'rejected this batch' :
+                                                        log.action === 'Reopened' ? 'rejected this batch' :
                                                             log.action}
                                             </span>
                                         </p>
@@ -513,7 +513,7 @@ export default function AdminBatchDetailPage() {
                                                                             <span className="font-medium text-foreground">{log.actor.firstName} {log.actor.lastName}</span>
                                                                             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${log.action === 'Modified' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' :
                                                                                 log.action === 'Approved' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                                                                                    log.action === 'Rejected' ? 'bg-destructive/10 text-destructive' :
+                                                                                    log.action === 'Reopened' ? 'bg-destructive/10 text-destructive' :
                                                                                         'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
                                                                                 }`}>
                                                                                 {log.action}

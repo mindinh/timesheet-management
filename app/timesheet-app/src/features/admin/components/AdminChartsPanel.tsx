@@ -10,7 +10,7 @@ const STATUS_COLORS: Record<string, string> = {
     'Submitted': '#fbbf24',  // amber-400
     'Approved': '#3b82f6',   // blue-500
     'Finished': '#10b981',   // emerald-500
-    'Rejected': '#ef4444',   // red-500
+    'Reopened': '#ef4444',   // red-500
 }
 
 const PROJECT_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6']
