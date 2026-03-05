@@ -64,6 +64,24 @@
       "auth": {
         "kind": "mocked",
         "users": {
+          "nam": {
+            "password": "nam",
+            "ID": "bdad7628-9dd7-46ea-b45b-7b37f1f00b68",
+            "roles": [
+              "Employee"
+            ],
+            "userAttributes": {
+              "email": [
+                "nam@example.com"
+              ],
+              "firstName": [
+                "Nam"
+              ],
+              "lastName": [
+                "Nguyen"
+              ]
+            }
+          },
           "alice": {
             "password": "alice",
             "ID": "2b7a2d96-0e94-4d13-8a03-7f8a70562590",

@@ -10,13 +10,13 @@ interface ProjectState {
 
     // Project Actions
     fetchProjects: (userId: string) => Promise<void>
-    addProject: (project: Omit<Project, 'id'>, userId: string) => Promise<void>
+    addProject: (project: Omit<Project, 'id'>, userId: string) => Promise<Project | null>
     updateProject: (id: string, project: Partial<Project>) => Promise<void>
     deleteProject: (id: string) => Promise<void>
 
     // Task Actions
     fetchTasks: (projectId: string) => Promise<void>
-    addTask: (task: Omit<Task, 'id'>) => Promise<void>
+    addTask: (task: Omit<Task, 'id'>) => Promise<Task>
     updateTask: (id: string, task: Partial<Task>) => Promise<void>
     deleteTask: (id: string, projectId: string) => Promise<void>
 }
@@ -59,6 +59,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
                 const projects = await getProjectsByUser(userId)
                 set({ projects, isLoading: false })
             }
+            return newProject
         } catch (error) {
             console.error('Failed to create project:', error)
             set({ isLoading: false })
@@ -118,6 +119,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
                     [task.projectId]: [...(state.tasks[task.projectId] || []), newTask],
                 },
             }))
+            return newTask
         } catch (error) {
             console.error('Failed to create task:', error)
             throw error

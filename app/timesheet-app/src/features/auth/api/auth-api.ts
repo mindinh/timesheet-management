@@ -17,6 +17,18 @@ export async function getUserInfo(): Promise<UserInfoResponse> {
     return api.get(AUTH_URL.userInfo)
 }
 
+export async function getAllUsers(): Promise<User[]> {
+    const data: unknown = await api.get(AUTH_URL.users)
+    const list = (data && typeof data === 'object' && 'value' in data ? (data as any).value : data) as { ID: string; firstName: string; lastName: string; role: string; email: string }[]
+    return list.map(u => ({
+        id: u.ID,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        role: u.role as User['role'],
+        email: u.email,
+    }))
+}
+
 export async function getUserWithManager(userId: string): Promise<Omit<User, 'email'>> {
     const data: unknown = await api.get(AUTH_URL.userById(userId), { $expand: 'manager' })
     const user = data as { ID: string; firstName: string; lastName: string; role: string; manager?: { ID: string; firstName: string; lastName: string; role: string } }

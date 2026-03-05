@@ -56,10 +56,11 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 | Feature | Description | Technical Requirements |
 |---------|-------------|----------------------|
 | **View pending list** | All timesheets with `status = SUBMITTED` from the team, grouped by user & date | `GET /timesheets?status=SUBMITTED&team_id=current`. Filters: user, date range, project. |
-| **Review details** | Full entry information: user info, date, project, type, hours, task, location, note | `GET /timesheets/:id`. Modal / detail view panel. |
-| **Approve timesheet** | Approve one or multiple entries | `POST /timesheets/approve` — Body: `{ timesheet_ids: [...] }`. Status: `SUBMITTED → APPROVED`. Notify Staff & aTrung. |
+| **Review details** | Full entry information: user info, date, project, type, hours, task, location, note. **Now supports per-line review!** | `GET /timesheets/:id`. Detail view allows selecting `Pending/Approved/Rejected` and adding a comment on *each individual entry*. |
+| **Approve timesheet** | Approve one or multiple entries | `POST /timesheets/approve` — Body: `{ timesheet_ids: [...] }`. Status: `SUBMITTED → APPROVED`. Auto-calculates `totalHours` and `mainDays`! |
 | **Reject timesheet** | Reject with specific reason | `POST /timesheets/reject` — Body: `{ timesheet_ids: [...], rejection_note: "..." }`. Status: `SUBMITTED → REJECTED`. Notify Staff. |
 | **Bulk approve / reject** | Select multiple entries via checkbox and approve or reject at once | Checkbox multi-select. Buttons: `Approve Selected`, `Reject Selected`. Confirmation dialog. |
+| **Batch Submission** | Group multiple approved timesheets, including those of Team Leads, into a common batch and forward to Admin | `POST /api/teamlead/createBatch`. Auto-assigns to Admin. |
 
 ### 2.2 Team Management
 
@@ -135,8 +136,9 @@ DRAFT (Staff) → SUBMITTED (Staff) → APPROVED (Team Lead) → Admin processes
 | `User` | id, email, firstName, lastName, role, isActive, manager_id |
 | `Project` | id, name, type, code, isActive, papierkram_id |
 | `Task` | id, project_id, name, status |
-| `Timesheet` | id, user_id, month, year, status, submitDate, approveDate |
-| `TimesheetEntry` | id, timesheet_id, project_id, task_id, date, loggedHours, approvedHours, description |
+| `Timesheet` | id, user_id, month, year, status, currentApprover, batch_id, totalHours, mainDays, comment |
+| `TimesheetEntry` | id, timesheet_id, project_id, task_id, date, status, approverComment, loggedHours, approvedHours, description |
+| `TimesheetBatch` | id, teamLead_id, admin_id, month, year, status |
 | `ApprovalHistory` | id, timesheet_id, actor_id, action, fromStatus, toStatus, comment, timestamp |
 | `AuditLog` | id, entity_, entityId, action, userId, changes |
 | `ExportLog` | id, exported_by, export_date, from_date, to_date, total_entries, file_path |

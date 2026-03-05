@@ -26,9 +26,11 @@ import {
     SelectValue,
 } from '@/shared/components/ui/select'
 import { Textarea } from '@/shared/components/ui/textarea'
+import { Label } from '@/shared/components/ui/label'
 import { format } from 'date-fns'
-import { useEffect, useMemo } from 'react'
-import type { TimesheetEntry } from '@/shared/types'
+import { useEffect, useMemo, useState } from 'react'
+import { Plus } from 'lucide-react'
+import type { TimesheetEntry, ProjectType } from '@/shared/types'
 import { useProjectStore } from '@/features/projects/store/projectStore'
 import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 
@@ -46,6 +48,13 @@ const formSchema = z.object({
 // Explicitly define the form data type
 type FormData = z.infer<typeof formSchema>
 
+const PROJECT_TYPES: { value: ProjectType; label: string }[] = [
+    { value: 'Papierkram', label: 'Papierkram' },
+    { value: 'Internal', label: 'Internal' },
+    { value: 'External', label: 'External' },
+    { value: 'Other', label: 'Other' },
+]
+
 interface DailyLogDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
@@ -55,8 +64,19 @@ interface DailyLogDialogProps {
 }
 
 export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: DailyLogDialogProps) {
-    const { projects, fetchProjects, tasks, fetchTasks } = useProjectStore()
+    const { projects, fetchProjects, tasks, fetchTasks, addProject, addTask } = useProjectStore()
     const { currentUser } = useTimesheetStore()
+
+    // Inline creation dialog states
+    const [showCreateProject, setShowCreateProject] = useState(false)
+    const [showCreateTask, setShowCreateTask] = useState(false)
+    const [isCreating, setIsCreating] = useState(false)
+
+    // Create Project form state
+    const [newProject, setNewProject] = useState({ name: '', code: '', type: 'Other' as ProjectType })
+
+    // Create Task form state
+    const [newTask, setNewTask] = useState({ name: '', description: '' })
 
     // Use 'any' for the resolver to bypass strict type checking issues between Zod and React Hook Form
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -102,6 +122,9 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
                     description: '',
                 })
             }
+            // Reset inline creation states
+            setShowCreateProject(false)
+            setShowCreateTask(false)
         }
 
     }, [open, entry, form])
@@ -124,6 +147,56 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
         onOpenChange(false)
     }
 
+    // --- Inline creation handlers ---
+
+    const handleCreateProject = async () => {
+        if (!newProject.name.trim() || !newProject.code.trim() || !currentUser?.id) return
+        setIsCreating(true)
+        try {
+            const created = await addProject(
+                {
+                    name: newProject.name.trim(),
+                    code: newProject.code.trim(),
+                    type: newProject.type,
+                    isActive: true,
+                },
+                currentUser.id
+            )
+            if (created) {
+                form.setValue('projectId', created.id)
+                form.setValue('taskId', '')
+            }
+            setNewProject({ name: '', code: '', type: 'Other' })
+            setShowCreateProject(false)
+        } catch {
+            // Error is logged in the store
+        } finally {
+            setIsCreating(false)
+        }
+    }
+
+    const handleCreateTask = async () => {
+        if (!newTask.name.trim() || !selectedProjectId) return
+        setIsCreating(true)
+        try {
+            const created = await addTask({
+                projectId: selectedProjectId,
+                name: newTask.name.trim(),
+                description: newTask.description.trim(),
+                status: 'Open',
+            })
+            if (created) {
+                form.setValue('taskId', created.id)
+            }
+            setNewTask({ name: '', description: '' })
+            setShowCreateTask(false)
+        } catch {
+            // Error is logged in the store
+        } finally {
+            setIsCreating(false)
+        }
+    }
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
@@ -133,28 +206,102 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                        {/* ── Project Field ── */}
                         <FormField
                             control={form.control}
                             name="projectId"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Project</FormLabel>
+                                    <div className="flex items-center justify-between">
+                                        <FormLabel>Project</FormLabel>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 px-2 text-xs text-primary hover:text-primary/80 gap-1"
+                                            onClick={() => setShowCreateProject(!showCreateProject)}
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                            New
+                                        </Button>
+                                    </div>
+
+                                    {/* Inline Create Project Form */}
+                                    {showCreateProject && (
+                                        <div className="p-3 border rounded-lg bg-muted/30 space-y-3 mb-2 overflow-hidden">
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div className="min-w-0">
+                                                    <Label htmlFor="newProjectName" className="text-xs">Name</Label>
+                                                    <Input
+                                                        id="newProjectName"
+                                                        value={newProject.name}
+                                                        onChange={(e) => setNewProject(p => ({ ...p, name: e.target.value }))}
+                                                        placeholder="e.g. Cloud Migration"
+                                                        className="h-8 text-sm w-full"
+                                                        autoFocus
+                                                    />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <Label htmlFor="newProjectCode" className="text-xs">Code</Label>
+                                                    <Input
+                                                        id="newProjectCode"
+                                                        value={newProject.code}
+                                                        onChange={(e) => setNewProject(p => ({ ...p, code: e.target.value }))}
+                                                        placeholder="e.g. P001"
+                                                        className="h-8 text-sm w-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <Label className="text-xs">Type</Label>
+                                                <Select
+                                                    value={newProject.type}
+                                                    onValueChange={(v) => setNewProject(p => ({ ...p, type: v as ProjectType }))}
+                                                >
+                                                    <SelectTrigger className="h-8 text-sm">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {PROJECT_TYPES.map((pt) => (
+                                                            <SelectItem key={pt.value} value={pt.value}>
+                                                                {pt.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="flex gap-2 justify-end">
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    onClick={handleCreateProject}
+                                                    disabled={!newProject.name.trim() || !newProject.code.trim() || isCreating}
+                                                >
+                                                    {isCreating ? 'Creating...' : 'Create'}
+                                                </Button>
+                                                <Button type="button" variant="ghost" size="sm" onClick={() => setShowCreateProject(false)}>
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <Select
                                         onValueChange={(value) => {
                                             field.onChange(value)
                                             // Reset task when project changes
                                             form.setValue('taskId', '')
                                         }}
-                                        defaultValue={field.value}
+                                        value={field.value}
                                     >
                                         <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Project" />
+                                            <SelectTrigger className="overflow-hidden">
+                                                <SelectValue placeholder="Select Project" className="truncate" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             {projects.map((project) => (
-                                                <SelectItem key={project.id} value={project.id}>
+                                                <SelectItem key={project.id} value={project.id} title={`${project.name} (${project.code})`}>
                                                     {project.name} ({project.code})
                                                 </SelectItem>
                                             ))}
@@ -165,23 +312,76 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
                             )}
                         />
 
-                        {/* Task Selection - only visible when a project is selected */}
+                        {/* ── Task Field ── (only visible when a project is selected) */}
                         {selectedProjectId && (
                             <FormField
                                 control={form.control}
                                 name="taskId"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Task</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <div className="flex items-center justify-between">
+                                            <FormLabel>Task</FormLabel>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-6 px-2 text-xs text-primary hover:text-primary/80 gap-1"
+                                                onClick={() => setShowCreateTask(!showCreateTask)}
+                                            >
+                                                <Plus className="h-3 w-3" />
+                                                New
+                                            </Button>
+                                        </div>
+
+                                        {/* Inline Create Task Form */}
+                                        {showCreateTask && (
+                                            <div className="p-3 border rounded-lg bg-muted/30 space-y-3 mb-2 overflow-hidden">
+                                                <div className="min-w-0">
+                                                    <Label htmlFor="newTaskName" className="text-xs">Task Name</Label>
+                                                    <Input
+                                                        id="newTaskName"
+                                                        value={newTask.name}
+                                                        onChange={(e) => setNewTask(t => ({ ...t, name: e.target.value }))}
+                                                        placeholder="e.g. Development"
+                                                        className="h-8 text-sm w-full"
+                                                        autoFocus
+                                                    />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <Label htmlFor="newTaskDesc" className="text-xs">Description</Label>
+                                                    <Input
+                                                        id="newTaskDesc"
+                                                        value={newTask.description}
+                                                        onChange={(e) => setNewTask(t => ({ ...t, description: e.target.value }))}
+                                                        placeholder="Optional description"
+                                                        className="h-8 text-sm w-full"
+                                                    />
+                                                </div>
+                                                <div className="flex gap-2 justify-end">
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        onClick={handleCreateTask}
+                                                        disabled={!newTask.name.trim() || isCreating}
+                                                    >
+                                                        {isCreating ? 'Creating...' : 'Create'}
+                                                    </Button>
+                                                    <Button type="button" variant="ghost" size="sm" onClick={() => setShowCreateTask(false)}>
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder={availableTasks.length > 0 ? 'Select Task' : 'No tasks available'} />
+                                                <SelectTrigger className="overflow-hidden">
+                                                    <SelectValue placeholder={availableTasks.length > 0 ? 'Select Task' : 'No tasks available'} className="truncate" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
                                                 {availableTasks.map((task) => (
-                                                    <SelectItem key={task.id} value={task.id}>
+                                                    <SelectItem key={task.id} value={task.id} title={task.name}>
                                                         {task.name}
                                                     </SelectItem>
                                                 ))}

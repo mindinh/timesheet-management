@@ -17,6 +17,21 @@
         "Modified": "Geändert",
         "Finished": "Abgeschlossen"
     },
+    "timesheets": {
+        "title": "Zeitblatt-Worklist",
+        "description": "Ihre Zeitnachweis-Einreichungen anzeigen und verwalten",
+        "logTimesheet": "Zeitblatt erfassen",
+        "noTimesheets": "Keine Zeitnachweise gefunden. Versuchen Sie, die Filter anzupassen oder einen neuen Zeitnachweis zu erstellen.",
+        "table": {
+            "period": "Zeitraum",
+            "status": "Status",
+            "totalHours": "Gesamtstunden",
+            "entries": "Einträge",
+            "submitted": "Eingereicht",
+            "approved": "Genehmigt",
+            "actions": "Aktionen"
+        }
+    },
     "projects": {
         "title": "Projekte",
         "description": "Verwalten Sie Ihre Projekte und Aufgaben",
@@ -32,6 +47,61 @@
             "tasks": "Aufgaben",
             "status": "Status",
             "actions": "Aktionen"
+        }
+    },
+    "approvalsPage": {
+        "title": "Genehmigungen & Batching",
+        "description": "Zeitnachweise von Mitarbeitern überprüfen oder zur endgültigen Genehmigung bündeln.",
+        "badge": "Genehmigungen",
+        "searchPlaceholder": "Mitarbeiter suchen...",
+        "loading": "Lade Zeitnachweise...",
+        "noTimesheets": "Keine Zeitnachweise gefunden",
+        "allCaughtUp": "Alles erledigt! Schauen Sie später wieder vorbei, wenn es Zeitnachweise zu überprüfen gibt.",
+        "selectedCount": "{{count}} Zeitnachweis(e) ausgewählt",
+        "rejectSelected": "Ausgewählte ablehnen",
+        "approveSelected": "Ausgewählte genehmigen",
+        "submitBatch": "Batch senden",
+        "table": {
+            "employee": "Mitarbeiter",
+            "period": "Zeitraum",
+            "submittedDate": "Einreichungsdatum",
+            "totalHours": "Gesamtstunden",
+            "status": "Status",
+            "actions": "Aktionen"
+        },
+        "reviewDetails": "Details überprüfen",
+        "showing": "Zeige",
+        "records": "Einträge",
+        "adminModal": {
+            "title": "Endgültigen Admin auswählen",
+            "description": "Wählen Sie den Admin, an den dieser Batch von {{count}} Zeitnachweisen zur endgültigen Genehmigung weitergeleitet wird.",
+            "placeholder": "Admin auswählen...",
+            "cancel": "Abbrechen",
+            "createBatch": "Batch erstellen"
+        },
+        "commentModal": {
+            "titleApprove": "Zeitnachweise genehmigen",
+            "titleReject": "Zeitnachweise ablehnen",
+            "descApprove": "Sie sind dabei, {{count}} Zeitnachweis(e) zu genehmigen. Sie können optional einen Kommentar hinzufügen.",
+            "descReject": "Sie sind dabei, {{count}} Zeitnachweis(e) abzulehnen. Bitte geben Sie einen Grund an.",
+            "placeholder": "Kommentar oder Grund hinzufügen...",
+            "cancel": "Abbrechen",
+            "confirmApprove": "Genehmigung bestätigen",
+            "confirmReject": "Ablehnung bestätigen"
+        },
+        "months": {
+            "1": "Januar",
+            "2": "Februar",
+            "3": "März",
+            "4": "April",
+            "5": "Mai",
+            "6": "Juni",
+            "7": "Juli",
+            "8": "August",
+            "9": "September",
+            "10": "Oktober",
+            "11": "November",
+            "12": "Dezember"
         }
     }
 }

@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/button'
+<<<<<<< HEAD
 import { ArrowLeft, CheckCircle, FileText, UserCircle, Calendar, XCircle, Clock, ChevronDown, ChevronRight, History, Download } from 'lucide-react'
+=======
+import { ArrowLeft, CheckCircle, FileText, UserCircle, Calendar, XCircle, Clock, ChevronDown, ChevronRight, History, Eye } from 'lucide-react'
+>>>>>>> 0e4ef9951f992fee4c069ac76453c4e15e9c6b45
 import { format } from 'date-fns'
 import { fetchTimesheetBatchById, markBatchDoneApi, rejectBatchApi, adminModifyEntryHours, getAdminTimesheetDetail, type TimesheetBatchDetail } from '../api/admin-api'
 import { exportSingleTimesheetToExcel } from '../utils/export-excel'
@@ -481,7 +485,20 @@ export default function AdminBatchDetailPage() {
                                             }`}>
                                             {ts.status}
                                         </span>
+<<<<<<< HEAD
                                         <div className="flex items-center gap-2">
+=======
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary z-10 hidden sm:flex"
+                                            onClick={(e) => { e.stopPropagation(); navigate(`/approvals/${ts.ID}`) }}
+                                        >
+                                            <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                            Full Review
+                                        </Button>
+                                        {status === 'Pending' && ts.status === 'Approved' && (
+>>>>>>> 0e4ef9951f992fee4c069ac76453c4e15e9c6b45
                                             <Button
                                                 variant="outline"
                                                 size="sm"
