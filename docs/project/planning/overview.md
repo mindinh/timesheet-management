@@ -65,8 +65,8 @@ Excel logging → Papierkram entry → Send to aTrung → aTrung re-formats → 
 | Edit own timesheet (after approval) | ✗ | ✗ | ✓ (override) |
 | View team members' timesheets | ✗ | ✓ (own team) | ✓ (all) |
 | Approve timesheets | ✗ | ✓ | ✓ |
-| Reject timesheets | ✗ | ✓ | ✓ |
-| Bulk approve / reject | ✗ | ✓ | ✓ |
+| Reopen timesheets for edit | ✗ | ✓ | ✓ |
+| Bulk approve / reopen | ✗ | ✓ | ✓ |
 | Export reports to Excel | ✗ | partial | ✓ |
 | Send email to Germany | ✗ | ✗ | ✓ |
 | Manage projects (sync Papierkram) | ✗ | ✗ | ✓ |
@@ -79,7 +79,7 @@ Excel logging → Papierkram entry → Send to aTrung → aTrung re-formats → 
 
 ```
 DRAFT → SUBMITTED → APPROVED_BY_TEAMLEAD → APPROVED → FINISHED
-                 ↘  REJECTED (→ Staff edits & resubmits)
+                 ↘  REOPENED (→ Staff edits & resubmits)
 ```
 
 | Status | Actor | Description |
@@ -87,7 +87,7 @@ DRAFT → SUBMITTED → APPROVED_BY_TEAMLEAD → APPROVED → FINISHED
 | **Draft** | Staff | Creating / editing entry. Can edit or delete freely. |
 | **Submitted** | Staff | Submitted for review. Locked from editing. |
 | **Approved** | Team Lead | Approved by Team Lead. aTrung can view, edit, and export. |
-| **Rejected** | Team Lead | Rejected with reason. Staff must edit and re-submit. |
+| **Reopened** | Team Lead | Reopened for edit with reason. Staff must edit and re-submit. |
 | **Locked / Finished** | Admin | Export completed. Fully finalised and archived. |
 
 ---

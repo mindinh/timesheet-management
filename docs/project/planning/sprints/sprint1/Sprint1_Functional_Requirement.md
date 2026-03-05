@@ -19,7 +19,7 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 | **DRAFT** | ⚫ Gray | Staff | Staff creates / edits entry |
 | **SUBMITTED** | 🟡 Yellow | Staff | Staff submits to Team Lead |
 | **APPROVED** | 🟢 Green | Team Lead | Team Lead approves |
-| **REJECTED** | 🔴 Red | Team Lead | Team Lead rejects with reason → Staff edits & resubmits |
+| **REOPENED** | 🟠 Orange | Team Lead | Team Lead reopens for edit with reason → Staff edits & resubmits |
 | **Admin Review** | 🔵 Blue | Admin | aTrung reviews, edits if needed, exports Excel |
 
 ---
@@ -42,8 +42,8 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 | Feature | Description | Technical Requirements |
 |---------|-------------|----------------------|
 | **Submit timesheet** | Send DRAFT entries to Team Lead. Supports bulk submit (multiple entries at once). | `POST /timesheets/submit` — Body: `{ timesheet_ids: [id1, id2, ...] }`. Status: `DRAFT → SUBMITTED`. Notification to Team Lead. |
-| **View status** | Check approval status: DRAFT / SUBMITTED / APPROVED / REJECTED | Color-coded status badges. |
-| **Handle rejection** | View rejection reason and re-submit | Display `rejection_note`. Allow edit (status reset to DRAFT). Track submission history. |
+| **View status** | Check approval status: DRAFT / SUBMITTED / APPROVED / REOPENED | Color-coded status badges. |
+| **Handle reopen** | View reopen reason and re-submit | Display reopen `comment`. Allow edit. Track submission history. |
 
 ---
 
@@ -56,10 +56,10 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 | Feature | Description | Technical Requirements |
 |---------|-------------|----------------------|
 | **View pending list** | All timesheets with `status = SUBMITTED` from the team, grouped by user & date | `GET /timesheets?status=SUBMITTED&team_id=current`. Filters: user, date range, project. |
-| **Review details** | Full entry information: user info, date, project, type, hours, task, location, note. **Now supports per-line review!** | `GET /timesheets/:id`. Detail view allows selecting `Pending/Approved/Rejected` and adding a comment on *each individual entry*. |
-| **Approve timesheet** | Approve one or multiple entries | `POST /timesheets/approve` — Body: `{ timesheet_ids: [...] }`. Status: `SUBMITTED → APPROVED`. Auto-calculates `totalHours` and `mainDays`! |
-| **Reject timesheet** | Reject with specific reason | `POST /timesheets/reject` — Body: `{ timesheet_ids: [...], rejection_note: "..." }`. Status: `SUBMITTED → REJECTED`. Notify Staff. |
-| **Bulk approve / reject** | Select multiple entries via checkbox and approve or reject at once | Checkbox multi-select. Buttons: `Approve Selected`, `Reject Selected`. Confirmation dialog. |
+| **Review details** | Full entry information: user info, date, project, type, hours, task, location, note. **Now supports per-line review!** | `GET /api/teamlead/timesheets/:id`. Detail view allows selecting `Pending/Approved/Reopened` and adding a comment on *each individual entry*. |
+| **Approve timesheet** | Approve timesheet | `POST /api/teamlead/approveTimesheet` — Body: `{ timesheetId, comment }`. Status: `SUBMITTED → APPROVED`. Auto-calculates `totalHours` and `mainDays`! |
+| **Reopen timesheet for edit** | Reopen with specific reason | `POST /api/teamlead/reopenForEdit` — Body: `{ timesheetId, comment }`. Status: `SUBMITTED → REOPENED`. Notify Staff. |
+| **Bulk approve / reopen** | Select multiple entries via checkbox and approve or reopen at once | Checkbox multi-select. Buttons: `Approve Selected`, `Reopen for Edit`. Confirmation dialog. |
 | **Batch Submission** | Group multiple approved timesheets, including those of Team Leads, into a common batch and forward to Admin | `POST /api/teamlead/createBatch`. Auto-assigns to Admin. |
 
 ### 2.2 Team Management
@@ -67,7 +67,7 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 | Feature | Description | Technical Requirements |
 |---------|-------------|----------------------|
 | **View team report** | Summarize working hours by user, project, and period | Dashboard charts: Total hours by user, Hours by project, Weekly/Monthly trends. Export to Excel. |
-| **Approval history** | Track all approved/rejected timesheets | `GET /timesheets?status=APPROVED,REJECTED`. Table: status, user, date range, approval_date, approved_by. |
+| **Approval history** | Track all approved/reopened timesheets | `GET /api/teamlead/timesheets?status=APPROVED,REOPENED`. Table: status, user, date range, approval_date, approved_by. |
 
 ---
 
@@ -113,8 +113,8 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 | `GET` | `/timesheets` | List timesheets with filters | own | team | all |
 | `GET` | `/timesheets/:id` | Timesheet detail view | own | team | all |
 | `POST` | `/timesheets/submit` | Submit DRAFT to Team Lead | ✓ | — | — |
-| `POST` | `/timesheets/approve` | Approve entries | — | ✓ | — |
-| `POST` | `/timesheets/reject` | Reject with `rejection_note` | — | ✓ | — |
+| `POST` | `/api/teamlead/approveTimesheet` | Approve entries | — | ✓ | — |
+| `POST` | `/api/teamlead/reopenForEdit` | Reopen with `comment` | — | ✓ | — |
 | `GET` | `/timesheets/export` | Export Excel | — | — | ✓ |
 | `GET` | `/projects` | List active projects | ✓ | ✓ | ✓ |
 | `POST` | `/projects/sync` | Sync from Papierkram API | — | — | ✓ |
@@ -127,7 +127,7 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 ### Status Flow
 ```
 DRAFT (Staff) → SUBMITTED (Staff) → APPROVED (Team Lead) → Admin processes & Exports
-                                  ↘ REJECTED (Team Lead) → Staff edits & resubmits
+                                  ↘ REOPENED (Team Lead) → Staff edits & resubmits
 ```
 
 ### Database Entities
