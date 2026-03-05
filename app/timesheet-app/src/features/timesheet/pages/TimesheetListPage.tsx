@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Calendar, Eye, History } from 'lucide-react'
+import { Calendar, Eye, History, FileText, Download, ArrowUp, Settings } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { DataTable } from '@/shared/components/common/DataTable'

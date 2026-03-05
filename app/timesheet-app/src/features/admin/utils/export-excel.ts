@@ -353,3 +353,253 @@ export const exportBatchToExcel = async (batch: TimesheetBatchDetail) => {
     })
     saveAs(blob, filename)
 }
+
+// ─── Export single timesheet mimicking batch format ─────────────────────────
+export const exportSingleTimesheetToExcel = async (ts: any) => {
+    const wb = new ExcelJS.Workbook()
+
+    // ── 1. TITLE SHEET ────────────────────────────────────────────────────────
+    const titleSheet = wb.addWorksheet('Title')
+    titleSheet.columns = Array.from({ length: 30 }, (_, i) => ({ width: i === 7 ? 25 : i === 10 ? 20 : i === 14 ? 20 : i === 17 ? 40 : 6 }))
+
+        ; (['B2', 'C2', 'E2', 'B3', 'C3', 'D5', 'D6'] as const).forEach(addr => {
+            titleSheet.getCell(addr).fill = solidFill(COLOR.DARK_RED)
+        })
+
+    const titleCell = titleSheet.getCell('H4')
+    titleCell.value = 'Timesheet conarum VN'
+    titleCell.font = { bold: true, size: 14, color: { argb: COLOR.WHITE }, name: 'Calibri' }
+    titleCell.fill = solidFill(COLOR.NAVY)
+
+    const versionLabelCell = titleSheet.getCell('AA6')
+    versionLabelCell.value = 'Version'
+    versionLabelCell.font = { bold: true, name: 'Calibri' }
+    versionLabelCell.fill = solidFill(COLOR.LIGHT_BLUE)
+
+    const versionValueCell = titleSheet.getCell('AD6')
+    versionValueCell.value = 1.2
+    versionValueCell.fill = solidFill(COLOR.LIGHT_BLUE)
+
+    for (const [addr, label] of [['H13', 'Change History'], ['L13', 'Action'], ['O13', 'Name'], ['R13', 'Content']] as const) {
+        styleHeaderCell(titleSheet.getCell(addr), label)
+    }
+
+    [...Array(13)].forEach(() => titleSheet.addRow([]))
+
+    const h14 = titleSheet.getRow(14)
+    h14.getCell(8).value = 45873
+    h14.getCell(12).value = 'New'
+    h14.getCell(15).value = 'HieuT2'
+    h14.getCell(18).value = 'Create new'
+
+    const h15 = titleSheet.getRow(15)
+    h15.getCell(8).value = 45694
+    h15.getCell(12).value = 'Update'
+    h15.getCell(15).value = 'HieuT2'
+    h15.getCell(18).value = 'Adjust Papierkram code'
+
+    const typeHeader = titleSheet.getRow(17)
+    const typeHeaderH = typeHeader.getCell(8)
+    typeHeaderH.value = 'Type'
+    typeHeaderH.font = { bold: true, color: { argb: COLOR.WHITE }, name: 'Calibri' }
+    typeHeaderH.fill = solidFill(COLOR.NAVY)
+    const typeHeaderK = typeHeader.getCell(11)
+    typeHeaderK.value = 'Note'
+    typeHeaderK.font = { bold: true, color: { argb: COLOR.WHITE }, name: 'Calibri' }
+    typeHeaderK.fill = solidFill(COLOR.NAVY)
+
+    const r18 = titleSheet.getRow(18)
+    const r18h = r18.getCell(8)
+    r18h.value = 'Papierkram'
+    r18h.font = { bold: true, name: 'Calibri' }
+    r18h.fill = solidFill(COLOR.LIGHT_BLUE)
+    r18.getCell(11).value = 'For Projects logged in Papierkram'
+
+    const r19 = titleSheet.getRow(19)
+    const r19h = r19.getCell(8)
+    r19h.value = 'Internal'
+    r19h.font = { bold: true, name: 'Calibri' }
+    r19h.fill = solidFill(COLOR.LIGHT_PINK)
+    r19.getCell(11).value = 'conarum VN customer project, but not logged in Papierkram\n*** Write project name in Note coloumns'
+
+    const r20 = titleSheet.getRow(20)
+    const r20h = r20.getCell(8)
+    r20h.value = 'Others'
+    r20h.font = { bold: true, name: 'Calibri' }
+    r20.getCell(11).value = 'Internal Project, Training, sharing, self study, marketing, management, interview, meeting, timesheet ...'
+
+    // ── 2. LEGEND SHEET ───────────────────────────────────────────────────────
+    const legendSheet = wb.addWorksheet('Legend')
+    legendSheet.columns = [
+        { width: 5 }, { width: 25 }, { width: 45 }, { width: 60 }, { width: 10 }, { width: 22 }, { width: 25 },
+    ]
+
+    const legendHeaderLabels = ['Customer', 'Papierkram/Project Code', 'Project Name', 'Active', 'Project Manager', 'Note']
+    const legendHeaderRow = legendSheet.getRow(2)
+    legendHeaderLabels.forEach((label, i) => styleHeaderCell(legendHeaderRow.getCell(i + 2), label))
+    legendHeaderRow.height = 20
+
+    const legendData = [
+        ['Spirit/21', 'Schunk div. Papierkram Projects', 'Active', 'Stefan Bäumler', ''],
+        ['KARON', '2025_0001_KARON_EV_KNORR_BREMSE', 'Active', 'Thomas Deubel', ''],
+        ['biotest', '4530039906_10_biotest_2025: Support MM/SRM', 'Active', 'Thomas Deubel', ''],
+        ['manrolandgoss', '4501144702 - SAP-Support', 'Active', 'Stefan Bäumler', ''],
+        ['Siltronic', '4501917977 - Support 2025', 'Active', 'Wolfgang Straßer', ''],
+    ]
+
+    legendData.forEach((rowData, idx) => {
+        const row = legendSheet.getRow(idx + 3)
+        const [customer, code, active, pm, note] = rowData
+        row.getCell(2).value = customer
+        row.getCell(3).value = code
+        row.getCell(4).value = { formula: `=B${idx + 3}&"-"&C${idx + 3}` }
+        row.getCell(5).value = active
+        row.getCell(6).value = pm
+        row.getCell(7).value = note
+        if (idx % 2 === 0) {
+            for (let c = 2; c <= 7; c++) row.getCell(c).fill = solidFill('FFF2F2F2')
+        }
+    })
+
+    // ── 3. DATA SHEET ─────────────────────────────────────────────────────────
+    const monthName = MONTH_NAMES[ts.month] || `Month_${ts.month}`
+    const safeSheetName = `${monthName}_${ts.user.firstName}`.substring(0, 31)
+    const tsSheet = wb.addWorksheet(safeSheetName)
+
+    tsSheet.columns = [
+        { width: 2 }, { width: 14 }, { width: 13 }, { width: 52 }, { width: 8 }, { width: 8 }, { width: 48 }, { width: 40 }, { width: 2 }, { width: 42 }, { width: 13 },
+    ]
+
+    const entries = ts.entries || []
+    const projectSums: Record<string, number> = {}
+    let grandTotal = 0
+    entries.forEach((e: any) => {
+        const pName = e.project?.name || '(blank)'
+        projectSums[pName] = (projectSums[pName] || 0) + (e.approvedHours ?? e.loggedHours ?? 0)
+        grandTotal += (e.approvedHours ?? e.loggedHours ?? 0)
+    })
+
+    const j1 = tsSheet.getCell('J1')
+    j1.value = 'Project(Papierkram)'
+    j1.font = { bold: true, name: 'Calibri', size: 11 }
+
+    const k1 = tsSheet.getCell('K1')
+    k1.value = 'Sum of Hours'
+    k1.font = { bold: true, name: 'Calibri', size: 11 }
+
+    let summaryRow = 2
+    Object.entries(projectSums).forEach(([pName, sum]) => {
+        tsSheet.getCell(`J${summaryRow}`).value = pName
+        tsSheet.getCell(`K${summaryRow}`).value = sum
+        summaryRow++
+    })
+
+    const grandTotalJCell = tsSheet.getCell(`J${summaryRow}`)
+    const grandTotalKCell = tsSheet.getCell(`K${summaryRow}`)
+    grandTotalJCell.value = 'Grand Total'
+    grandTotalJCell.font = { bold: true, name: 'Calibri' }
+    grandTotalKCell.value = grandTotal
+    grandTotalKCell.font = { bold: true, name: 'Calibri' }
+
+    const infoRows: [string, string, string | number | undefined][] = [
+        ['B1', 'Service Entry Sheet', undefined],
+        ['B2', 'Project:', undefined],
+        ['D2', 'Conarum VN - SAP Development Services', undefined],
+        ['B5', 'Customer', undefined],
+        ['D5', 'conarum GmbH & Co. KG', undefined],
+        ['B6', 'Place:', undefined],
+        ['D6', 'Germany', undefined],
+        ['B8', 'Company', undefined],
+        ['D8', 'conarum Vietnam Company Ltd.', undefined],
+        ['B9', 'Employee', undefined],
+        ['D9', `${ts.user.firstName} ${ts.user.lastName}`, undefined],
+        ['B10', 'Period: ', undefined],
+        ['D10', `${monthName} 01, ${ts.year}`, undefined],
+        ['B11', 'Customer contact person:', undefined],
+        ['B4', 'Please indicate on each invoice', undefined],
+        ['E12', '* Write "X" if Onsite', undefined],
+    ]
+
+    infoRows.forEach(([addr, value]) => {
+        tsSheet.getCell(addr).value = value
+    })
+
+        ; (['B1', 'B2', 'D2', 'B5', 'B6', 'B8', 'B9', 'B10', 'B11'] as const).forEach(addr => {
+            tsSheet.getCell(addr).font = { bold: true, name: 'Calibri', size: 11 }
+        })
+    tsSheet.getCell('B1').font = { bold: true, size: 14, name: 'Calibri' }
+    tsSheet.getCell('E12').font = { italic: true, size: 9, name: 'Calibri' }
+    tsSheet.getCell('B4').font = { italic: true, name: 'Calibri' }
+
+    const DATA_HEADER_ROW = 13
+    const columnLabels = ['', 'Date', 'Type', 'Task', 'onsite', 'Hours', 'Project(Papierkram)', 'Note (Internal Projects name)']
+    const thRow = tsSheet.getRow(DATA_HEADER_ROW)
+    thRow.height = 18
+
+    columnLabels.forEach((label, i) => {
+        if (i === 0) return
+        const cell = thRow.getCell(i + 1)
+        cell.value = label
+        cell.font = { bold: true, name: 'Calibri', size: 11 }
+        cell.fill = solidFill(COLOR.GRAY_HEADER)
+        cell.border = thinBorder()
+        cell.alignment = { horizontal: 'center', vertical: 'middle' }
+    })
+
+    const sortedEntries = [...entries].sort((a: any, b: any) =>
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+    )
+
+    let currentRowIdx = DATA_HEADER_ROW + 1
+    sortedEntries.forEach((e: any) => {
+        const pName = e.project?.name || ''
+        const taskName = e.task?.name || ''
+        const desc = e.description || ''
+
+        let type = 'Papierkram'
+        if (pName.toLowerCase().includes('internal')) type = 'Internal'
+        else if (!pName && desc.toLowerCase().includes('training')) type = 'Others'
+        else if (!pName) type = 'Others'
+
+        const rowBg: string | null = type === 'Papierkram' ? COLOR.LIGHT_BLUE : type === 'Internal' ? COLOR.LIGHT_PINK : null
+
+        const dataRow = tsSheet.getRow(currentRowIdx++)
+        dataRow.height = 16
+
+        const cells: [number, string | number | Date | null][] = [
+            [2, new Date(e.date)],
+            [3, type],
+            [4, taskName],
+            [5, ''],
+            [6, e.approvedHours ?? e.loggedHours ?? 0],
+            [7, pName],
+            [8, desc],
+        ]
+
+        cells.forEach(([colIdx, value]) => {
+            const cell = dataRow.getCell(colIdx)
+            cell.value = value
+            cell.border = thinBorder()
+            if (rowBg) cell.fill = solidFill(rowBg)
+            cell.font = { name: 'Calibri', size: 10 }
+        })
+
+        const dateCell = dataRow.getCell(2)
+        dateCell.numFmt = 'MM/DD/YYYY'
+        dateCell.alignment = { horizontal: 'left' }
+
+        const typeCell = dataRow.getCell(3)
+        typeCell.font = { bold: true, name: 'Calibri', size: 10 }
+        dataRow.getCell(6).alignment = { horizontal: 'right' }
+    })
+
+    // ── 4. Save ───────────────────────────────────────────────────────────────
+    const buffer = await wb.xlsx.writeBuffer() as ArrayBuffer
+    const yyyy_mm = `${ts.year}_${String(ts.month).padStart(2, '0')}`
+    const filename = `${yyyy_mm} Conarum Timesheet BTP - ${ts.user.firstName} ${ts.user.lastName}.xlsx`
+
+    const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    saveAs(blob, filename)
+}
