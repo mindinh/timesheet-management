@@ -228,27 +228,27 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
 
                                     {/* Inline Create Project Form */}
                                     {showCreateProject && (
-                                        <div className="p-3 border rounded-lg bg-muted/30 space-y-3 mb-2">
+                                        <div className="p-3 border rounded-lg bg-muted/30 space-y-3 mb-2 overflow-hidden">
                                             <div className="grid grid-cols-2 gap-2">
-                                                <div>
+                                                <div className="min-w-0">
                                                     <Label htmlFor="newProjectName" className="text-xs">Name</Label>
                                                     <Input
                                                         id="newProjectName"
                                                         value={newProject.name}
                                                         onChange={(e) => setNewProject(p => ({ ...p, name: e.target.value }))}
                                                         placeholder="e.g. Cloud Migration"
-                                                        className="h-8 text-sm"
+                                                        className="h-8 text-sm w-full"
                                                         autoFocus
                                                     />
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <Label htmlFor="newProjectCode" className="text-xs">Code</Label>
                                                     <Input
                                                         id="newProjectCode"
                                                         value={newProject.code}
                                                         onChange={(e) => setNewProject(p => ({ ...p, code: e.target.value }))}
                                                         placeholder="e.g. P001"
-                                                        className="h-8 text-sm"
+                                                        className="h-8 text-sm w-full"
                                                     />
                                                 </div>
                                             </div>
@@ -295,13 +295,13 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
                                         value={field.value}
                                     >
                                         <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Project" />
+                                            <SelectTrigger className="overflow-hidden">
+                                                <SelectValue placeholder="Select Project" className="truncate" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             {projects.map((project) => (
-                                                <SelectItem key={project.id} value={project.id}>
+                                                <SelectItem key={project.id} value={project.id} title={`${project.name} (${project.code})`}>
                                                     {project.name} ({project.code})
                                                 </SelectItem>
                                             ))}
@@ -335,26 +335,26 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
 
                                         {/* Inline Create Task Form */}
                                         {showCreateTask && (
-                                            <div className="p-3 border rounded-lg bg-muted/30 space-y-3 mb-2">
-                                                <div>
+                                            <div className="p-3 border rounded-lg bg-muted/30 space-y-3 mb-2 overflow-hidden">
+                                                <div className="min-w-0">
                                                     <Label htmlFor="newTaskName" className="text-xs">Task Name</Label>
                                                     <Input
                                                         id="newTaskName"
                                                         value={newTask.name}
                                                         onChange={(e) => setNewTask(t => ({ ...t, name: e.target.value }))}
                                                         placeholder="e.g. Development"
-                                                        className="h-8 text-sm"
+                                                        className="h-8 text-sm w-full"
                                                         autoFocus
                                                     />
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <Label htmlFor="newTaskDesc" className="text-xs">Description</Label>
                                                     <Input
                                                         id="newTaskDesc"
                                                         value={newTask.description}
                                                         onChange={(e) => setNewTask(t => ({ ...t, description: e.target.value }))}
                                                         placeholder="Optional description"
-                                                        className="h-8 text-sm"
+                                                        className="h-8 text-sm w-full"
                                                     />
                                                 </div>
                                                 <div className="flex gap-2 justify-end">
@@ -375,13 +375,13 @@ export function DailyLogDialog({ open, onOpenChange, date, onSubmit, entry }: Da
 
                                         <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder={availableTasks.length > 0 ? 'Select Task' : 'No tasks available'} />
+                                                <SelectTrigger className="overflow-hidden">
+                                                    <SelectValue placeholder={availableTasks.length > 0 ? 'Select Task' : 'No tasks available'} className="truncate" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
                                                 {availableTasks.map((task) => (
-                                                    <SelectItem key={task.id} value={task.id}>
+                                                    <SelectItem key={task.id} value={task.id} title={task.name}>
                                                         {task.name}
                                                     </SelectItem>
                                                 ))}

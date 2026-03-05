@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Save, FileDown, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
 import { EffortDistribution } from './EffortDistribution'
@@ -12,14 +12,8 @@ interface TimesheetFooterProps {
     manager?: { id: string; firstName: string; lastName: string; role: string }
     potentialApprovers: { id: string; firstName: string; lastName: string; role: string; email: string }[]
     onSubmit: (approverId?: string) => void
-    onSaveChanges: () => void
-    onExport: () => void
-    isDirty: boolean
-    isLoading: boolean
-    isExporting: boolean
     isReadOnly: boolean
     status: string
-    lastSyncTime?: Date
 }
 
 export function TimesheetFooter({
@@ -29,14 +23,8 @@ export function TimesheetFooter({
     manager,
     potentialApprovers,
     onSubmit,
-    onSaveChanges,
-    onExport,
-    isDirty,
-    isLoading,
-    isExporting,
     isReadOnly,
     status,
-    lastSyncTime,
 }: TimesheetFooterProps) {
     const [selectedApproverId, setSelectedApproverId] = useState<string>('')
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -63,10 +51,6 @@ export function TimesheetFooter({
     }, [manager, selectedApproverId, filteredApprovers])
 
     const selectedApprover = filteredApprovers.find(a => a.id === selectedApproverId)
-
-    const syncText = lastSyncTime
-        ? `Last sync: ${Math.round((Date.now() - lastSyncTime.getTime()) / 60000)} mins ago`
-        : 'Not synced'
 
     const canSubmit = status === 'Draft' || status === 'Rejected'
     const submitLabel = status === 'Rejected' ? 'Resubmit Timesheet' : 'Submit Timesheet'
@@ -175,40 +159,7 @@ export function TimesheetFooter({
                     </Card>
                 </div>
             </div>
-
-            {/* Bottom Bar */}
-            <div className="flex items-center justify-between py-3 border-t text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <span className={`h-2 w-2 rounded-full ${isDirty ? 'bg-warning' : 'bg-success'}`} />
-                    <span>{isDirty ? 'Unsaved changes' : 'All saved'}</span>
-                    <span className="text-muted-foreground/50 ml-2">{syncText}</span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    {!isReadOnly && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onSaveChanges}
-                            disabled={!isDirty || isLoading}
-                            className={isDirty ? 'text-warning hover:opacity-80' : ''}
-                        >
-                            <Save className="h-4 w-4 mr-1.5" />
-                            {isLoading ? 'Saving...' : 'Save as Draft'}
-                        </Button>
-                    )}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="font-medium"
-                        onClick={onExport}
-                        disabled={isExporting}
-                    >
-                        <FileDown className="h-4 w-4 mr-1.5" />
-                        {isExporting ? 'Exporting...' : 'Export Report'}
-                    </Button>
-                </div>
-            </div>
         </div>
     )
 }
+

@@ -9,6 +9,14 @@
     {
       "name": "$XSAPPNAME.member",
       "description": "Team Member"
+    },
+    {
+      "name": "$XSAPPNAME.Admin",
+      "description": "Admin"
+    },
+    {
+      "name": "$XSAPPNAME.TeamLead",
+      "description": "TeamLead"
     }
   ],
   "attributes": [],

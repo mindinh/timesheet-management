@@ -116,15 +116,6 @@ export function DailyEntryList({
 
     return (
         <div className="space-y-1">
-            {/* Header Row */}
-            <div className="grid grid-cols-12 gap-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3">
-                <div className="col-span-2">Date / Status</div>
-                <div className="col-span-2">Project</div>
-                <div className="col-span-2">Task</div>
-                <div className="col-span-3">Task Description</div>
-                <div className="col-span-1 text-right">HRS</div>
-                <div className="col-span-2 text-right">Action</div>
-            </div>
 
             {/* Daily Entries */}
             {allDaysInMonth.map((day) => {
@@ -196,22 +187,24 @@ export function DailyEntryList({
                             {/* Entry Rows */}
                             {dayEntries.length > 0 ? (
                                 <div className="divide-y divide-border/30">
-                                    {/* Select All row for this day */}
-                                    {!readOnly && (
-                                        <div className="flex items-center gap-2 px-6 py-2 bg-muted/30">
-                                            <Checkbox
-                                                id={`select-all-${dateStr}`}
-                                                checked={allSelected ? true : someSelected ? 'indeterminate' : false}
-                                                onCheckedChange={(checked: CheckedState) => onSelectAllForDay(dateStr, !!checked)}
-                                            />
-                                            <label
-                                                htmlFor={`select-all-${dateStr}`}
-                                                className="text-xs text-muted-foreground cursor-pointer select-none"
-                                            >
-                                                {/* Select all ({dayEntries.length}) */}
-                                            </label>
+                                    {/* Day-level column headers + Select All */}
+                                    <div className="grid grid-cols-12 gap-4 items-center px-6 py-2 bg-muted/30">
+                                        <div className="col-span-2 min-w-0 flex items-center gap-2">
+                                            {!readOnly && (
+                                                <Checkbox
+                                                    id={`select-all-${dateStr}`}
+                                                    checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+                                                    onCheckedChange={(checked: CheckedState) => onSelectAllForDay(dateStr, !!checked)}
+                                                />
+                                            )}
+                                            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Select</span>
                                         </div>
-                                    )}
+                                        <div className="col-span-2 min-w-0 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Project</div>
+                                        <div className="col-span-2 min-w-0 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Task</div>
+                                        <div className="col-span-3 min-w-0 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Description</div>
+                                        <div className="col-span-1 min-w-0 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-right">HRS</div>
+                                        <div className="col-span-2 min-w-0 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Action</div>
+                                    </div>
                                     {dayEntries.map((entry) => {
                                         const projectTasks = getTasksForProject(entry.projectId)
                                         const taskName = tasks.find(t => t.id === entry.taskId)?.name
@@ -219,7 +212,7 @@ export function DailyEntryList({
                                         return (
                                             <div key={entry.id} className="grid grid-cols-12 gap-4 items-center px-6 py-3">
                                                 {/* Checkbox + empty date column */}
-                                                <div className="col-span-2 flex items-center gap-2">
+                                                <div className="col-span-2 min-w-0 flex items-center gap-2">
                                                     {!readOnly && (
                                                         <Checkbox
                                                             id={`entry-${entry.id}`}
@@ -230,9 +223,9 @@ export function DailyEntryList({
                                                 </div>
 
                                                 {/* Project */}
-                                                <div className="col-span-2">
+                                                <div className="col-span-2 min-w-0 overflow-hidden" title={projects.find(p => p.id === entry.projectId)?.name || 'Unknown'}>
                                                     <Select value={entry.projectId} disabled>
-                                                        <SelectTrigger className="h-9 text-sm">
+                                                        <SelectTrigger className="h-9 text-sm [&>span]:truncate [&>span]:block">
                                                             <SelectValue>
                                                                 {projects.find(p => p.id === entry.projectId)?.name || 'Unknown'}
                                                             </SelectValue>
@@ -241,9 +234,9 @@ export function DailyEntryList({
                                                 </div>
 
                                                 {/* Task Type */}
-                                                <div className="col-span-2">
+                                                <div className="col-span-2 min-w-0 overflow-hidden" title={taskName || ''}>
                                                     <Select value={entry.taskId || ''} disabled>
-                                                        <SelectTrigger className="h-9 text-sm">
+                                                        <SelectTrigger className="h-9 text-sm [&>span]:truncate [&>span]:block">
                                                             <SelectValue>
                                                                 {taskName || (projectTasks.length > 0 ? 'Select Task' : '—')}
                                                             </SelectValue>
@@ -251,7 +244,7 @@ export function DailyEntryList({
                                                         {projectTasks.length > 0 && (
                                                             <SelectContent>
                                                                 {projectTasks.map((task) => (
-                                                                    <SelectItem key={task.id} value={task.id}>
+                                                                    <SelectItem key={task.id} value={task.id} title={task.name}>
                                                                         {task.name}
                                                                     </SelectItem>
                                                                 ))}
@@ -261,22 +254,22 @@ export function DailyEntryList({
                                                 </div>
 
                                                 {/* Description */}
-                                                <div className="col-span-3">
+                                                <div className="col-span-3 min-w-0 overflow-hidden" title={entry.description || ''}>
                                                     <Input
                                                         value={entry.description || ''}
                                                         placeholder="Task description"
-                                                        className="h-9 text-sm"
+                                                        className="h-9 text-sm w-full truncate"
                                                         disabled
                                                     />
                                                 </div>
 
                                                 {/* Hours */}
-                                                <div className="col-span-1 text-right">
+                                                <div className="col-span-1 min-w-0 text-right">
                                                     <div className="text-sm font-semibold tabular-nums">{entry.hours.toFixed(2)}</div>
                                                 </div>
 
                                                 {/* Actions */}
-                                                <div className="col-span-2 flex justify-end gap-1">
+                                                <div className="col-span-2 min-w-0 flex justify-end gap-1">
                                                     {!readOnly && (
                                                         <>
                                                             <Button

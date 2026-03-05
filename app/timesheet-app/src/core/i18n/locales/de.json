@@ -17,6 +17,21 @@
         "Modified": "Geändert",
         "Finished": "Abgeschlossen"
     },
+    "timesheets": {
+        "title": "Zeitblatt-Worklist",
+        "description": "Ihre Zeitnachweis-Einreichungen anzeigen und verwalten",
+        "logTimesheet": "Zeitblatt erfassen",
+        "noTimesheets": "Keine Zeitnachweise gefunden. Versuchen Sie, die Filter anzupassen oder einen neuen Zeitnachweis zu erstellen.",
+        "table": {
+            "period": "Zeitraum",
+            "status": "Status",
+            "totalHours": "Gesamtstunden",
+            "entries": "Einträge",
+            "submitted": "Eingereicht",
+            "approved": "Genehmigt",
+            "actions": "Aktionen"
+        }
+    },
     "projects": {
         "title": "Projekte",
         "description": "Verwalten Sie Ihre Projekte und Aufgaben",
