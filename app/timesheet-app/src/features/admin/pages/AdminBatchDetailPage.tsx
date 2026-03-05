@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/button'
-<<<<<<< HEAD
-import { ArrowLeft, CheckCircle, FileText, UserCircle, Calendar, XCircle, Clock, ChevronDown, ChevronRight, History, Download } from 'lucide-react'
-=======
-import { ArrowLeft, CheckCircle, FileText, UserCircle, Calendar, XCircle, Clock, ChevronDown, ChevronRight, History, Eye } from 'lucide-react'
->>>>>>> 0e4ef9951f992fee4c069ac76453c4e15e9c6b45
+import { ArrowLeft, CheckCircle, FileText, UserCircle, Calendar, XCircle, Clock, ChevronDown, ChevronRight, History, Download, Eye } from 'lucide-react'
 import { format } from 'date-fns'
 import { fetchTimesheetBatchById, markBatchDoneApi, rejectBatchApi, adminModifyEntryHours, getAdminTimesheetDetail, type TimesheetBatchDetail } from '../api/admin-api'
 import { exportSingleTimesheetToExcel } from '../utils/export-excel'
@@ -485,20 +481,16 @@ export default function AdminBatchDetailPage() {
                                             }`}>
                                             {ts.status}
                                         </span>
-<<<<<<< HEAD
                                         <div className="flex items-center gap-2">
-=======
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary z-10 hidden sm:flex"
-                                            onClick={(e) => { e.stopPropagation(); navigate(`/approvals/${ts.ID}`) }}
-                                        >
-                                            <Eye className="mr-1.5 h-3.5 w-3.5" />
-                                            Full Review
-                                        </Button>
-                                        {status === 'Pending' && ts.status === 'Approved' && (
->>>>>>> 0e4ef9951f992fee4c069ac76453c4e15e9c6b45
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary z-10 hidden sm:flex"
+                                                onClick={(e) => { e.stopPropagation(); navigate(`/approvals/${ts.ID}`) }}
+                                            >
+                                                <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                                Full Review
+                                            </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
@@ -523,93 +515,96 @@ export default function AdminBatchDetailPage() {
                                                 </Button>
                                             )}
                                         </div>
-                                    </div>
-                                </div>
+                                    </div >
+                                </div >
 
                                 {/* Expanded Timesheet Inner View */}
-                                {expandedRows[ts.ID] && (
-                                    <div className="bg-muted/10 border-t border-border/50 px-4 py-6 sm:px-14">
-                                        {loadingDetails[ts.ID] ? (
-                                            <div className="text-sm text-muted-foreground animate-pulse py-4">Loading entries...</div>
-                                        ) : timesheetDetails[ts.ID] ? (
-                                            <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
-                                                <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Logged Entries</h4>
+                                {
+                                    expandedRows[ts.ID] && (
+                                        <div className="bg-muted/10 border-t border-border/50 px-4 py-6 sm:px-14">
+                                            {loadingDetails[ts.ID] ? (
+                                                <div className="text-sm text-muted-foreground animate-pulse py-4">Loading entries...</div>
+                                            ) : timesheetDetails[ts.ID] ? (
+                                                <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                                    <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Logged Entries</h4>
 
-                                                {timesheetDetails[ts.ID].entries.length === 0 ? (
-                                                    <p className="text-sm italic text-muted-foreground py-2">No entries found for this timesheet.</p>
-                                                ) : (
-                                                    <div className="h-[400px]">
-                                                        <DataTable<any>
-                                                            data={timesheetDetails[ts.ID].entries}
-                                                            columns={getEntryColumns(ts)}
-                                                            isLoading={false}
-                                                            variant="card"
-                                                            maxHeight="100%"
-                                                            stickyHeader
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                <div className="flex justify-end pr-4 text-sm">
-                                                    <span className="font-medium mr-2">Total Logged:</span>
-                                                    <span className="font-bold font-mono">{timesheetDetails[ts.ID].totalHours}</span>
-                                                </div>
-
-                                                {timesheetDetails[ts.ID].comment && (
-                                                    <div className="mt-4 p-3 bg-muted/40 rounded-md border border-border/50 text-sm">
-                                                        <span className="font-medium text-foreground block mb-1">Employee Comment:</span>
-                                                        <span className="text-muted-foreground italic">"{timesheetDetails[ts.ID].comment}"</span>
-                                                    </div>
-                                                )}
-
-                                                {/* Timesheet Approval History */}
-                                                {ts.approvalHistory && ts.approvalHistory.length > 0 && (
-                                                    <div className="mt-6 pt-4 border-t border-border/50">
-                                                        <h4 className="font-semibold text-sm flex items-center gap-2 mb-3 text-muted-foreground">
-                                                            <History className="h-4 w-4" /> Timesheet Edit & Approval History
-                                                        </h4>
-                                                        <div className="space-y-3">
-                                                            {ts.approvalHistory.map((log) => (
-                                                                <div key={log.ID} className="flex gap-3 text-sm border-l-2 border-muted pl-3 pb-1">
-                                                                    <div className="flex-1">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="font-medium text-foreground">{log.actor.firstName} {log.actor.lastName}</span>
-                                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${log.action === 'Modified' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' :
-                                                                                log.action === 'Approved' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                                                                                    log.action === 'Rejected' ? 'bg-destructive/10 text-destructive' :
-                                                                                        'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
-                                                                                }`}>
-                                                                                {log.action}
-                                                                            </span>
-                                                                            <span className="text-xs text-muted-foreground ml-auto">
-                                                                                {format(new Date(log.timestamp), 'MMM dd, HH:mm')}
-                                                                            </span>
-                                                                        </div>
-                                                                        {log.comment && (
-                                                                            <p className="text-muted-foreground mt-1 text-xs">
-                                                                                {log.comment}
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            ))}
+                                                    {timesheetDetails[ts.ID].entries.length === 0 ? (
+                                                        <p className="text-sm italic text-muted-foreground py-2">No entries found for this timesheet.</p>
+                                                    ) : (
+                                                        <div className="h-[400px]">
+                                                            <DataTable<any>
+                                                                data={timesheetDetails[ts.ID].entries}
+                                                                columns={getEntryColumns(ts)}
+                                                                isLoading={false}
+                                                                variant="card"
+                                                                maxHeight="100%"
+                                                                stickyHeader
+                                                            />
                                                         </div>
+                                                    )}
+
+                                                    <div className="flex justify-end pr-4 text-sm">
+                                                        <span className="font-medium mr-2">Total Logged:</span>
+                                                        <span className="font-bold font-mono">{timesheetDetails[ts.ID].totalHours}</span>
                                                     </div>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div className="text-sm text-destructive py-4">Failed to load entries.</div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+
+                                                    {timesheetDetails[ts.ID].comment && (
+                                                        <div className="mt-4 p-3 bg-muted/40 rounded-md border border-border/50 text-sm">
+                                                            <span className="font-medium text-foreground block mb-1">Employee Comment:</span>
+                                                            <span className="text-muted-foreground italic">"{timesheetDetails[ts.ID].comment}"</span>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Timesheet Approval History */}
+                                                    {ts.approvalHistory && ts.approvalHistory.length > 0 && (
+                                                        <div className="mt-6 pt-4 border-t border-border/50">
+                                                            <h4 className="font-semibold text-sm flex items-center gap-2 mb-3 text-muted-foreground">
+                                                                <History className="h-4 w-4" /> Timesheet Edit & Approval History
+                                                            </h4>
+                                                            <div className="space-y-3">
+                                                                {ts.approvalHistory.map((log) => (
+                                                                    <div key={log.ID} className="flex gap-3 text-sm border-l-2 border-muted pl-3 pb-1">
+                                                                        <div className="flex-1">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="font-medium text-foreground">{log.actor.firstName} {log.actor.lastName}</span>
+                                                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${log.action === 'Modified' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' :
+                                                                                    log.action === 'Approved' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                                                                        log.action === 'Rejected' ? 'bg-destructive/10 text-destructive' :
+                                                                                            'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                                                                                    }`}>
+                                                                                    {log.action}
+                                                                                </span>
+                                                                                <span className="text-xs text-muted-foreground ml-auto">
+                                                                                    {format(new Date(log.timestamp), 'MMM dd, HH:mm')}
+                                                                                </span>
+                                                                            </div>
+                                                                            {log.comment && (
+                                                                                <p className="text-muted-foreground mt-1 text-xs">
+                                                                                    {log.comment}
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="text-sm text-destructive py-4">Failed to load entries.</div>
+                                            )}
+                                        </div>
+                                    )
+                                }
+                            </div >
+                        ))
+                        }
+                    </div >
                 )}
-            </div>
+            </div >
 
             {/* Dialogs */}
-            <StatusDialog
+            < StatusDialog
                 open={statusDialog.open}
                 onOpenChange={(open) => setStatusDialog(prev => ({ ...prev, open }))}
                 variant={statusDialog.variant}
@@ -688,7 +683,7 @@ export default function AdminBatchDetailPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     )
 }
 
