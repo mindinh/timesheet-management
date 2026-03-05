@@ -258,11 +258,14 @@ export default function TimesheetReviewPage() {
                 <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                     <h2 className="font-semibold text-foreground">Daily Entry Details</h2>
                     <Badge
-                        variant={ts.status === 'Submitted' ? 'secondary' : 'default'}
+                        variant="outline"
                         className={cn(
-                            ts.status === 'Submitted' ? 'bg-sap-informative/10 text-sap-informative hover:bg-sap-informative/10'
-                                : ts.status === 'Approved' ? 'bg-sap-positive/10 text-sap-positive hover:bg-sap-positive/10'
-                                    : 'bg-muted text-muted-foreground'
+                            "font-medium border-0",
+                            ts.status === 'Draft' ? "bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300" :
+                                ts.status === 'Submitted' ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                    ts.status === 'Approved' ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400" :
+                                        ts.status === 'Reopened' ? "bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400" :
+                                            "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400"
                         )}
                     >
                         {ts.status === 'Submitted' ? 'Pending Approval' : ts.status}
@@ -346,9 +349,10 @@ export default function TimesheetReviewPage() {
                                                         onValueChange={(val) => setEntryStatus(entry.id, val)}
                                                     >
                                                         <SelectTrigger className={cn(
-                                                            "h-8 text-xs",
-                                                            entryStatus[entry.id] === 'Approved' ? 'bg-sap-positive/10 text-sap-positive border-sap-positive/30' :
-                                                                entryStatus[entry.id] === 'Reopened' ? 'bg-sap-negative/10 text-sap-negative border-sap-negative/30' : ''
+                                                            "h-8 text-xs font-medium border-transparent",
+                                                            entryStatus[entry.id] === 'Approved' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                                                entryStatus[entry.id] === 'Reopened' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                                                         )}>
                                                             <SelectValue />
                                                         </SelectTrigger>
@@ -360,9 +364,10 @@ export default function TimesheetReviewPage() {
                                                     </Select>
                                                 ) : (
                                                     <Badge variant="outline" className={cn(
-                                                        "text-xs font-normal",
-                                                        entryStatus[entry.id] === 'Approved' ? 'bg-sap-positive/10 text-sap-positive border-sap-positive/30' :
-                                                            entryStatus[entry.id] === 'Reopened' ? 'bg-sap-negative/10 text-sap-negative border-sap-negative/30' : ''
+                                                        "text-xs font-medium border-0",
+                                                        entryStatus[entry.id] === 'Approved' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                                            entryStatus[entry.id] === 'Reopened' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                                                     )}>
                                                         {entryStatus[entry.id] || 'Pending'}
                                                     </Badge>

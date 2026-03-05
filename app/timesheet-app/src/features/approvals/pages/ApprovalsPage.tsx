@@ -175,12 +175,17 @@ export default function ApprovalsPage() {
             render: (_val, row) => (
                 <div className="text-center w-full block">
                     <Badge
-                        variant={row.status === 'Submitted' ? 'secondary' : 'default'}
+                        variant="outline"
                         className={cn(
-                            row.status === 'Submitted' ? "bg-sap-informative/10 text-sap-informative hover:bg-sap-informative/10" : "bg-sap-positive/10 text-sap-positive hover:bg-sap-positive/10"
+                            "font-medium border-0",
+                            row.status === 'Draft' ? "bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300" :
+                                row.status === 'Submitted' ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                    row.status === 'Approved' ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400" :
+                                        row.status === 'Reopened' ? "bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400" :
+                                            "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400"
                         )}
                     >
-                        {row.status}
+                        {row.status === 'Submitted' ? 'Pending Approval' : row.status}
                     </Badge>
                 </div>
             )
