@@ -98,6 +98,8 @@ entity Task : cuid, managed {
 entity TimesheetBatch : cuid, managed {
   teamLead   : Association to User @mandatory; // who created the batch
   admin      : Association to User @mandatory; // which admin it was sent to
+  month      : Integer             @mandatory; // month of the timesheets in this batch
+  year       : Integer             @mandatory; // year of the timesheets in this batch
   status     : String(20) default 'Pending'; // Pending, Processed
   timesheets : Composition of many Timesheet
                  on timesheets.batch = $self;

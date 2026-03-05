@@ -109,6 +109,9 @@
 | approveDate        | DateTime            | No       | —      | When fully approved                                                       |
 | finishedDate       | DateTime            | No       | —      | When archived                                                             |
 | currentApprover_id | Association → User | No       | —      | Who must act next                                                         |
+| batch_id           | Association → Batch| No       | —      | Which batch this timesheet belongs to                                     |
+| totalHours         | Decimal(7,2)        | No       | —      | Auto-calculated total hours                                               |
+| mainDays           | Decimal(5,2)        | No       | —      | Auto-calculated working days (totalHours / 8)                             |
 | comment            | String(1000)        | No       | —      | Reviewer/employee comment                                                 |
 
 ### Entity: TimesheetEntry
@@ -120,11 +123,24 @@
 | project_id         | Association → Project   | Yes      | —      | Linked project               |
 | task_id            | Association → Task      | No       | —      | Optional task                |
 | date               | Date                     | Yes      | —      | Working date                 |
+| status             | String(20)               | No       | Pending | Per-line approval status     |
+| approverComment    | String(500)              | No       | —      | Per-line reviewer reason     |
 | loggedHours        | Decimal(5,2)             | Yes      | —      | Hours by employee            |
 | approvedHours      | Decimal(5,2)             | No       | —      | Hours overridden by approver |
 | hoursModifiedBy_id | Association → User      | No       | —      | Who changed hours            |
 | hoursModifiedAt    | DateTime                 | No       | —      | When hours were changed      |
 | description        | String(500)              | No       | —      | Task description / notes     |
+
+### Entity: TimesheetBatch
+
+| Field        | Type                     | Required | Default | Description                           |
+| ------------ | ------------------------ | -------- | ------- | ------------------------------------- |
+| id (cuid)    | UUID / String(36)        | Yes      | Auto    | Primary key                           |
+| teamLead_id  | Association → User      | Yes      | —      | Team Lead managing the batch          |
+| admin_id     | Association → User      | Yes      | —      | Target admin for the batch            |
+| month        | Integer                  | No       | —      | Calendar month                        |
+| year         | Integer                  | No       | —      | Calendar year                         |
+| status       | String(20)               | Yes      | Pending | Pending / SubmittedToAdmin / Processed|
 
 ### Entity: ApprovalHistory
 
@@ -185,20 +201,20 @@
 
 | Task ID | Description                                           | Type     | Estimate | Priority |
 | ------- | ----------------------------------------------------- | -------- | -------- | -------- |
-| T-201   | Define `Projects` entity in CDS schema              | Backend  | 2h       | HIGH     |
-| T-202   | Define `Timesheets` entity in CDS schema            | Backend  | 3h       | HIGH     |
-| T-203   | Define `Task` entity in CDS schema                  | Backend  | 2h       | HIGH     |
-| T-204   | Define `TimesheetEntry` entity in CDS schema        | Backend  | 2h       | HIGH     |
-| T-205   | Define `ApprovalHistory` entity in CDS schema       | Backend  | 2h       | HIGH     |
+| T-201   | Define `Projects` entity in CDS schema              | Backend  | 2h       | HIGH     | [x] |
+| T-202   | Define `Timesheets` entity in CDS schema            | Backend  | 3h       | HIGH     | [x] |
+| T-203   | Define `Task` entity in CDS schema                  | Backend  | 2h       | HIGH     | [x] |
+| T-204   | Define `TimesheetEntry` entity in CDS schema        | Backend  | 2h       | HIGH     | [x] |
+| T-205   | Define `ApprovalHistory` entity in CDS schema       | Backend  | 2h       | HIGH     | [x] |
 | T-206   | Define `AuditLog` entity in CDS schema              | Backend  | 1h       | MEDIUM   |
-| T-207   | Create `GET /projects` endpoint                     | Backend  | 2h       | HIGH     |
-| T-208   | Create `POST /timesheets` endpoint                  | Backend  | 3h       | HIGH     |
-| T-209   | Add validation rules (hours, date, required fields)   | Backend  | 2h       | MEDIUM   |
-| T-210   | Create Timesheet Entry form UI                        | Frontend | 4h       | HIGH     |
-| T-211   | Implement project + task dropdowns                    | Frontend | 2h       | HIGH     |
-| T-212   | Add date picker (exclude weekends)                    | Frontend | 2h       | MEDIUM   |
-| T-213   | Create type selector (Papierkram / Internal / Others) | Frontend | 2h       | MEDIUM   |
-| T-214   | Show success/error messages (toast)                   | Frontend | 1h       | MEDIUM   |
+| T-207   | Create `GET /projects` endpoint                     | Backend  | 2h       | HIGH     | [x] |
+| T-208   | Create `POST /timesheets` endpoint                  | Backend  | 3h       | HIGH     | [x] |
+| T-209   | Add validation rules (hours, date, required fields)   | Backend  | 2h       | MEDIUM   | [x] |
+| T-210   | Create Timesheet Entry form UI                        | Frontend | 4h       | HIGH     | [x] |
+| T-211   | Implement project + task dropdowns                    | Frontend | 2h       | HIGH     | [x] |
+| T-212   | Add date picker (exclude weekends)                    | Frontend | 2h       | MEDIUM   | [x] |
+| T-213   | Create type selector (Papierkram / Internal / Others) | Frontend | 2h       | MEDIUM   | [x] |
+| T-214   | Show success/error messages (toast)                   | Frontend | 1h       | MEDIUM   | [x] |
 
 ### US-3: Excel Import / Export
 
