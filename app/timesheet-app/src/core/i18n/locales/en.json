@@ -17,6 +17,21 @@
         "Modified": "Modified",
         "Finished": "Finished"
     },
+    "timesheets": {
+        "title": "Timesheet Worklist",
+        "description": "View and manage your timesheet submissions",
+        "logTimesheet": "Log Timesheet",
+        "noTimesheets": "No timesheets found. Try adjusting your filters or log a new timesheet.",
+        "table": {
+            "period": "Period",
+            "status": "Status",
+            "totalHours": "Total Hours",
+            "entries": "Entries",
+            "submitted": "Submitted",
+            "approved": "Approved",
+            "actions": "Actions"
+        }
+    },
     "projects": {
         "title": "Projects",
         "description": "Manage your projects and tasks",

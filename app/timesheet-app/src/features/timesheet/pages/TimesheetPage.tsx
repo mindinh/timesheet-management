@@ -10,7 +10,7 @@ import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
 import { getUserWithManager, getPotentialApprovers } from '@/features/auth/api/auth-api'
 import { exportToExcel } from '@/features/timesheet/api/timesheet-api'
 import type { TimesheetEntry } from '@/shared/types'
-import { AlertTriangle, History } from 'lucide-react'
+import { AlertTriangle, History, Save, FileDown } from 'lucide-react'
 import { Alert, AlertTitle, AlertDescription } from '@/shared/components/ui/alert'
 import { Button } from '@/shared/components/ui/button'
 import { AuditHistoryDialog } from '@/features/timesheet/components/AuditHistoryDialog'
@@ -293,7 +293,7 @@ export default function TimesheetPage() {
     }, [])
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-20">
             {/* Header */}
             <CalendarHeader
                 currentMonth={currentMonth}
@@ -352,7 +352,7 @@ export default function TimesheetPage() {
                 readOnly={isReadOnly}
             />
 
-            {/* Footer: Effort Distribution + Approver + Bottom Bar */}
+            {/* Footer: Effort Distribution + Approver */}
             <TimesheetFooter
                 entries={currentMonthEntries}
                 projects={projects}
@@ -360,15 +360,48 @@ export default function TimesheetPage() {
                 manager={manager}
                 potentialApprovers={potentialApprovers}
                 onSubmit={handleSubmit}
-                onSaveChanges={handleSaveChanges}
-                onExport={handleExport}
-                isDirty={isDirty}
-                isLoading={isLoading}
-                isExporting={isExporting}
                 isReadOnly={isReadOnly}
                 status={currentTimesheetStatus}
-                lastSyncTime={lastSyncTime}
             />
+
+            {/* Sticky Action Bar */}
+            <div className="fixed bottom-0 left-0 md:left-[16rem] right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+                <div className="mx-auto max-w-screen-2xl flex items-center justify-between px-6 py-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span className={`h-2 w-2 rounded-full ${isDirty ? 'bg-warning' : 'bg-success'}`} />
+                        <span>{isDirty ? 'Unsaved changes' : 'All saved'}</span>
+                        <span className="text-muted-foreground/50 ml-2">
+                            {lastSyncTime
+                                ? `Last sync: ${Math.round((Date.now() - lastSyncTime.getTime()) / 60000)} mins ago`
+                                : 'Not synced'}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {!isReadOnly && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleSaveChanges}
+                                disabled={!isDirty || isLoading}
+                                className={isDirty ? 'text-warning hover:opacity-80' : ''}
+                            >
+                                <Save className="h-4 w-4 mr-1.5" />
+                                {isLoading ? 'Saving...' : 'Save as Draft'}
+                            </Button>
+                        )}
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="font-medium"
+                            onClick={handleExport}
+                            disabled={isExporting}
+                        >
+                            <FileDown className="h-4 w-4 mr-1.5" />
+                            {isExporting ? 'Exporting...' : 'Export Report'}
+                        </Button>
+                    </div>
+                </div>
+            </div>
 
             {/* Daily Log Dialog */}
             {!isReadOnly && (

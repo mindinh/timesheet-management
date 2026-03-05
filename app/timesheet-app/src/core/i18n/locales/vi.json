@@ -17,6 +17,21 @@
         "Modified": "Đã sửa đổi",
         "Finished": "Đã hoàn thành"
     },
+    "timesheets": {
+        "title": "Worklist Timesheet",
+        "description": "Xem và quản lý các bản ghi timesheet",
+        "logTimesheet": "Ghi Timesheet",
+        "noTimesheets": "Không tìm thấy timesheet. Hãy thử điều chỉnh bộ lọc hoặc ghi một timesheet mới.",
+        "table": {
+            "period": "Kỳ",
+            "status": "Trạng thái",
+            "totalHours": "Tổng giờ",
+            "entries": "Mục nhập",
+            "submitted": "Ngày gửi",
+            "approved": "Ngày duyệt",
+            "actions": "Hành động"
+        }
+    },
     "approvalsPage": {
         "title": "Phê duyệt & Đóng gói",
         "description": "Xem xét timesheet của nhân viên hoặc đóng gói gửi quản trị viên cuối cùng.",
