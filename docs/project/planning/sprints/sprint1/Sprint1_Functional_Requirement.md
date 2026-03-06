@@ -68,6 +68,7 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 |---------|-------------|----------------------|
 | **View team report** | Summarize working hours by user, project, and period | Dashboard charts: Total hours by user, Hours by project, Weekly/Monthly trends. Export to Excel. |
 | **Approval history** | Track all approved/reopened timesheets | `GET /api/teamlead/timesheets?status=APPROVED,REOPENED`. Table: status, user, date range, approval_date, approved_by. |
+| **Manage Team Members** | View assigned members, unassigned employees pool. Assign/remove members. Create new employee accounts. | `GET /api/teamlead/getMyMembers`, `GET /api/teamlead/getUnassignedEmployees`, `POST /api/teamlead/assignMember`, `POST /api/teamlead/removeMember`, `POST /api/teamlead/createMember`. UI: "My Team" page. |
 
 ---
 
@@ -95,7 +96,8 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 
 | Feature | Description | Technical Requirements |
 |---------|-------------|----------------------|
-| **Manage Users** | CRUD users, assign roles (Staff / Team Lead / Admin), deactivate/activate | `CRUD /users`. Roles: `STAFF`, `TEAM_LEAD`, `ADMIN`. Assign Team Lead to Staff. Soft-delete (`isActive` flag). |
+| **Manage Users** | CRUD users, assign roles (Staff / Team Lead / Admin), deactivate/activate | `CRUD /users`. Roles: `STAFF`, `TEAM_LEAD`, `ADMIN`. Soft-delete (`isActive` flag). |
+| **Reassign Members** | Reassign an employee to a different Team Lead | `POST /api/admin/reassignMember` — Body: `{ memberId, newTeamLeadId }`. |
 | **Manage Projects** | Sync projects from Papierkram API. Activate/Deactivate projects | Papierkram API integration. Cron job: daily sync. Manual sync button. `POST /projects/sync`. |
 | **View Audit Logs** | Who did what, when. Filter by user, action type, date range | Table `audit_logs`: `user_id`, `action`, `entity_type`, `entity_id`, `timestamp`, `details`. |
 
@@ -121,6 +123,13 @@ Staff (logs) → Team Lead (approves/rejects) → Admin/aTrung (edits & exports)
 | `GET` | `/users` | List users | — | team | ✓ |
 | `POST` | `/users` | Create user | — | — | ✓ |
 | `PUT` | `/users/:id` | Update user / assign role | — | — | ✓ |
+| `GET` | `/api/timesheet/getMyTeamLead` | Get details of assigned Team Lead | ✓ | — | — |
+| `GET` | `/api/teamlead/getMyMembers` | List team members | — | ✓ | — |
+| `GET` | `/api/teamlead/getUnassignedEmployees` | List unassigned employees | — | ✓ | — |
+| `POST` | `/api/teamlead/assignMember` | Assign user to team | — | ✓ | — |
+| `POST` | `/api/teamlead/removeMember` | Remove user from team | — | ✓ | — |
+| `POST` | `/api/teamlead/createMember` | Create new employee & assign to team | — | ✓ | — |
+| `POST` | `/api/admin/reassignMember` | Admin reassigns user to another Team Lead | — | — | ✓ |
 | `GET` | `/audit-logs` | View audit logs | — | — | ✓ |
 | `GET` | `/export-logs` | View export history | — | — | ✓ |
 

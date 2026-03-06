@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight, CheckSquare, BookOpen } from 'lucide-react'
+import { Calendar, ClipboardList, LayoutDashboard, FolderKanban, LogOut, ChevronLeft, ChevronRight, CheckSquare, BookOpen, Users } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -17,11 +17,12 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { useSidebarStore } from '@/shared/store/sidebarStore'
 import type { UserRole } from '@/shared/types'
 
-const navigation: { nameKey: string; href: string; icon: any; roles: UserRole[] }[] = [
+const navigation: { nameKey: string; href: string; icon: React.ElementType; roles: UserRole[] }[] = [
     { nameKey: 'sidebar.myTimesheet', href: '/timesheet', icon: Calendar, roles: ['Employee', 'TeamLead', 'Admin'] },
     { nameKey: 'sidebar.myTimesheets', href: '/timesheets', icon: ClipboardList, roles: ['Employee', 'TeamLead', 'Admin'] },
     { nameKey: 'sidebar.myProjects', href: '/projects', icon: FolderKanban, roles: ['Employee', 'TeamLead', 'Admin'] },
     { nameKey: 'sidebar.approvals', href: '/approvals', icon: CheckSquare, roles: ['TeamLead', 'Admin'] },
+    { nameKey: 'sidebar.myTeam', href: '/approvals/team', icon: Users, roles: ['TeamLead', 'Admin'] },
     { nameKey: 'sidebar.adminDashboard', href: '/admin', icon: LayoutDashboard, roles: ['Admin'] },
     { nameKey: 'sidebar.documents', href: '/docs', icon: BookOpen, roles: ['Employee', 'TeamLead', 'Admin'] },
 ]
@@ -91,7 +92,8 @@ export default function Sidebar() {
             {/* Navigation */}
             <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
                 {visibleNavigation.map((item) => {
-                    const isActive = location.pathname === item.href
+                    // special case for exact matching for some nested routes
+                    const isActive = item.href === '/approvals' ? location.pathname === '/approvals' || location.pathname.match(/^\/approvals\/[a-zA-Z0-9-]{12,}$/) : location.pathname === item.href
                     const label = t(item.nameKey)
                     return (
                         <Link

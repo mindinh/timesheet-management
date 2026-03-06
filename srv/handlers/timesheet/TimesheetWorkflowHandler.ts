@@ -19,6 +19,7 @@ export class TimesheetWorkflowHandler {
         this.srv.on('finishTimesheet', this.onFinishTimesheet.bind(this))
         this.srv.on('submitToAdmin', this.onSubmitToAdmin.bind(this))
         this.srv.on('getApprovableTimesheets', this.onGetApprovableTimesheets.bind(this))
+        this.srv.on('getMyTeamLead', this.onGetMyTeamLead.bind(this))
     }
 
     // ── submitTimesheet ──
@@ -46,12 +47,23 @@ export class TimesheetWorkflowHandler {
             totalHours: totalHrs,
             mainDays: Number((totalHrs / 8).toFixed(2))
         }
-        if (approverId) {
-            updateData.currentApprover_ID = approverId
+
+        let finalApproverId = approverId
+
+        // If approverId is not provided, try to use the user's assigned manager
+        if (!finalApproverId) {
+            const [userRec] = await SELECT.from('sap.timesheet.User').where({ ID: ts.user_ID })
+            if (userRec && userRec.manager_ID) {
+                finalApproverId = userRec.manager_ID
+            }
+        }
+
+        if (finalApproverId) {
+            updateData.currentApprover_ID = finalApproverId
 
             // Auto-assign to/create a Pending batch for the teamlead, month, year
             const [existingBatch] = await SELECT.from('sap.timesheet.TimesheetBatch').where({
-                teamLead_ID: approverId,
+                teamLead_ID: finalApproverId,
                 month: ts.month,
                 year: ts.year,
                 status: 'Pending'
@@ -63,7 +75,7 @@ export class TimesheetWorkflowHandler {
                 const batchId = cds.utils.uuid()
                 await INSERT.into('sap.timesheet.TimesheetBatch').entries({
                     ID: batchId,
-                    teamLead_ID: approverId,
+                    teamLead_ID: finalApproverId,
                     month: ts.month,
                     year: ts.year,
                     status: 'Pending'
@@ -292,5 +304,29 @@ export class TimesheetWorkflowHandler {
         }
 
         return enriched
+    }
+
+    // ── getMyTeamLead ──
+    private async onGetMyTeamLead(req: any) {
+        const user = await resolveUser(req)
+        if (!user) return req.reject(401, 'User not found')
+
+        const db = cds.db || await cds.connect.to('db')
+        const { User } = db.entities('sap.timesheet')
+
+        const [currentUser] = await SELECT.from(User).where({ ID: user.ID })
+        if (!currentUser || !currentUser.manager_ID) {
+            return null
+        }
+
+        const [manager] = await SELECT.from(User).where({ ID: currentUser.manager_ID })
+        if (!manager) return null
+
+        return {
+            id: manager.ID,
+            firstName: manager.firstName,
+            lastName: manager.lastName,
+            email: manager.email
+        }
     }
 }

@@ -21,6 +21,12 @@ export class TeamLeadBatchHandler {
         this.srv.on('modifyEntryHours', this.onModifyEntryHours.bind(this));
         this.srv.on('reviewEntry', this.onReviewEntry.bind(this));
         this.srv.on('createBatch', this.onCreateBatch.bind(this));
+
+        this.srv.on('getMyMembers', this.onGetMyMembers.bind(this));
+        this.srv.on('assignMember', this.onAssignMember.bind(this));
+        this.srv.on('removeMember', this.onRemoveMember.bind(this));
+        this.srv.on('getUnassignedEmployees', this.onGetUnassignedEmployees.bind(this));
+        this.srv.on('createMember', this.onCreateMember.bind(this));
     }
 
     // ── getPendingTimesheets ──
@@ -348,5 +354,95 @@ export class TeamLeadBatchHandler {
         }).where({ ID: { 'in': timesheetIds } });
 
         return `Successfully submitted ${timesheets.length} timesheets to Admin across ${batchIdsToUpdate.size} batches.`;
+    }
+
+    // ── Team Management ──
+
+    private async onGetMyMembers(req: any) {
+        const user = await resolveUser(req);
+        if (!user) return req.reject(401, 'User not found');
+
+        const db = cds.db || await cds.connect.to('db');
+        const { User } = db.entities('sap.timesheet');
+
+        return await SELECT.from(User).where({ manager_ID: user.ID });
+    }
+
+    private async onGetUnassignedEmployees(req: any) {
+        const user = await resolveUser(req);
+        if (!user) return req.reject(401, 'User not found');
+
+        const db = cds.db || await cds.connect.to('db');
+        const { User } = db.entities('sap.timesheet');
+
+        return await SELECT.from(User).where({ manager_ID: null, role: 'Employee' });
+    }
+
+    private async onAssignMember(req: any) {
+        const { memberId } = req.data;
+        const user = await resolveUser(req);
+        if (!user) return req.reject(401, 'User not found');
+
+        const db = cds.db || await cds.connect.to('db');
+        const { User } = db.entities('sap.timesheet');
+
+        const [member] = await SELECT.from(User).where({ ID: memberId });
+        if (!member) return req.reject(404, 'Employee not found');
+
+        if (member.manager_ID && member.manager_ID !== user.ID) {
+            const [otherManager] = await SELECT.from(User).where({ ID: member.manager_ID });
+            const managerName = otherManager ? `${otherManager.firstName} ${otherManager.lastName}` : 'another Team Lead';
+            return req.reject(409, `Employee belongs to ${managerName}`);
+        }
+
+        await UPDATE(User).set({ manager_ID: user.ID }).where({ ID: memberId });
+        return 'Member assigned successfully';
+    }
+
+    private async onRemoveMember(req: any) {
+        const { memberId } = req.data;
+        const user = await resolveUser(req);
+        if (!user) return req.reject(401, 'User not found');
+
+        const db = cds.db || await cds.connect.to('db');
+        const { User } = db.entities('sap.timesheet');
+
+        const [member] = await SELECT.from(User).where({ ID: memberId });
+        if (!member) return req.reject(404, 'Employee not found');
+
+        if (member.manager_ID !== user.ID) {
+            return req.reject(403, 'Employee is not in your team');
+        }
+
+        await UPDATE(User).set({ manager_ID: null }).where({ ID: memberId });
+        return 'Member removed successfully';
+    }
+
+    private async onCreateMember(req: any) {
+        const { firstName, lastName, email } = req.data;
+        const user = await resolveUser(req);
+        if (!user) return req.reject(401, 'User not found');
+
+        const db = cds.db || await cds.connect.to('db');
+        const { User } = db.entities('sap.timesheet');
+
+        // validate email unique
+        const [existing] = await SELECT.from(User).where({ email });
+        if (existing) {
+            return req.reject(400, 'Email already exists');
+        }
+
+        const newId = cds.utils.uuid();
+        await INSERT.into(User).entries({
+            ID: newId,
+            firstName,
+            lastName,
+            email,
+            role: 'Employee',
+            isActive: true,
+            manager_ID: user.ID
+        });
+
+        return 'Member created and assigned successfully';
     }
 }

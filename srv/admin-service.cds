@@ -1,10 +1,14 @@
-using { sap.timesheet as db } from '../db/schema';
+using {sap.timesheet as db} from '../db/schema';
 
 /**
  * Admin Service
  * Provides admin operations for master data, reports, and final approvals.
  */
-service AdminService @(path: '/api/admin', requires: 'Admin', impl: './admin-service') {
+service AdminService @(
+  path    : '/api/admin',
+  requires: 'Admin',
+  impl    : './admin-service'
+) {
 
   // ── Master Data Management ────────────────────────────────────────────────
   entity Projects          as projection on db.Project;
@@ -17,10 +21,17 @@ service AdminService @(path: '/api/admin', requires: 'Admin', impl: './admin-ser
   entity TimesheetEntries  as projection on db.TimesheetEntry;
 
   // ── Audit & Export History ────────────────────────────────────────────────
-  @readonly entity AuditLogs          as projection on db.AuditLog;
-  @readonly entity ApprovalHistories  as projection on db.ApprovalHistory;
-  @readonly entity BatchHistories     as projection on db.BatchHistory;
-  @readonly entity ExportLogs         as projection on db.ExportLog;
+  @readonly
+  entity AuditLogs         as projection on db.AuditLog;
+
+  @readonly
+  entity ApprovalHistories as projection on db.ApprovalHistory;
+
+  @readonly
+  entity BatchHistories    as projection on db.BatchHistory;
+
+  @readonly
+  entity ExportLogs        as projection on db.ExportLog;
 
   // ── Export Actions ────────────────────────────────────────────────────────
 
@@ -36,26 +47,24 @@ service AdminService @(path: '/api/admin', requires: 'Admin', impl: './admin-ser
    * @param from       - ISO date string: inclusive start date (e.g. 2026-02-01).
    * @param to         - ISO date string: inclusive end date (e.g. 2026-02-28).
    */
-  action exportToExcel(
-    month     : Integer,
-    year      : Integer,
-    userId    : String,
-    projectId : String,
-    from      : String,
-    to        : String
-  ) returns LargeBinary;
+  action exportToExcel(month: Integer,
+                       year: Integer,
+                       userId: String,
+                       projectId: String,
+                       from: String,
+                       to: String)                                                    returns LargeBinary;
 
   /**
    * Import data from an Excel file (Base64 encoded) and seed the database.
    * This action processes the uploaded Excel file to populate User, Project, Task, Timesheet, and TimesheetEntry tables.
    */
-  action runreport(base64Data: LargeString) returns String;
+  action runreport(base64Data: LargeString)                                           returns String;
 
   /**
    * Trigger a manual sync of projects from the Papierkram API.
    * Requires PAPIERKRAM_API_KEY environment variable to be set.
    */
-  action syncProjects() returns String;
+  action syncProjects()                                                               returns String;
 
   /**
    * Send the most recent (or a specific) exported Excel file to Germany via email.
@@ -64,9 +73,9 @@ service AdminService @(path: '/api/admin', requires: 'Admin', impl: './admin-ser
    * @param exportId       - The ExportLog ID to re-attach. If empty, uses the latest export.
    * @param recipientEmail - Target email address (defaults to env GERMANY_EMAIL if omitted).
    */
-  action sendEmailToGermany(exportId: String, recipientEmail: String) returns String;
+  action sendEmailToGermany(exportId: String, recipientEmail: String)                 returns String;
 
-  /** 
+  /**
    * Admin override: directly set approved hours on a timesheet entry.
    * Logs an AuditLog record for the change.
    */
@@ -75,22 +84,27 @@ service AdminService @(path: '/api/admin', requires: 'Admin', impl: './admin-ser
   /**
    * Finalize all timesheets in a batch (sets them to Finished).
    */
-  action markBatchDone(batchId: String) returns String;
+  action markBatchDone(batchId: String)                                               returns String;
 
   /**
    * Reject all timesheets in a batch and return them to the submitted state.
    */
-  action rejectBatch(batchId: String, comment: String) returns String;
+  action rejectBatch(batchId: String, comment: String)                                returns String;
 
   /**
    * Dashboard Statistics
    * Returns a JSON string containing OT metrics, missing timesheets, and an activity feed.
    */
-  action getDashboardStats(month: Integer, year: Integer) returns String;
+  action getDashboardStats(month: Integer, year: Integer)                             returns String;
 
   /**
    * Clear all data from the database (dev/test only).
    * Deletes all records from every entity in the correct order to respect FK constraints.
    */
-  action clearDatabase() returns String;
+  action clearDatabase()                                                              returns String;
+
+  /**
+   * Admin can reassign an employee to a different Team Lead.
+   */
+  action reassignMember(memberId: String, newTeamLeadId: String)                      returns String;
 }

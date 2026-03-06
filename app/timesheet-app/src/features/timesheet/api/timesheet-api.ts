@@ -147,6 +147,18 @@ export async function getTimesheetDetail(
     }
 }
 
+export async function getMyTeamLead(): Promise<{ id: string, firstName: string, lastName: string, email: string } | null> {
+    try {
+        const data: unknown = await api.get(TIMESHEET_URL.getMyTeamLead)
+        if (!data) return null
+        const lead = typeof data === 'object' && 'value' in data ? (data as any).value : data
+        if (!lead || !lead.id) return null
+        return lead as { id: string, firstName: string, lastName: string, email: string }
+    } catch {
+        return null
+    }
+}
+
 export async function getApprovableTimesheets(): Promise<Timesheet[]> {
     const data: unknown = await api.get(TIMESHEET_URL.approvable)
     const list = (data && typeof data === 'object' && 'value' in data ? (data as any).value : data) as Record<string, unknown>[]

@@ -60,4 +60,21 @@ service TeamLeadService @(
     /** Group approved timesheets into a batch and forward to final Admin */
     action   createBatch(timesheetIds: array of String, adminId: String)                                   returns String;
 
+    // ── Team Management ───────────────────────────────────────────────────────
+
+    /** Get employees managed by the current Team Lead */
+    function getMyMembers()                                                                                returns array of Users;
+
+    /** Assign an employee to the current Team Lead's team */
+    action   assignMember(memberId: String)                                                                returns String;
+
+    /** Remove an employee from the current Team Lead's team */
+    action   removeMember(memberId: String)                                                                returns String;
+
+    /** Get employees with no assigned manager */
+    function getUnassignedEmployees()                                                                      returns array of Users;
+
+    /** Create a new employee and automatically assign them to the current Team Lead's team */
+    action   createMember(firstName: String, lastName: String, email: String)                              returns String;
+
 }

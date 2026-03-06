@@ -11,6 +11,7 @@ export class AdminBatchHandler {
     register() {
         this.srv.on('markBatchDone', this.onMarkBatchDone.bind(this))
         this.srv.on('rejectBatch', this.onRejectBatch.bind(this))
+        this.srv.on('reassignMember', this.onReassignMember.bind(this))
     }
 
     // ── markBatchDone ────────────────────────────────────────────────────────
@@ -147,5 +148,30 @@ export class AdminBatchHandler {
         })
 
         return `Batch rejected. ${timesheets.length} timesheets marked as Reopened.`
+    }
+
+    // ── reassignMember ───────────────────────────────────────────────────────
+    private async onReassignMember(req: any) {
+        const { memberId, newTeamLeadId } = req.data as { memberId: string, newTeamLeadId: string }
+
+        if (!memberId || !newTeamLeadId) {
+            return req.reject(400, 'memberId and newTeamLeadId are required')
+        }
+
+        const admin = await resolveUser(req)
+        if (!admin) return req.reject(401, 'Admin user not found')
+
+        const db = cds.db || await cds.connect.to('db')
+        const { User } = db.entities('sap.timesheet')
+
+        const [member] = await SELECT.from(User).where({ ID: memberId })
+        if (!member) return req.reject(404, 'Employee not found')
+
+        const [newTl] = await SELECT.from(User).where({ ID: newTeamLeadId })
+        if (!newTl) return req.reject(404, 'New Team Lead not found')
+
+        await UPDATE(User).set({ manager_ID: newTeamLeadId }).where({ ID: memberId })
+
+        return `Member reassigned successfully`
     }
 }

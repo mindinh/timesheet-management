@@ -33,6 +33,7 @@
 | 11 | Papierkram API project sync (daily cron + manual trigger)             | Integration  | MEDIUM   | Not Started |
 | 12 | Audit log & export log tables + UI                                    | Admin        | MEDIUM   | Not Started |
 | 13 | Role-based access control (Staff / Team Lead / Admin guards)          | Security     | HIGH     | Not Started |
+| 14 | Team Lead Member Management (assign, remove, create, route auto)      | Team Mgt     | HIGH     | Not Started |
 
 ### Key Deliverables
 
@@ -235,16 +236,29 @@
 | T-311   | Handle import errors & display feedback       | Frontend | 2h       | MEDIUM   |
 | T-312   | Add template download link                    | Frontend | 1h       | MEDIUM   |
 
+### US-4: Team Lead Management
+
+> **Story Points:** 5 | **Priority:** HIGH | **Owner:** Full Stack Dev
+
+| Task ID | Description                                   | Type     | Estimate | Priority |
+| ------- | --------------------------------------------- | -------- | -------- | -------- |
+| T-401   | Define `TeamLeadService` & `AdminService` endpoints | Backend  | 1h       | HIGH     |
+| T-402   | Implement `assignMember` and conflict logic   | Backend  | 2h       | HIGH     |
+| T-403   | Implement `createMember` & `removeMember` logic | Backend  | 1h       | HIGH     |
+| T-404   | Implement Admin `reassignMember`              | Backend  | 1h       | HIGH     |
+| T-405   | Build `TeamMembersPage` UI                    | Frontend | 3h       | HIGH     |
+| T-406   | Auto-route timesheets to assigned Team Lead   | Backend  | 1h       | HIGH     |
+
 ### Sprint Summary
 
 | Metric                 | Value               |
 | ---------------------- | ------------------- |
-| Total User Stories     | 3                   |
-| Total Story Points     | 34                  |
-| Total Tasks            | 33                  |
-| Estimated Hours        | ~66h                |
-| Team Velocity Target   | 34 pts / 1 week     |
-| Average Capacity / Dev | 22h (full capacity) |
+| Total User Stories     | 4                   |
+| Total Story Points     | 39                  |
+| Total Tasks            | 39                  |
+| Estimated Hours        | ~75h                |
+| Team Velocity Target   | 39 pts / 1 week     |
+| Average Capacity / Dev | 25h (full capacity) |
 
 ---
 
@@ -266,6 +280,13 @@
 | `GET`    | `/users`              | List users                      | —    | team      | ✓    |
 | `POST`   | `/users`              | Create user                     | —    | —        | ✓    |
 | `PUT`    | `/users/:id`          | Update / assign role            | —    | —        | ✓    |
+| `GET`    | `/api/timesheet/getMyTeamLead` | Get assigned Team Lead | ✓    | —        | —    |
+| `GET`    | `/api/teamlead/getMyMembers` | List team members | —    | ✓        | —    |
+| `GET`    | `/api/teamlead/getUnassignedEmployees` | List unassigned | —    | ✓        | —    |
+| `POST`   | `/api/teamlead/assignMember` | Assign user to team | —    | ✓        | —    |
+| `POST`   | `/api/teamlead/removeMember` | Remove user from team | —    | ✓        | —    |
+| `POST`   | `/api/teamlead/createMember` | Create & assign employee | —    | ✓        | —    |
+| `POST`   | `/api/admin/reassignMember` | Admin reassigns member | —    | —        | ✓    |
 | `GET`    | `/audit-logs`         | View audit logs                 | —    | —        | ✓    |
 | `GET`    | `/export-logs`        | Export history                  | —    | —        | ✓    |
 

@@ -1,6 +1,6 @@
 import { api } from '@/shared/api/http'
 import { TEAMLEAD_URL } from '@/features/timesheet/api/timesheet-url'
-import type { Timesheet, TimesheetEntry, TimesheetStatusType } from '@/shared/types'
+import type { Timesheet, TimesheetEntry, TimesheetStatusType, User } from '@/shared/types'
 
 // ---------- Queries ----------
 
@@ -163,5 +163,34 @@ export async function reviewEntryByTeamLead(entryId: string, status: string, app
 
 export async function createBatch(timesheetIds: string[], adminId: string): Promise<string> {
     const data: unknown = await api.post(TEAMLEAD_URL.createBatch, { timesheetIds, adminId })
+    return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
+}
+
+// ---------- Team Management ----------
+
+export async function getMyMembers(): Promise<User[]> {
+    const data: unknown = await api.get(TEAMLEAD_URL.getMyMembers)
+    const list = (data && typeof data === 'object' && 'value' in data ? (data as any).value : data) as User[]
+    return list || []
+}
+
+export async function getUnassignedEmployees(): Promise<User[]> {
+    const data: unknown = await api.get(TEAMLEAD_URL.getUnassignedEmployees)
+    const list = (data && typeof data === 'object' && 'value' in data ? (data as any).value : data) as User[]
+    return list || []
+}
+
+export async function assignMember(memberId: string): Promise<string> {
+    const data: unknown = await api.post(TEAMLEAD_URL.assignMember, { memberId })
+    return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
+}
+
+export async function removeMember(memberId: string): Promise<string> {
+    const data: unknown = await api.post(TEAMLEAD_URL.removeMember, { memberId })
+    return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
+}
+
+export async function createMember(firstName: string, lastName: string, email: string): Promise<string> {
+    const data: unknown = await api.post(TEAMLEAD_URL.createMember, { firstName, lastName, email })
     return String((data && typeof data === 'object' && 'value' in data ? (data as any).value : data))
 }

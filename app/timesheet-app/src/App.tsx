@@ -4,6 +4,7 @@ import TimesheetPage from '@/features/timesheet/pages/TimesheetPage'
 import TimesheetListPage from '@/features/timesheet/pages/TimesheetListPage'
 import ApprovalsPage from '@/features/approvals/pages/ApprovalsPage'
 import TimesheetReviewPage from '@/features/approvals/pages/TimesheetReviewPage'
+import TeamMembersPage from '@/features/approvals/pages/TeamMembersPage'
 import AdminDashboard from '@/features/admin/pages/AdminDashboard'
 import AdminBatchPage from '@/features/admin/pages/AdminBatchPage'
 import AdminBatchDetailPage from '@/features/admin/pages/AdminBatchDetailPage'
@@ -23,6 +24,11 @@ function App() {
         <Route path="approvals" element={
           <ProtectedRoute allowedRoles={['TeamLead', 'Admin']}>
             <ApprovalsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="approvals/team" element={
+          <ProtectedRoute allowedRoles={['TeamLead', 'Admin']}>
+            <TeamMembersPage />
           </ProtectedRoute>
         } />
         <Route path="approvals/:timesheetId" element={

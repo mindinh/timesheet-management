@@ -13,6 +13,7 @@ export const TIMESHEET_URL = {
     modifyEntryHours: `${SERVICE_URL.timesheet}/modifyEntryHours`,
     exportToExcel: `${SERVICE_URL.timesheet}/exportToExcel`,
     approvable: `${SERVICE_URL.timesheet}/getApprovableTimesheets()`,
+    getMyTeamLead: `${SERVICE_URL.timesheet}/getMyTeamLead()`,
 } as const
 
 // TeamLead endpoints
@@ -26,4 +27,9 @@ export const TEAMLEAD_URL = {
     createBatch: `${SERVICE_URL.teamlead}/createBatch`,
     timesheets: `${SERVICE_URL.teamlead}/Timesheets`,
     users: `${SERVICE_URL.teamlead}/Users`,
+    getMyMembers: `${SERVICE_URL.teamlead}/getMyMembers()`,
+    getUnassignedEmployees: `${SERVICE_URL.teamlead}/getUnassignedEmployees()`,
+    assignMember: `${SERVICE_URL.teamlead}/assignMember`,
+    removeMember: `${SERVICE_URL.teamlead}/removeMember`,
+    createMember: `${SERVICE_URL.teamlead}/createMember`,
 } as const
