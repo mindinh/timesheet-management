@@ -10,7 +10,6 @@ using {
 type UserRole        : String(20) enum {
   Employee;
   TeamLead;
-  Manager;
   Admin;
 };
 
@@ -66,11 +65,13 @@ entity Project : cuid, managed {
   type        : ProjectType default 'Others';
   code        : String(20)  @mandatory;
   isActive    : Boolean default true;
-  user        : Association to User;
+  projectCreator : Association to User;  // who created — informational only, does NOT restrict visibility
   tasks       : Composition of many Task
                   on tasks.project = $self;
   entries     : Association to many TimesheetEntry
                   on entries.project = $self;
+  auditLogs   : Association to many ProjectAuditLog
+                  on auditLogs.project = $self;
 }
 
 // ─── Task ───────────────────────────────────────────────────────────────────
@@ -97,7 +98,7 @@ entity Task : cuid, managed {
  */
 entity TimesheetBatch : cuid, managed {
   teamLead   : Association to User @mandatory; // who created the batch
-  admin      : Association to User @mandatory; // which admin it was sent to
+  admin      : Association to User; // which admin it was sent to (set when TL forwards)
   month      : Integer             @mandatory; // month of the timesheets in this batch
   year       : Integer             @mandatory; // year of the timesheets in this batch
   status     : String(20) default 'Pending'; // Pending, Processed
@@ -144,12 +145,11 @@ entity TimesheetEntry : cuid, managed {
   project         : Association to Project   @mandatory;
   task            : Association to Task; // optional – finer granularity
   date            : Date                     @mandatory;
-  status          : String(20) default 'Pending'; // Pending, Approved, Reopened
-  approverComment : String(500); // Reason for rejection or modification
-  loggedHours     : Decimal(5, 2)            @mandatory; // employee's original value
+  loggedHours     : Decimal(5, 2)            @mandatory; // employee's original value (max 24)
   approvedHours   : Decimal(5, 2); // modified by approver (nullable)
   hoursModifiedBy : Association to User; // who changed the hours
   hoursModifiedAt : DateTime; // when hours were changed
+  approverComment : String(500); // Approver note on this entry
   description     : String(500);
 }
 
@@ -180,6 +180,23 @@ entity BatchHistory : cuid, managed {
   status    : String(20); // Pending, Processed, Reopened
   comment   : String(1000);
   timestamp : DateTime                      @mandatory;
+}
+
+// ─── Project Audit Log ──────────────────────────────────────────────────────
+
+/**
+ * Tracks every create / update / delete on Project and Task.
+ * `entity_` is 'Project' or 'Task'.
+ * `changes` is a JSON snapshot of changed fields.
+ */
+entity ProjectAuditLog : cuid, managed {
+  project   : Association to Project; // which project (nullable for task-level)
+  entity_   : String(20) @mandatory;  // 'Project' | 'Task'
+  entityId  : String(36) @mandatory;  // ID of the affected record
+  action    : String(20) @mandatory;  // 'Created' | 'Updated' | 'Deleted'
+  actor     : Association to User;    // who performed the action
+  changes   : String(2000);           // JSON snapshot of field changes
+  timestamp : DateTime  @mandatory;
 }
 
 // ─── Audit Log ──────────────────────────────────────────────────────────────

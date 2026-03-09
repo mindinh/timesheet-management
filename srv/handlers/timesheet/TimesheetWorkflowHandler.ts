@@ -1,332 +1,406 @@
-import cds from '@sap/cds'
-import { resolveUser } from '../../lib/user-resolver'
+import cds from '@sap/cds';
+import { resolveUser } from '../../lib/user-resolver';
 
 /**
  * TimesheetWorkflowHandler
  * Handles all workflow state transitions and approval queries.
  */
 export class TimesheetWorkflowHandler {
-    private srv: any
+  private srv: any;
 
-    constructor(srv: any) {
-        this.srv = srv
+  constructor(srv: any) {
+    this.srv = srv;
+  }
+
+  register() {
+    this.srv.on('submitTimesheet', this.onSubmitTimesheet.bind(this));
+    this.srv.on('approveTimesheet', this.onApproveTimesheet.bind(this));
+    this.srv.on('rejectTimesheet', this.onRejectTimesheet.bind(this));
+    this.srv.on('finishTimesheet', this.onFinishTimesheet.bind(this));
+    this.srv.on('submitToAdmin', this.onSubmitToAdmin.bind(this));
+    this.srv.on('getApprovableTimesheets', this.onGetApprovableTimesheets.bind(this));
+    this.srv.on('getMyTeamLead', this.onGetMyTeamLead.bind(this));
+    this.srv.on('getTeamLeads', this.onGetTeamLeads.bind(this));
+  }
+
+  // ── submitTimesheet ──
+  private async onSubmitTimesheet(req: any) {
+    const { timesheetId } = req.data;
+    const db = cds.db || (await cds.connect.to('db'));
+    const { Timesheet, ApprovalHistory, TimesheetBatch } = db.entities('sap.timesheet');
+
+    const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId });
+    if (!ts) return req.reject(404, 'Timesheet not found');
+    if (ts.status !== 'Draft' && ts.status !== 'Reopened') {
+      return req.reject(400, `Cannot submit – status is "${ts.status}"`);
     }
 
-    register() {
-        this.srv.on('submitTimesheet', this.onSubmitTimesheet.bind(this))
-        this.srv.on('approveTimesheet', this.onApproveTimesheet.bind(this))
-        this.srv.on('rejectTimesheet', this.onRejectTimesheet.bind(this))
-        this.srv.on('finishTimesheet', this.onFinishTimesheet.bind(this))
-        this.srv.on('submitToAdmin', this.onSubmitToAdmin.bind(this))
-        this.srv.on('getApprovableTimesheets', this.onGetApprovableTimesheets.bind(this))
-        this.srv.on('getMyTeamLead', this.onGetMyTeamLead.bind(this))
+    // Identify the submitting user to check for Admin role.
+    // Check both the requesting session user AND the timesheet owner
+    // (Admin submits their own timesheet, so ts.user_ID is also the Admin)
+    const submittingUser = await resolveUser(req);
+    const [timesheetOwner] = await SELECT.from('sap.timesheet.User').where({ ID: ts.user_ID });
+    const isAdmin =
+      submittingUser?.role === 'Admin' ||
+      timesheetOwner?.role === 'Admin';
+
+    // Calculate total hours from entries
+    const { TimesheetEntry } = db.entities('sap.timesheet');
+    const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: timesheetId });
+    let totalHrs = 0;
+    for (const e of entries) {
+      totalHrs += Number(e.loggedHours) || 0;
     }
 
-    // ── submitTimesheet ──
-    private async onSubmitTimesheet(req: any) {
-        const { timesheetId, approverId } = req.data
-        const db = cds.db || await cds.connect.to('db')
-        const { Timesheet, ApprovalHistory } = db.entities('sap.timesheet')
+    const now = cds.context?.timestamp ?? new Date();
 
-        const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId })
-        if (!ts) return req.reject(404, 'Timesheet not found')
-        if (ts.status !== 'Draft' && ts.status !== 'Reopened') {
-            return req.reject(400, `Cannot submit – status is "${ts.status}"`)
-        }
+    // ── Admin fast-path: Draft/Reopened → Finished directly ──────────────────
+    if (isAdmin) {
+      await UPDATE(Timesheet)
+        .set({
+          status: 'Finished',
+          submitDate: now,
+          finishedDate: now,
+          totalHours: totalHrs,
+          mainDays: Number((totalHrs / 8).toFixed(2)),
+        })
+        .where({ ID: timesheetId });
 
-        const { TimesheetEntry } = db.entities('sap.timesheet')
-        const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: timesheetId })
-        let totalHrs = 0
-        for (const e of entries) {
-            totalHrs += Number(e.loggedHours) || 0
-        }
+      await INSERT.into(ApprovalHistory).entries({
+        timesheet_ID: timesheetId,
+        actor_ID: ts.user_ID,
+        action: 'Finished',
+        fromStatus: ts.status,
+        toStatus: 'Finished',
+        comment: 'Auto-finished by Admin on submission',
+        timestamp: now,
+      });
 
-        const updateData: any = {
-            status: 'Submitted',
-            submitDate: new Date().toISOString(),
-            totalHours: totalHrs,
-            mainDays: Number((totalHrs / 8).toFixed(2))
-        }
+      return 'Timesheet submitted and auto-finished by Admin';
+    }
 
-        let finalApproverId = approverId
+    // ── Normal flow (Employee / TeamLead) ────────────────────────────────────
+    // Auto-detect Team Lead from the employee's assigned manager
+    const [userRec] = await SELECT.from('sap.timesheet.User').where({ ID: ts.user_ID });
 
-        // If approverId is not provided, try to use the user's assigned manager
-        if (!finalApproverId) {
-            const [userRec] = await SELECT.from('sap.timesheet.User').where({ ID: ts.user_ID })
-            if (userRec && userRec.manager_ID) {
-                finalApproverId = userRec.manager_ID
+    // Resolve teamLeadId: prefer manager_ID, fallback to manually provided teamLeadId
+    const manualTeamLeadId = req.data.teamLeadId;
+    const resolvedTeamLeadId = userRec?.manager_ID || manualTeamLeadId;
+
+    if (!resolvedTeamLeadId) {
+      return req.reject(400, 'You have not been assigned to a Team Lead yet. Please select a Team Lead from the list.');
+    }
+
+    // Validate that the resolved TL exists and has TeamLead role
+    const [tlRec] = await SELECT.from('sap.timesheet.User').where({ ID: resolvedTeamLeadId });
+    if (!tlRec || (tlRec.role !== 'TeamLead' && tlRec.role !== 'Admin')) {
+      return req.reject(400, 'Selected Team Lead is invalid.');
+    }
+    const teamLeadId = resolvedTeamLeadId;
+
+    // If the employee had no manager_ID and manually selected a TL, persist the assignment
+    // so future submissions are automatic (no need to select again)
+    if (!userRec?.manager_ID && manualTeamLeadId) {
+      await UPDATE('sap.timesheet.User').set({ manager_ID: teamLeadId }).where({ ID: ts.user_ID });
+    }
+
+    // Find or create a Pending batch for (teamLead, month, year)
+    const [existingBatch] = await SELECT.from(TimesheetBatch).where({
+      teamLead_ID: teamLeadId,
+      month: ts.month,
+      year: ts.year,
+      status: 'Pending',
+    });
+
+    let batchId: string;
+    if (existingBatch) {
+      batchId = existingBatch.ID;
+    } else {
+      batchId = cds.utils.uuid();
+      await INSERT.into(TimesheetBatch).entries({
+        ID: batchId,
+        teamLead_ID: teamLeadId,
+        month: ts.month,
+        year: ts.year,
+        status: 'Pending',
+      });
+    }
+
+    await UPDATE(Timesheet)
+      .set({
+        status: 'Submitted',
+        submitDate: now,
+        totalHours: totalHrs,
+        mainDays: Number((totalHrs / 8).toFixed(2)),
+        currentApprover_ID: teamLeadId,
+        batch_ID: batchId,
+      })
+      .where({ ID: timesheetId });
+
+    await INSERT.into(ApprovalHistory).entries({
+      timesheet_ID: timesheetId,
+      actor_ID: ts.user_ID,
+      action: 'Submitted',
+      fromStatus: ts.status,
+      toStatus: 'Submitted',
+      timestamp: now,
+    });
+
+    return 'Timesheet submitted successfully';
+  }
+
+  // ── approveTimesheet ──
+  private async onApproveTimesheet(req: any) {
+    const { timesheetId, comment } = req.data;
+    const user = await resolveUser(req);
+    if (!user) return req.reject(401, 'User not found');
+
+    const db = cds.db || (await cds.connect.to('db'));
+    const { Timesheet, ApprovalHistory } = db.entities('sap.timesheet');
+
+    const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId });
+    if (!ts) return req.reject(404, 'Timesheet not found');
+
+    if (ts.currentApprover_ID !== user.ID) {
+      return req.reject(403, 'You are not the designated approver for this timesheet');
+    }
+
+    if (ts.status === 'Approved') {
+      return `Timesheet is already approved`;
+    }
+
+    if (ts.status !== 'Submitted') {
+      return req.reject(400, `Cannot approve – status is "${ts.status}"`);
+    }
+
+    // TeamLead/Admin/Manager → Approved
+    let newStatus = 'Approved';
+
+    const { TimesheetEntry } = db.entities('sap.timesheet');
+    const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: timesheetId });
+    let totalHrs = 0;
+    for (const e of entries) {
+      totalHrs +=
+        e.approvedHours !== null && e.approvedHours !== undefined
+          ? Number(e.approvedHours)
+          : Number(e.loggedHours) || 0;
+    }
+
+    const updateData: any = {
+      status: newStatus,
+      approveDate: new Date().toISOString(),
+      comment: comment || ts.comment,
+      totalHours: totalHrs,
+      mainDays: Number((totalHrs / 8).toFixed(2)),
+    };
+
+    await UPDATE(Timesheet).set(updateData).where({ ID: timesheetId });
+
+    await INSERT.into(ApprovalHistory).entries({
+      timesheet_ID: timesheetId,
+      actor_ID: user.ID,
+      action: 'Approved',
+      fromStatus: ts.status,
+      toStatus: newStatus,
+      comment: comment || null,
+      timestamp: new Date().toISOString(),
+    });
+
+    return `Timesheet approved successfully`;
+  }
+
+  // ── rejectTimesheet ──
+  private async onRejectTimesheet(req: any) {
+    const { timesheetId, comment } = req.data;
+    const user = await resolveUser(req);
+    if (!user) return req.reject(401, 'User not found');
+
+    const db = cds.db || (await cds.connect.to('db'));
+    const { Timesheet, ApprovalHistory } = db.entities('sap.timesheet');
+
+    const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId });
+    if (!ts) return req.reject(404, 'Timesheet not found');
+
+    if (ts.currentApprover_ID !== user.ID) {
+      return req.reject(403, 'You are not the designated approver for this timesheet');
+    }
+
+    if (ts.status !== 'Submitted' && ts.status !== 'Approved') {
+      return req.reject(400, `Cannot reject – status is "${ts.status}"`);
+    }
+
+    await UPDATE(Timesheet)
+      .set({
+        status: 'Reopened',
+        comment: comment || null,
+      })
+      .where({ ID: timesheetId });
+
+    await INSERT.into(ApprovalHistory).entries({
+      timesheet_ID: timesheetId,
+      actor_ID: user.ID,
+      action: 'Reopened',
+      fromStatus: ts.status,
+      toStatus: 'Reopened',
+      comment: comment || null,
+      timestamp: new Date().toISOString(),
+    });
+
+    return 'Timesheet rejected';
+  }
+
+  // ── finishTimesheet ──
+  private async onFinishTimesheet(req: any) {
+    const { timesheetId } = req.data;
+    const user = await resolveUser(req);
+    if (!user) return req.reject(401, 'User not found');
+
+    if (user.role !== 'Admin') {
+      return req.reject(403, 'Only Admins can finish timesheets');
+    }
+
+    const db = cds.db || (await cds.connect.to('db'));
+    const { Timesheet, ApprovalHistory } = db.entities('sap.timesheet');
+
+    const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId });
+    if (!ts) return req.reject(404, 'Timesheet not found');
+
+    if (ts.status !== 'Approved' && ts.status !== 'Submitted') {
+      return req.reject(400, `Cannot finish – status is "${ts.status}"`);
+    }
+
+    await UPDATE(Timesheet)
+      .set({
+        status: 'Finished',
+        finishedDate: new Date().toISOString(),
+      })
+      .where({ ID: timesheetId });
+
+    await INSERT.into(ApprovalHistory).entries({
+      timesheet_ID: timesheetId,
+      actor_ID: user.ID,
+      action: 'Finished',
+      fromStatus: ts.status,
+      toStatus: 'Finished',
+      timestamp: new Date().toISOString(),
+    });
+
+    return 'Timesheet finished';
+  }
+
+  // ── submitToAdmin ──
+  // Team Lead forwards an Approved timesheet to an Admin for final sign-off
+  private async onSubmitToAdmin(req: any) {
+    const { timesheetId, adminId } = req.data;
+    const user = await resolveUser(req);
+    if (!user) return req.reject(401, 'User not found');
+
+    const db = cds.db || (await cds.connect.to('db'));
+    const { Timesheet, ApprovalHistory, User } = db.entities('sap.timesheet');
+
+    const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId });
+    if (!ts) return req.reject(404, 'Timesheet not found');
+
+    if (ts.status !== 'Approved') {
+      return req.reject(400, `Cannot submit to admin – status is "${ts.status}". Must be Approved first.`);
+    }
+
+    // Verify the target is an Admin
+    const [admin] = await SELECT.from(User).where({ ID: adminId });
+    if (!admin) {
+      return req.reject(400, 'Selected user not found');
+    }
+
+    await UPDATE(Timesheet)
+      .set({
+        currentApprover_ID: adminId,
+      })
+      .where({ ID: timesheetId });
+
+    await INSERT.into(ApprovalHistory).entries({
+      timesheet_ID: timesheetId,
+      actor_ID: user.ID,
+      action: 'SubmittedToAdmin',
+      fromStatus: ts.status,
+      toStatus: ts.status, // Remains Approved
+      timestamp: new Date().toISOString(),
+    });
+
+    return 'Timesheet submitted to admin for final approval';
+  }
+
+  // ── getApprovableTimesheets ──
+  private async onGetApprovableTimesheets(req: any) {
+    const user = await resolveUser(req);
+    if (!user) return req.reject(401, 'User not found');
+
+    const db = cds.db || (await cds.connect.to('db'));
+    const { Timesheet, TimesheetEntry, User } = db.entities('sap.timesheet');
+
+    // Fetch timesheets where this user is the current approver
+    const timesheets = await SELECT.from(Timesheet).where({ currentApprover_ID: user.ID }).orderBy('submitDate desc');
+
+    // Enrich with user info and total hours
+    const enriched = [];
+    for (const ts of timesheets) {
+      const [tsUser] = await SELECT.from(User).where({ ID: ts.user_ID });
+      const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: ts.ID });
+      const totalHours = entries.reduce((sum: number, e: any) => sum + (Number(e.loggedHours) || 0), 0);
+
+      enriched.push({
+        ...ts,
+        id: ts.ID,
+        totalHours,
+        user: tsUser
+          ? {
+              id: tsUser.ID,
+              firstName: tsUser.firstName,
+              lastName: tsUser.lastName,
+              email: tsUser.email,
+              role: tsUser.role,
             }
-        }
-
-        if (finalApproverId) {
-            updateData.currentApprover_ID = finalApproverId
-
-            // Auto-assign to/create a Pending batch for the teamlead, month, year
-            const [existingBatch] = await SELECT.from('sap.timesheet.TimesheetBatch').where({
-                teamLead_ID: finalApproverId,
-                month: ts.month,
-                year: ts.year,
-                status: 'Pending'
-            })
-
-            if (existingBatch) {
-                updateData.batch_ID = existingBatch.ID
-            } else {
-                const batchId = cds.utils.uuid()
-                await INSERT.into('sap.timesheet.TimesheetBatch').entries({
-                    ID: batchId,
-                    teamLead_ID: finalApproverId,
-                    month: ts.month,
-                    year: ts.year,
-                    status: 'Pending'
-                })
-                updateData.batch_ID = batchId
-            }
-        }
-
-        await UPDATE(Timesheet).set(updateData).where({ ID: timesheetId })
-
-        await INSERT.into(ApprovalHistory).entries({
-            timesheet_ID: timesheetId,
-            actor_ID: ts.user_ID,
-            action: 'Submitted',
-            fromStatus: ts.status,
-            toStatus: 'Submitted',
-            timestamp: new Date().toISOString(),
-        })
-
-        return 'Timesheet submitted successfully'
+          : null,
+      });
     }
 
-    // ── approveTimesheet ──
-    private async onApproveTimesheet(req: any) {
-        const { timesheetId, comment } = req.data
-        const user = await resolveUser(req)
-        if (!user) return req.reject(401, 'User not found')
+    return enriched;
+  }
 
-        const db = cds.db || await cds.connect.to('db')
-        const { Timesheet, ApprovalHistory } = db.entities('sap.timesheet')
+  // ── getMyTeamLead ──
+  private async onGetMyTeamLead(req: any) {
+    const user = await resolveUser(req);
+    if (!user) return req.reject(401, 'User not found');
 
-        const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId })
-        if (!ts) return req.reject(404, 'Timesheet not found')
+    const db = cds.db || (await cds.connect.to('db'));
+    const { User } = db.entities('sap.timesheet');
 
-        if (ts.currentApprover_ID !== user.ID) {
-            return req.reject(403, 'You are not the designated approver for this timesheet')
-        }
-
-        if (ts.status === 'Approved') {
-            return `Timesheet is already approved`
-        }
-
-        if (ts.status !== 'Submitted') {
-            return req.reject(400, `Cannot approve – status is "${ts.status}"`)
-        }
-
-        // TeamLead/Admin/Manager → Approved
-        let newStatus = 'Approved'
-
-        const { TimesheetEntry } = db.entities('sap.timesheet')
-        const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: timesheetId })
-        let totalHrs = 0
-        for (const e of entries) {
-            totalHrs += (e.approvedHours !== null && e.approvedHours !== undefined) ? Number(e.approvedHours) : (Number(e.loggedHours) || 0)
-        }
-
-        const updateData: any = {
-            status: newStatus,
-            approveDate: new Date().toISOString(),
-            comment: comment || ts.comment,
-            totalHours: totalHrs,
-            mainDays: Number((totalHrs / 8).toFixed(2))
-        }
-
-        await UPDATE(Timesheet).set(updateData).where({ ID: timesheetId })
-
-        await INSERT.into(ApprovalHistory).entries({
-            timesheet_ID: timesheetId,
-            actor_ID: user.ID,
-            action: 'Approved',
-            fromStatus: ts.status,
-            toStatus: newStatus,
-            comment: comment || null,
-            timestamp: new Date().toISOString(),
-        })
-
-        return `Timesheet approved successfully`
+    const [currentUser] = await SELECT.from(User).where({ ID: user.ID });
+    if (!currentUser || !currentUser.manager_ID) {
+      return null;
     }
 
-    // ── rejectTimesheet ──
-    private async onRejectTimesheet(req: any) {
-        const { timesheetId, comment } = req.data
-        const user = await resolveUser(req)
-        if (!user) return req.reject(401, 'User not found')
+    const [manager] = await SELECT.from(User).where({ ID: currentUser.manager_ID });
+    if (!manager) return null;
 
-        const db = cds.db || await cds.connect.to('db')
-        const { Timesheet, ApprovalHistory } = db.entities('sap.timesheet')
+    return {
+      id: manager.ID,
+      firstName: manager.firstName,
+      lastName: manager.lastName,
+      email: manager.email,
+    };
+  }
 
-        const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId })
-        if (!ts) return req.reject(404, 'Timesheet not found')
+  // ── getTeamLeads ── returns all active TeamLead users
+  private async onGetTeamLeads(req: any) {
+    const db = cds.db || (await cds.connect.to('db'));
+    const { User } = db.entities('sap.timesheet');
 
-        if (ts.currentApprover_ID !== user.ID) {
-            return req.reject(403, 'You are not the designated approver for this timesheet')
-        }
-
-        if (ts.status !== 'Submitted' && ts.status !== 'Approved') {
-            return req.reject(400, `Cannot reject – status is "${ts.status}"`)
-        }
-
-        await UPDATE(Timesheet).set({
-            status: 'Reopened',
-            comment: comment || null,
-        }).where({ ID: timesheetId })
-
-        await INSERT.into(ApprovalHistory).entries({
-            timesheet_ID: timesheetId,
-            actor_ID: user.ID,
-            action: 'Reopened',
-            fromStatus: ts.status,
-            toStatus: 'Reopened',
-            comment: comment || null,
-            timestamp: new Date().toISOString(),
-        })
-
-        return 'Timesheet rejected'
-    }
-
-    // ── finishTimesheet ──
-    private async onFinishTimesheet(req: any) {
-        const { timesheetId } = req.data
-        const user = await resolveUser(req)
-        if (!user) return req.reject(401, 'User not found')
-
-        if (user.role !== 'Admin' && user.role !== 'Manager') {
-            return req.reject(403, 'Only Admin/Manager can finish timesheets')
-        }
-
-        const db = cds.db || await cds.connect.to('db')
-        const { Timesheet, ApprovalHistory } = db.entities('sap.timesheet')
-
-        const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId })
-        if (!ts) return req.reject(404, 'Timesheet not found')
-
-        if (ts.status !== 'Approved' && ts.status !== 'Submitted') {
-            return req.reject(400, `Cannot finish – status is "${ts.status}"`)
-        }
-
-        await UPDATE(Timesheet).set({
-            status: 'Finished',
-            finishedDate: new Date().toISOString(),
-        }).where({ ID: timesheetId })
-
-        await INSERT.into(ApprovalHistory).entries({
-            timesheet_ID: timesheetId,
-            actor_ID: user.ID,
-            action: 'Finished',
-            fromStatus: ts.status,
-            toStatus: 'Finished',
-            timestamp: new Date().toISOString(),
-        })
-
-        return 'Timesheet finished'
-    }
-
-    // ── submitToAdmin ──
-    // Team Lead forwards an Approved timesheet to an Admin for final sign-off
-    private async onSubmitToAdmin(req: any) {
-        const { timesheetId, adminId } = req.data
-        const user = await resolveUser(req)
-        if (!user) return req.reject(401, 'User not found')
-
-        const db = cds.db || await cds.connect.to('db')
-        const { Timesheet, ApprovalHistory, User } = db.entities('sap.timesheet')
-
-        const [ts] = await SELECT.from(Timesheet).where({ ID: timesheetId })
-        if (!ts) return req.reject(404, 'Timesheet not found')
-
-        if (ts.status !== 'Approved') {
-            return req.reject(400, `Cannot submit to admin – status is "${ts.status}". Must be Approved first.`)
-        }
-
-        // Verify the target is an Admin
-        const [admin] = await SELECT.from(User).where({ ID: adminId })
-        if (!admin || (admin.role !== 'Admin' && admin.role !== 'Manager')) {
-            return req.reject(400, 'Selected user is not an Admin')
-        }
-
-        await UPDATE(Timesheet).set({
-            currentApprover_ID: adminId,
-        }).where({ ID: timesheetId })
-
-        await INSERT.into(ApprovalHistory).entries({
-            timesheet_ID: timesheetId,
-            actor_ID: user.ID,
-            action: 'SubmittedToAdmin',
-            fromStatus: ts.status,
-            toStatus: ts.status, // Remains Approved
-            timestamp: new Date().toISOString(),
-        })
-
-        return 'Timesheet submitted to admin for final approval'
-    }
-
-    // ── getApprovableTimesheets ──
-    private async onGetApprovableTimesheets(req: any) {
-        const user = await resolveUser(req)
-        if (!user) return req.reject(401, 'User not found')
-
-        const db = cds.db || await cds.connect.to('db')
-        const { Timesheet, TimesheetEntry, User } = db.entities('sap.timesheet')
-
-        // Fetch timesheets where this user is the current approver
-        const timesheets = await SELECT.from(Timesheet)
-            .where({ currentApprover_ID: user.ID })
-            .orderBy('submitDate desc')
-
-        // Enrich with user info and total hours
-        const enriched = []
-        for (const ts of timesheets) {
-            const [tsUser] = await SELECT.from(User).where({ ID: ts.user_ID })
-            const entries = await SELECT.from(TimesheetEntry).where({ timesheet_ID: ts.ID })
-            const totalHours = entries.reduce((sum: number, e: any) => sum + (Number(e.loggedHours) || 0), 0)
-
-            enriched.push({
-                ...ts,
-                id: ts.ID,
-                totalHours,
-                user: tsUser ? {
-                    id: tsUser.ID,
-                    firstName: tsUser.firstName,
-                    lastName: tsUser.lastName,
-                    email: tsUser.email,
-                    role: tsUser.role,
-                } : null,
-            })
-        }
-
-        return enriched
-    }
-
-    // ── getMyTeamLead ──
-    private async onGetMyTeamLead(req: any) {
-        const user = await resolveUser(req)
-        if (!user) return req.reject(401, 'User not found')
-
-        const db = cds.db || await cds.connect.to('db')
-        const { User } = db.entities('sap.timesheet')
-
-        const [currentUser] = await SELECT.from(User).where({ ID: user.ID })
-        if (!currentUser || !currentUser.manager_ID) {
-            return null
-        }
-
-        const [manager] = await SELECT.from(User).where({ ID: currentUser.manager_ID })
-        if (!manager) return null
-
-        return {
-            id: manager.ID,
-            firstName: manager.firstName,
-            lastName: manager.lastName,
-            email: manager.email
-        }
-    }
+    const teamLeads = await SELECT.from(User).where({ role: 'TeamLead', isActive: true });
+    return teamLeads.map((u: any) => ({
+      id: u.ID,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      email: u.email,
+    }));
+  }
 }

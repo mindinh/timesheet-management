@@ -5,11 +5,11 @@ import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/components/ui/table';
 import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationPrevious,
-    PaginationNext,
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
 } from '@/shared/components/ui/pagination';
 import { ResizableTableHeader, useColumnWidths } from '@/shared/components/ui/ResizableTableHeader';
 import { format as formatFns } from 'date-fns';
@@ -18,179 +18,159 @@ import { format as formatFns } from 'date-fns';
  * Generic Column Definition for DataTable
  */
 export interface DataTableColumn<T = any> {
-    /** Unique key for the column (field name in data) */
-    key: string;
-    /** Translation key for header label */
-    labelKey: string;
-    /** Column width in pixels (optional, default: 150) */
-    width?: number;
-    /** Minimum column width in pixels (optional, default: 80) */
-    minWidth?: number;
-    /** Maximum column width in pixels (optional, for text wrapping) */
-    maxWidth?: number;
-    /** Whether this column is visible (default: true) */
-    visible?: boolean;
-    /** Render type for special formatting */
-    renderType?: 'text' | 'link' | 'badge' | 'status' | 'date' | 'number' | 'duration' | 'custom';
-    /** CSS classes for styling */
-    className?: string;
-    /** Custom render function (when renderType is 'custom') */
-    render?: (value: any, row: T) => React.ReactNode;
-    /** Date formatter function that returns CSS class name for styling (used with renderType: 'date') */
-    dateFormatter?: (value: string, row?: T) => string;
+  /** Unique key for the column (field name in data) */
+  key: string;
+  /** Translation key for header label */
+  labelKey: string;
+  /** Column width in pixels (optional, default: 150) */
+  width?: number;
+  /** Minimum column width in pixels (optional, default: 80) */
+  minWidth?: number;
+  /** Maximum column width in pixels (optional, for text wrapping) */
+  maxWidth?: number;
+  /** Flex ratio for proportional width (when set, overrides pixel width and fills 100% of table) */
+  flex?: number;
+  /** Whether this column is visible (default: true) */
+  visible?: boolean;
+  /** Render type for special formatting */
+  renderType?: 'text' | 'link' | 'badge' | 'status' | 'date' | 'number' | 'duration' | 'custom';
+  /** CSS classes for styling */
+  className?: string;
+  /** Custom render function (when renderType is 'custom') */
+  render?: (value: any, row: T) => React.ReactNode;
+  /** Date formatter function that returns CSS class name for styling (used with renderType: 'date') */
+  dateFormatter?: (value: string, row?: T) => string;
 }
 
 /**
  * Pagination configuration
  */
 export interface PaginationConfig {
-    page: number;
-    pageSize: number;
-    totalCount?: number | null;
-    hasNextPage?: boolean;
-    onPageChange: (page: number) => void;
+  page: number;
+  pageSize: number;
+  totalCount?: number | null;
+  hasNextPage?: boolean;
+  onPageChange: (page: number) => void;
 }
 
 /**
  * Selection configuration
  */
 export interface SelectionConfig {
-    enabled?: boolean;
-    mode?: 'single' | 'multiple';
-    selectedIds: Set<string>;
-    onSelectionChange: (selectedIds: Set<string>) => void;
-    getRowId: (row: any) => string;
+  enabled?: boolean;
+  mode?: 'single' | 'multiple';
+  selectedIds: Set<string>;
+  onSelectionChange: (selectedIds: Set<string>) => void;
+  getRowId: (row: any) => string;
 }
 
 /**
  * DataTable Props
  */
 export interface DataTableProps<T = any> {
-    /** Data items to display */
-    data: T[];
-    /** Column definitions */
-    columns: DataTableColumn<T>[];
-    /** Loading state */
-    isLoading?: boolean;
-    /** Placeholder data state (for optimistic updates) */
-    isPlaceholderData?: boolean;
-    /** Error object */
-    error?: Error | null;
-    /** Pagination configuration (optional) */
-    pagination?: PaginationConfig;
-    /** Selection configuration (optional) */
-    selection?: SelectionConfig;
-    /** Row click handler (optional) */
-    onRowClick?: (row: T) => void;
-    /** Refresh handler (optional) */
-    onRefresh?: () => void;
-    /** Empty state message key */
-    emptyMessageKey?: string;
-    /** Error state message key */
-    errorMessageKey?: string;
-    /** Title to show above table (optional) */
-    title?: string;
-    /** Show footer with pagination (default: true) */
-    showFooter?: boolean;
-    /** Custom CSS class for container */
-    className?: string;
-    /** Scroll handler for infinite scroll (optional) */
-    onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
-    /** Maximum height for table with scroll (optional) */
-    maxHeight?: string;
-    /** Loading state for infinite scroll (optional) */
-    isFetchingNextPage?: boolean;
-    /** Variant: 'card' (boxed with border) or 'borderless' (flat, no container) */
-    variant?: 'card' | 'borderless';
-    /** Sticky header - header sticks to top when scrolling (for global scroll) */
-    stickyHeader?: boolean;
-    /** Sticky header offset - top position offset in pixels for sticky header (e.g., to position below other sticky elements) */
-    stickyHeaderOffset?: number;
+  /** Data items to display */
+  data: T[];
+  /** Column definitions */
+  columns: DataTableColumn<T>[];
+  /** Loading state */
+  isLoading?: boolean;
+  /** Placeholder data state (for optimistic updates) */
+  isPlaceholderData?: boolean;
+  /** Error object */
+  error?: Error | null;
+  /** Pagination configuration (optional) */
+  pagination?: PaginationConfig;
+  /** Selection configuration (optional) */
+  selection?: SelectionConfig;
+  /** Row click handler (optional) */
+  onRowClick?: (row: T) => void;
+  /** Refresh handler (optional) */
+  onRefresh?: () => void;
+  /** Empty state message key */
+  emptyMessageKey?: string;
+  /** Error state message key */
+  errorMessageKey?: string;
+  /** Title to show above table (optional) */
+  title?: string;
+  /** Show footer with pagination (default: true) */
+  showFooter?: boolean;
+  /** Custom CSS class for container */
+  className?: string;
+  /** Scroll handler for infinite scroll (optional) */
+  onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
+  /** Maximum height for table with scroll (optional) */
+  maxHeight?: string;
+  /** Loading state for infinite scroll (optional) */
+  isFetchingNextPage?: boolean;
+  /** Variant: 'card' (boxed with border) or 'borderless' (flat, no container) */
+  variant?: 'card' | 'borderless';
+  /** Sticky header - header sticks to top when scrolling (for global scroll) */
+  stickyHeader?: boolean;
+  /** Sticky header offset - top position offset in pixels for sticky header (e.g., to position below other sticky elements) */
+  stickyHeaderOffset?: number;
 }
 
 /**
  * Default cell renderer based on column renderType
  */
-function DefaultCellRenderer<T>({
-    column,
-    value,
-    row,
-}: {
-    column: DataTableColumn<T>;
-    value: any;
-    row: T;
-}) {
-    const formatDate = (dateString: string) => formatFns(new Date(dateString), 'MMM dd, yyyy');
-    const { t } = useTranslation();
+function DefaultCellRenderer<T>({ column, value, row }: { column: DataTableColumn<T>; value: any; row: T }) {
+  const formatDate = (dateString: string) => formatFns(new Date(dateString), 'MMM dd, yyyy');
+  const { t } = useTranslation();
 
-    // Custom render function takes precedence
-    if (column.render) {
-        return <>{column.render(value, row)}</>;
-    }
+  // Custom render function takes precedence
+  if (column.render) {
+    return <>{column.render(value, row)}</>;
+  }
 
-    switch (column.renderType) {
-        case 'link':
-            return (
-                <span className={column.className || 'text-primary font-medium'}>
-                    {value}
-                </span>
-            );
+  switch (column.renderType) {
+    case 'link':
+      return <span className={column.className || 'text-primary font-medium'}>{value}</span>;
 
-        case 'badge':
-            return (
-                <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 text-sm font-medium rounded-full bg-secondary text-secondary-foreground">
-                        {value || '-'}
-                    </span>
-                </div>
-            );
+    case 'badge':
+      return (
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-1 text-sm font-medium rounded-full bg-secondary text-secondary-foreground">
+            {value || '-'}
+          </span>
+        </div>
+      );
 
-        case 'status':
-            // Expects row to have 'status' and 'statusDescription' fields
-            const rowAny = row as any;
-            return (
-                <div className="flex flex-col gap-1">
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-secondary text-secondary-foreground inline-flex items-center w-max uppercase">
-                        {rowAny.status}
-                    </span>
-                    {rowAny.statusDescription && (
-                        <span className="text-xs text-muted-foreground">{rowAny.statusDescription}</span>
-                    )}
-                </div>
-            );
+    case 'status':
+      // Expects row to have 'status' and 'statusDescription' fields
+      const rowAny = row as any;
+      return (
+        <div className="flex flex-col gap-1">
+          <span className="px-2 py-1 text-xs font-medium rounded-full bg-secondary text-secondary-foreground inline-flex items-center w-max uppercase">
+            {rowAny.status}
+          </span>
+          {rowAny.statusDescription && (
+            <span className="text-xs text-muted-foreground">{rowAny.statusDescription}</span>
+          )}
+        </div>
+      );
 
-        case 'date':
-            if (!value) return '-';
+    case 'date':
+      if (!value) return '-';
 
-            // Apply dateFormatter if provided, otherwise use column className
-            const colorClass = column.dateFormatter
-                ? column.dateFormatter(value as string, row)
-                : (column.className || '');
+      // Apply dateFormatter if provided, otherwise use column className
+      const colorClass = column.dateFormatter ? column.dateFormatter(value as string, row) : column.className || '';
 
-            return (
-                <span className={colorClass}>
-                    {formatDate(value as string)}
-                </span>
-            );
+      return <span className={colorClass}>{formatDate(value as string)}</span>;
 
-        case 'number':
-            return (
-                <span className={column.className || 'text-sm text-foreground'}>
-                    {value ?? 0}
-                </span>
-            );
+    case 'number':
+      return <span className={column.className || 'text-sm text-foreground'}>{value ?? 0}</span>;
 
-        case 'duration':
-            return (
-                <span className={column.className || 'text-sm text-muted-foreground'}>
-                    {value ? `${value} ${t('common.days', 'days')}` : '-'}
-                </span>
-            );
+    case 'duration':
+      return (
+        <span className={column.className || 'text-sm text-muted-foreground'}>
+          {value ? `${value} ${t('common.days', 'days')}` : '-'}
+        </span>
+      );
 
-        case 'text':
-        default:
-            return <>{value ?? '-'}</>;
-    }
+    case 'text':
+    default:
+      return <>{value ?? '-'}</>;
+  }
 }
 
 /**
@@ -205,532 +185,521 @@ function DefaultCellRenderer<T>({
  * - Row click handling
  */
 export function DataTable<T = any>({
-    data,
-    columns,
-    isLoading = false,
-    isPlaceholderData = false,
-    error = null,
-    pagination,
-    selection,
-    onRowClick,
-    onRefresh,
-    emptyMessageKey = 'common.noData',
-    errorMessageKey = 'common.error',
-    title,
-    showFooter = true,
-    className = '',
-    onScroll,
-    maxHeight,
-    isFetchingNextPage = false,
-    variant = 'card',
-    stickyHeader = false,
-    stickyHeaderOffset = 0,
+  data,
+  columns,
+  isLoading = false,
+  isPlaceholderData = false,
+  error = null,
+  pagination,
+  selection,
+  onRowClick,
+  onRefresh,
+  emptyMessageKey = 'common.noData',
+  errorMessageKey = 'common.error',
+  title,
+  showFooter = true,
+  className = '',
+  onScroll,
+  maxHeight,
+  isFetchingNextPage = false,
+  variant = 'card',
+  stickyHeader = false,
+  stickyHeaderOffset = 0,
 }: DataTableProps<T>) {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
-    // Filter to visible columns only
-    const visibleColumns = useMemo(
-        () => columns.filter((col) => col.visible !== false),
-        [columns]
-    );
+  // Filter to visible columns only
+  const visibleColumns = useMemo(() => columns.filter((col) => col.visible !== false), [columns]);
 
-    // Column widths for resizable headers
-    const { columnWidths, handleWidthChange } = useColumnWidths(
-        visibleColumns.map((col) => ({ key: col.key, width: col.width || 150 }))
-    );
+  // Check if ANY visible column uses flex — if so, use proportional % layout
+  const useFlexLayout = useMemo(() => visibleColumns.some((c) => c.flex != null), [visibleColumns]);
+  const totalFlex = useMemo(
+    () => (useFlexLayout ? visibleColumns.reduce((sum, c) => sum + (c.flex ?? 1), 0) : 0),
+    [useFlexLayout, visibleColumns]
+  );
 
-    // Refs for sticky header with synced horizontal scroll
-    const headerRef = useRef<HTMLTableSectionElement>(null);
-    const tableContainerRef = useRef<HTMLDivElement>(null);
-    const headerScrollRef = useRef<HTMLDivElement>(null);
-    const bodyScrollRef = useRef<HTMLDivElement>(null);
+  // Column widths for resizable headers (only used in pixel-width mode)
+  const { columnWidths, handleWidthChange } = useColumnWidths(
+    visibleColumns.map((col) => ({ key: col.key, width: col.width || 150 }))
+  );
 
-    // Sync horizontal scroll between header and body containers
-    useEffect(() => {
-        if (variant !== 'borderless' || !stickyHeader) return;
+  // Refs for sticky header with synced horizontal scroll
+  const headerRef = useRef<HTMLTableSectionElement>(null);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const headerScrollRef = useRef<HTMLDivElement>(null);
+  const bodyScrollRef = useRef<HTMLDivElement>(null);
 
-        const header = headerScrollRef.current;
-        const body = bodyScrollRef.current;
-        if (!header || !body) return;
+  // Sync horizontal scroll between header and body containers
+  useEffect(() => {
+    if (variant !== 'borderless' || !stickyHeader) return;
 
-        let syncing = false;
-        const sync = (src: HTMLElement, tgt: HTMLElement) => {
-            if (syncing) return;
-            syncing = true;
-            tgt.scrollLeft = src.scrollLeft;
-            requestAnimationFrame(() => syncing = false);
-        };
+    const header = headerScrollRef.current;
+    const body = bodyScrollRef.current;
+    if (!header || !body) return;
 
-        const onHeaderScroll = () => sync(header, body);
-        const onBodyScroll = () => sync(body, header);
+    let syncing = false;
+    const sync = (src: HTMLElement, tgt: HTMLElement) => {
+      if (syncing) return;
+      syncing = true;
+      tgt.scrollLeft = src.scrollLeft;
+      requestAnimationFrame(() => (syncing = false));
+    };
 
-        header.addEventListener('scroll', onHeaderScroll);
-        body.addEventListener('scroll', onBodyScroll);
+    const onHeaderScroll = () => sync(header, body);
+    const onBodyScroll = () => sync(body, header);
 
-        return () => {
-            header.removeEventListener('scroll', onHeaderScroll);
-            body.removeEventListener('scroll', onBodyScroll);
-        };
-    }, [variant, stickyHeader]);
+    header.addEventListener('scroll', onHeaderScroll);
+    body.addEventListener('scroll', onBodyScroll);
 
-    // Selection handlers
-    const handleSelectAll = useCallback(
-        (checked: boolean) => {
-            if (!selection) return;
-            if (checked) {
-                const allIds = new Set(data.map((row) => selection.getRowId(row)));
-                selection.onSelectionChange(allIds);
-            } else {
-                selection.onSelectionChange(new Set());
-            }
-        },
-        [data, selection]
-    );
+    return () => {
+      header.removeEventListener('scroll', onHeaderScroll);
+      body.removeEventListener('scroll', onBodyScroll);
+    };
+  }, [variant, stickyHeader]);
 
-    const handleSelectRow = useCallback(
-        (id: string, checked: boolean) => {
-            if (!selection) return;
+  // Selection handlers
+  const handleSelectAll = useCallback(
+    (checked: boolean) => {
+      if (!selection) return;
+      if (checked) {
+        const allIds = new Set(data.map((row) => selection.getRowId(row)));
+        selection.onSelectionChange(allIds);
+      } else {
+        selection.onSelectionChange(new Set());
+      }
+    },
+    [data, selection]
+  );
 
-            if (selection.mode === 'single') {
-                // Single selection mode - only one item selected at a time
-                if (checked) {
-                    selection.onSelectionChange(new Set([id]));
-                } else {
-                    selection.onSelectionChange(new Set());
-                }
-            } else {
-                // Multiple selection mode
-                const newSelected = new Set(selection.selectedIds);
-                if (checked) {
-                    newSelected.add(id);
-                } else {
-                    newSelected.delete(id);
-                }
-                selection.onSelectionChange(newSelected);
-            }
-        },
-        [selection]
-    );
+  const handleSelectRow = useCallback(
+    (id: string, checked: boolean) => {
+      if (!selection) return;
 
-    const handleRowClickInternal = useCallback(
-        (row: T) => {
-            if (onRowClick) {
-                onRowClick(row);
-            }
-        },
-        [onRowClick]
-    );
+      if (selection.mode === 'single') {
+        // Single selection mode - only one item selected at a time
+        if (checked) {
+          selection.onSelectionChange(new Set([id]));
+        } else {
+          selection.onSelectionChange(new Set());
+        }
+      } else {
+        // Multiple selection mode
+        const newSelected = new Set(selection.selectedIds);
+        if (checked) {
+          newSelected.add(id);
+        } else {
+          newSelected.delete(id);
+        }
+        selection.onSelectionChange(newSelected);
+      }
+    },
+    [selection]
+  );
 
-    const showLoading = isLoading && !isPlaceholderData && data.length === 0;
-    const showCheckboxColumn = selection?.enabled !== false && selection;
+  const handleRowClickInternal = useCallback(
+    (row: T) => {
+      if (onRowClick) {
+        onRowClick(row);
+      }
+    },
+    [onRowClick]
+  );
 
-    // Pagination handlers
-    const handlePrevPage = useCallback(
-        (e: React.MouseEvent) => {
-            e.preventDefault();
-            if (pagination && pagination.page > 1 && !isLoading) {
-                pagination.onPageChange(pagination.page - 1);
-            }
-        },
-        [pagination, isLoading]
-    );
+  const showLoading = isLoading && !isPlaceholderData && data.length === 0;
+  const showCheckboxColumn = selection?.enabled !== false && selection;
 
-    const handleNextPage = useCallback(
-        (e: React.MouseEvent) => {
-            e.preventDefault();
-            if (pagination && pagination.hasNextPage && !isLoading) {
-                pagination.onPageChange(pagination.page + 1);
-            }
-        },
-        [pagination, isLoading]
-    );
+  // Pagination handlers
+  const handlePrevPage = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (pagination && pagination.page > 1 && !isLoading) {
+        pagination.onPageChange(pagination.page - 1);
+      }
+    },
+    [pagination, isLoading]
+  );
 
-    // ── Shared table rendering helpers ──────────────────────────────
-    const renderHeaderRow = () => (
-        <TableRow className="bg-muted">
-            {showCheckboxColumn && (
-                <TableHead className="bg-muted" style={{ width: '48px', minWidth: '48px' }}>
-                    {selection.mode !== 'single' && (
-                        <Checkbox
-                            checked={
-                                data.length > 0 &&
-                                data.every((row) => selection.selectedIds.has(selection.getRowId(row)))
-                            }
-                            onCheckedChange={handleSelectAll}
-                            aria-label={t('common.selectAll', 'Select all')}
-                        />
-                    )}
-                </TableHead>
-            )}
-            {visibleColumns.map((column) => (
-                <ResizableTableHeader
-                    key={column.key}
-                    columnKey={column.key}
-                    initialWidth={column.width || 150}
-                    minWidth={column.minWidth || 80}
-                    onWidthChange={handleWidthChange}
-                    className={`bg-muted ${column.className || ''}`}
-                >
-                    {t(column.labelKey)}
-                </ResizableTableHeader>
-            ))}
+  const handleNextPage = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (pagination && pagination.hasNextPage && !isLoading) {
+        pagination.onPageChange(pagination.page + 1);
+      }
+    },
+    [pagination, isLoading]
+  );
+
+  // ── Shared table rendering helpers ──────────────────────────────
+  const renderHeaderRow = () => (
+    <TableRow className="bg-muted">
+      {showCheckboxColumn && (
+        <TableHead className="bg-muted" style={{ width: '48px', minWidth: '48px' }}>
+          {selection.mode !== 'single' && (
+            <Checkbox
+              checked={data.length > 0 && data.every((row) => selection.selectedIds.has(selection.getRowId(row)))}
+              onCheckedChange={handleSelectAll}
+              aria-label={t('common.selectAll', 'Select all')}
+            />
+          )}
+        </TableHead>
+      )}
+      {visibleColumns.map((column) =>
+        useFlexLayout ? (
+          <TableHead
+            key={column.key}
+            className={`bg-muted overflow-hidden ${column.className || ''}`}
+            style={{ width: `${((column.flex ?? 1) / totalFlex) * 100}%` }}
+          >
+            {t(column.labelKey)}
+          </TableHead>
+        ) : (
+          <ResizableTableHeader
+            key={column.key}
+            columnKey={column.key}
+            initialWidth={column.width || 150}
+            minWidth={column.minWidth || 80}
+            onWidthChange={handleWidthChange}
+            className={`bg-muted ${column.className || ''}`}
+          >
+            {t(column.labelKey)}
+          </ResizableTableHeader>
+        )
+      )}
+    </TableRow>
+  );
+
+  const renderBodyRows = () => (
+    <>
+      {showLoading && (
+        <TableRow>
+          <TableCell colSpan={visibleColumns.length + (showCheckboxColumn ? 1 : 0)} className="h-64">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          </TableCell>
         </TableRow>
-    );
+      )}
+      {data.length === 0 && !isLoading ? (
+        <TableRow>
+          <TableCell
+            colSpan={visibleColumns.length + (showCheckboxColumn ? 1 : 0)}
+            className="text-center py-8 text-muted-foreground"
+          >
+            {error ? t(errorMessageKey) : t(emptyMessageKey)}
+          </TableCell>
+        </TableRow>
+      ) : (
+        data.map((row, index) => {
+          const rowId = selection?.getRowId(row) || '';
+          const rowKey = rowId || `row-${index}`;
+          const isSelected = selection?.selectedIds.has(rowId);
 
-    const renderBodyRows = () => (
-        <>
+          return (
+            <TableRow
+              key={rowKey}
+              className={`transition-colors ${onRowClick ? 'cursor-pointer' : ''} ${isSelected ? 'bg-primary/5' : ''}`}
+              onClick={() => handleRowClickInternal(row)}
+              style={{ opacity: isPlaceholderData ? 0.6 : 1 }}
+            >
+              {showCheckboxColumn && (
+                <TableCell onClick={(e) => e.stopPropagation()} style={{ width: '48px', minWidth: '48px' }}>
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={(checked) => handleSelectRow(rowId, checked as boolean)}
+                    aria-label={t('common.selectRow', { id: rowId })}
+                  />
+                </TableCell>
+              )}
+              {visibleColumns.map((column) =>
+                useFlexLayout ? (
+                  <TableCell
+                    key={column.key}
+                    className={`overflow-hidden ${column.className || ''}`}
+                    style={{ width: `${((column.flex ?? 1) / totalFlex) * 100}%`, maxWidth: 0 }}
+                  >
+                    <div className="truncate">
+                      <DefaultCellRenderer column={column} value={(row as any)[column.key]} row={row} />
+                    </div>
+                  </TableCell>
+                ) : (
+                  <TableCell
+                    key={column.key}
+                    style={{
+                      width: `${columnWidths[column.key]}px`,
+                      minWidth: `${column.minWidth || 80}px`,
+                      ...(column.maxWidth && { maxWidth: `${column.maxWidth}px` }),
+                    }}
+                    className={`whitespace-normal break-words ${column.className || ''}`}
+                  >
+                    <DefaultCellRenderer column={column} value={(row as any)[column.key]} row={row} />
+                  </TableCell>
+                )
+              )}
+            </TableRow>
+          );
+        })
+      )}
+    </>
+  );
+
+  // Borderless variant (for detail-page sections & worklist with global scroll)
+  if (variant === 'borderless') {
+    // When stickyHeader is ON, we need separate scroll containers for
+    // the header (sticky) and body (scrollable) with synced horizontal scroll.
+    // When stickyHeader is OFF, use a single container — no double scrollbar.
+    const useSplitContainers = stickyHeader;
+
+    return (
+      <div className={`border rounded-lg overflow-hidden ${className}`} ref={tableContainerRef}>
+        {/* Title */}
+        {title && (
+          <div className="py-3 px-3">
+            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          </div>
+        )}
+
+        {useSplitContainers ? (
+          <>
+            {/* Sticky Header — separate scroll container, scrollbar hidden */}
+            <div
+              ref={headerScrollRef}
+              className="overflow-x-auto hide-scrollbar sticky z-20 bg-card"
+              style={{ top: `${stickyHeaderOffset}px` }}
+            >
+              <Table style={{ tableLayout: useFlexLayout ? 'fixed' : 'fixed', width: '100%' }}>
+                <TableHeader ref={headerRef} className="bg-card">
+                  {renderHeaderRow()}
+                </TableHeader>
+              </Table>
+            </div>
+
+            {/* Body — separate scroll container synced with header */}
+            <div ref={bodyScrollRef} className="overflow-x-auto scrollbar-thin">
+              <Table style={{ tableLayout: useFlexLayout ? 'fixed' : 'fixed', width: '100%' }}>
+                <TableBody className="relative">{renderBodyRows()}</TableBody>
+              </Table>
+
+              {/* Infinite scroll loading indicator */}
+              {isFetchingNextPage && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          /* Single scroll container — header + body in one <Table> */
+          <div className="overflow-x-auto scrollbar-thin">
+            <Table style={{ tableLayout: useFlexLayout ? 'auto' : 'fixed', width: '100%' }}>
+              <TableHeader ref={headerRef} className="bg-card">
+                {renderHeaderRow()}
+              </TableHeader>
+              <TableBody className="relative">{renderBodyRows()}</TableBody>
+            </Table>
+
+            {/* Infinite scroll loading indicator */}
+            {isFetchingNextPage && (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Footer - simplified for borderless */}
+        {showFooter && onRefresh && (
+          <div className="py-3 flex items-center justify-end">
+            <Button variant="ghost" size="sm" onClick={onRefresh} className="gap-1" disabled={isLoading}>
+              <RefreshCw className="w-4 h-4" />
+              {t('common.refresh', 'Refresh')}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Card variant (default - boxed with border)
+  return (
+    <div className={`bg-card transition-all ${stickyHeader ? 'overflow-clip' : 'overflow-hidden'} ${className}`}>
+      {/* Title */}
+      {title && (
+        <div className="px-6 py-3 border-b border-border">
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        </div>
+      )}
+
+      {/* Table Content */}
+      <div
+        className={`relative ${stickyHeader ? 'overflow-x-clip' : 'overflow-x-auto'}`}
+        style={{
+          ...(maxHeight && {
+            maxHeight,
+            overflowY: 'auto',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'hsl(var(--border)) transparent',
+          }),
+        }}
+        onScroll={onScroll}
+      >
+        <Table className={useFlexLayout ? 'w-full' : 'min-w-[800px]'} style={{ tableLayout: useFlexLayout ? 'fixed' : undefined }}>
+          <TableHeader
+            className={stickyHeader ? 'sticky z-20 bg-muted shadow-[0_1px_0_0_hsl(var(--border))]' : ''}
+            style={stickyHeader ? { top: `${stickyHeaderOffset}px` } : undefined}
+          >
+            <TableRow className="bg-muted">
+              {showCheckboxColumn && (
+                <TableHead className="w-12">
+                  {selection.mode !== 'single' && (
+                    <Checkbox
+                      checked={
+                        data.length > 0 && data.every((row) => selection.selectedIds.has(selection.getRowId(row)))
+                      }
+                      onCheckedChange={handleSelectAll}
+                      aria-label={t('common.selectAll', 'Select all')}
+                    />
+                  )}
+                </TableHead>
+              )}
+              {visibleColumns.map((column) => (
+                <ResizableTableHeader
+                  key={column.key}
+                  columnKey={column.key}
+                  initialWidth={column.width || 150}
+                  minWidth={column.minWidth || 80}
+                  onWidthChange={handleWidthChange}
+                  className={column.className || ''}
+                >
+                  {t(column.labelKey)}
+                </ResizableTableHeader>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody className="relative">
             {showLoading && (
-                <TableRow>
-                    <TableCell colSpan={visibleColumns.length + (showCheckboxColumn ? 1 : 0)} className="h-64">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        </div>
-                    </TableCell>
-                </TableRow>
+              <TableRow>
+                <TableCell colSpan={visibleColumns.length + (showCheckboxColumn ? 1 : 0)} className="h-64">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                </TableCell>
+              </TableRow>
             )}
             {data.length === 0 && !isLoading ? (
-                <TableRow>
-                    <TableCell
-                        colSpan={visibleColumns.length + (showCheckboxColumn ? 1 : 0)}
-                        className="text-center py-8 text-muted-foreground"
-                    >
-                        {error ? t(errorMessageKey) : t(emptyMessageKey)}
-                    </TableCell>
-                </TableRow>
+              <TableRow>
+                <TableCell
+                  colSpan={visibleColumns.length + (showCheckboxColumn ? 1 : 0)}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  {error ? t(errorMessageKey) : t(emptyMessageKey)}
+                </TableCell>
+              </TableRow>
             ) : (
-                data.map((row, index) => {
-                    const rowId = selection?.getRowId(row) || '';
-                    const rowKey = rowId || `row-${index}`;
-                    const isSelected = selection?.selectedIds.has(rowId);
+              data.map((row, index) => {
+                const rowId = selection?.getRowId(row) || '';
+                const rowKey = rowId || `row-${index}`;
+                const isSelected = selection?.selectedIds.has(rowId);
 
-                    return (
-                        <TableRow
-                            key={rowKey}
-                            className={`transition-colors ${onRowClick ? 'cursor-pointer' : ''} ${isSelected ? 'bg-primary/5' : ''}`}
-                            onClick={() => handleRowClickInternal(row)}
-                            style={{ opacity: isPlaceholderData ? 0.6 : 1 }}
-                        >
-                            {showCheckboxColumn && (
-                                <TableCell onClick={(e) => e.stopPropagation()} style={{ width: '48px', minWidth: '48px' }}>
-                                    <Checkbox
-                                        checked={isSelected}
-                                        onCheckedChange={(checked) =>
-                                            handleSelectRow(rowId, checked as boolean)
-                                        }
-                                        aria-label={t('common.selectRow', { id: rowId })}
-                                    />
-                                </TableCell>
-                            )}
-                            {visibleColumns.map((column) => (
-                                <TableCell
-                                    key={column.key}
-                                    style={{
-                                        width: `${columnWidths[column.key]}px`,
-                                        minWidth: `${column.minWidth || 80}px`,
-                                        ...(column.maxWidth && { maxWidth: `${column.maxWidth}px` }),
-                                    }}
-                                    className={`whitespace-normal break-words ${column.className || ''}`}
-                                >
-                                    <DefaultCellRenderer
-                                        column={column}
-                                        value={(row as any)[column.key]}
-                                        row={row}
-                                    />
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    );
-                })
+                return (
+                  <TableRow
+                    key={rowKey}
+                    className={`transition-colors ${onRowClick ? 'cursor-pointer' : ''} ${isSelected ? 'bg-primary/5' : ''}`}
+                    onClick={() => handleRowClickInternal(row)}
+                    style={{ opacity: isPlaceholderData ? 0.6 : 1 }}
+                  >
+                    {showCheckboxColumn && (
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(checked) => handleSelectRow(rowId, checked as boolean)}
+                          aria-label={t('common.selectRow', { id: rowId })}
+                        />
+                      </TableCell>
+                    )}
+                    {visibleColumns.map((column) => (
+                      <TableCell
+                        key={column.key}
+                        style={{
+                          width: `${columnWidths[column.key]}px`,
+                          minWidth: `${column.minWidth || 80}px`,
+                          ...(column.maxWidth && { maxWidth: `${column.maxWidth}px` }),
+                        }}
+                        className={`whitespace-normal break-words ${column.className || ''}`}
+                      >
+                        <DefaultCellRenderer column={column} value={(row as any)[column.key]} row={row} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             )}
-        </>
-    );
+          </TableBody>
+        </Table>
 
-    // Borderless variant (for detail-page sections & worklist with global scroll)
-    if (variant === 'borderless') {
-        // When stickyHeader is ON, we need separate scroll containers for
-        // the header (sticky) and body (scrollable) with synced horizontal scroll.
-        // When stickyHeader is OFF, use a single container — no double scrollbar.
-        const useSplitContainers = stickyHeader;
+        {/* Infinite scroll loading indicator */}
+        {isFetchingNextPage && (
+          <div className="flex items-center justify-center py-4 bg-muted">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          </div>
+        )}
+      </div>
 
-        return (
-            <div className={`border rounded-lg overflow-hidden ${className}`} ref={tableContainerRef}>
-                {/* Title */}
-                {title && (
-                    <div className="py-3 px-3">
-                        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-                    </div>
-                )}
-
-                {useSplitContainers ? (
-                    <>
-                        {/* Sticky Header — separate scroll container, scrollbar hidden */}
-                        <div
-                            ref={headerScrollRef}
-                            className="overflow-x-auto hide-scrollbar sticky z-20 bg-card"
-                            style={{ top: `${stickyHeaderOffset}px` }}
-                        >
-                            <Table style={{ tableLayout: 'fixed' }}>
-                                <TableHeader ref={headerRef} className="bg-card">
-                                    {renderHeaderRow()}
-                                </TableHeader>
-                            </Table>
-                        </div>
-
-                        {/* Body — separate scroll container synced with header */}
-                        <div
-                            ref={bodyScrollRef}
-                            className="overflow-x-auto scrollbar-thin"
-                        >
-                            <Table style={{ tableLayout: 'fixed' }}>
-                                <TableBody className="relative">
-                                    {renderBodyRows()}
-                                </TableBody>
-                            </Table>
-
-                            {/* Infinite scroll loading indicator */}
-                            {isFetchingNextPage && (
-                                <div className="flex items-center justify-center py-4">
-                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                                </div>
-                            )}
-                        </div>
-                    </>
-                ) : (
-                    /* Single scroll container — header + body in one <Table> */
-                    <div className="overflow-x-auto scrollbar-thin">
-                        <Table style={{ tableLayout: 'fixed' }}>
-                            <TableHeader ref={headerRef} className="bg-card">
-                                {renderHeaderRow()}
-                            </TableHeader>
-                            <TableBody className="relative">
-                                {renderBodyRows()}
-                            </TableBody>
-                        </Table>
-
-                        {/* Infinite scroll loading indicator */}
-                        {isFetchingNextPage && (
-                            <div className="flex items-center justify-center py-4">
-                                <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Footer - simplified for borderless */}
-                {showFooter && onRefresh && (
-                    <div className="py-3 flex items-center justify-end">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onRefresh}
-                            className="gap-1"
-                            disabled={isLoading}
-                        >
-                            <RefreshCw className="w-4 h-4" />
-                            {t('common.refresh', 'Refresh')}
-                        </Button>
-                    </div>
-                )}
-            </div>
-        );
-    }
-
-    // Card variant (default - boxed with border)
-    return (
-        <div className={`bg-card transition-all ${stickyHeader ? 'overflow-clip' : 'overflow-hidden'} ${className}`}>
-            {/* Title */}
-            {title && (
-                <div className="px-6 py-3 border-b border-border">
-                    <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-                </div>
+      {/* Footer with Pagination - Using Reusable UI Components */}
+      {showFooter && (pagination || onRefresh) && (
+        <div className="border-t border-border px-6 py-3 flex items-center justify-between bg-muted rounded-b-xl">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {onRefresh && (
+              <>
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <span>{isLoading ? t('common.updating', 'Updating...') : t('common.lastUpdated', 'Last updated')}</span>
+              </>
             )}
-
-            {/* Table Content */}
-            <div
-                className={`relative ${stickyHeader ? 'overflow-x-clip' : 'overflow-x-auto'}`}
-                style={{
-                    ...(maxHeight && {
-                        maxHeight,
-                        overflowY: 'auto',
-                        scrollbarWidth: 'thin',
-                        scrollbarColor: 'hsl(var(--border)) transparent',
-                    })
-                }}
-                onScroll={onScroll}
-            >
-                <Table className="min-w-[800px]">
-                    <TableHeader
-                        className={stickyHeader ? 'sticky z-20 bg-muted shadow-[0_1px_0_0_hsl(var(--border))]' : ''}
-                        style={stickyHeader ? { top: `${stickyHeaderOffset}px` } : undefined}
-                    >
-                        <TableRow className="bg-muted">
-                            {showCheckboxColumn && (
-                                <TableHead className="w-12">
-                                    {selection.mode !== 'single' && (
-                                        <Checkbox
-                                            checked={
-                                                data.length > 0 &&
-                                                data.every((row) => selection.selectedIds.has(selection.getRowId(row)))
-                                            }
-                                            onCheckedChange={handleSelectAll}
-                                            aria-label={t('common.selectAll', 'Select all')}
-                                        />
-                                    )}
-                                </TableHead>
-                            )}
-                            {visibleColumns.map((column) => (
-                                <ResizableTableHeader
-                                    key={column.key}
-                                    columnKey={column.key}
-                                    initialWidth={column.width || 150}
-                                    minWidth={column.minWidth || 80}
-                                    onWidthChange={handleWidthChange}
-                                    className={column.className || ''}
-                                >
-                                    {t(column.labelKey)}
-                                </ResizableTableHeader>
-                            ))}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody className="relative">
-                        {showLoading && (
-                            <TableRow>
-                                <TableCell colSpan={visibleColumns.length + (showCheckboxColumn ? 1 : 0)} className="h-64">
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        )}
-                        {data.length === 0 && !isLoading ? (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={visibleColumns.length + (showCheckboxColumn ? 1 : 0)}
-                                    className="text-center py-8 text-muted-foreground"
-                                >
-                                    {error ? t(errorMessageKey) : t(emptyMessageKey)}
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            data.map((row, index) => {
-                                const rowId = selection?.getRowId(row) || '';
-                                const rowKey = rowId || `row-${index}`;
-                                const isSelected = selection?.selectedIds.has(rowId);
-
-                                return (
-                                    <TableRow
-                                        key={rowKey}
-                                        className={`transition-colors ${onRowClick ? 'cursor-pointer' : ''} ${isSelected ? 'bg-primary/5' : ''}`}
-                                        onClick={() => handleRowClickInternal(row)}
-                                        style={{ opacity: isPlaceholderData ? 0.6 : 1 }}
-                                    >
-                                        {showCheckboxColumn && (
-                                            <TableCell onClick={(e) => e.stopPropagation()}>
-                                                <Checkbox
-                                                    checked={isSelected}
-                                                    onCheckedChange={(checked) =>
-                                                        handleSelectRow(rowId, checked as boolean)
-                                                    }
-                                                    aria-label={t('common.selectRow', { id: rowId })}
-                                                />
-                                            </TableCell>
-                                        )}
-                                        {visibleColumns.map((column) => (
-                                            <TableCell
-                                                key={column.key}
-                                                style={{
-                                                    width: `${columnWidths[column.key]}px`,
-                                                    minWidth: `${column.minWidth || 80}px`,
-                                                    ...(column.maxWidth && { maxWidth: `${column.maxWidth}px` }),
-                                                }}
-                                                className={`whitespace-normal break-words ${column.className || ''}`}
-                                            >
-                                                <DefaultCellRenderer
-                                                    column={column}
-                                                    value={(row as any)[column.key]}
-                                                    row={row}
-                                                />
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                );
-                            })
-                        )}
-                    </TableBody>
-                </Table>
-
-                {/* Infinite scroll loading indicator */}
-                {isFetchingNextPage && (
-                    <div className="flex items-center justify-center py-4 bg-muted">
-                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    </div>
-                )}
-            </div>
-
-            {/* Footer with Pagination - Using Reusable UI Components */}
-            {showFooter && (pagination || onRefresh) && (
-                <div className="border-t border-border px-6 py-3 flex items-center justify-between bg-muted rounded-b-xl">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        {onRefresh && (
-                            <>
-                                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                                <span>
-                                    {isLoading ? t('common.updating', 'Updating...') : t('common.lastUpdated', 'Last updated')}
-                                </span>
-                            </>
-                        )}
-                        {pagination?.totalCount != null && (
-                            <span className="ml-2 font-medium">
-                                ({pagination.totalCount} {t('common.items', 'items')})
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        {pagination && (
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            href="#"
-                                            onClick={handlePrevPage}
-                                            aria-disabled={pagination.page === 1 || isLoading}
-                                            className={pagination.page === 1 || isLoading ? 'pointer-events-none opacity-50' : ''}
-                                        />
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <span className="text-sm font-medium text-foreground px-3">
-                                            {t('common.page', 'Page')} {pagination.page}
-                                        </span>
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            href="#"
-                                            onClick={handleNextPage}
-                                            aria-disabled={!pagination.hasNextPage || isLoading}
-                                            className={!pagination.hasNextPage || isLoading ? 'pointer-events-none opacity-50' : ''}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-                        )}
-                        {onRefresh && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={onRefresh}
-                                className="gap-1 ml-2"
-                                disabled={isLoading}
-                            >
-                                <RefreshCw className="w-4 h-4" />
-                                {t('common.refresh', 'Refresh')}
-                            </Button>
-                        )}
-                    </div>
-                </div>
+            {pagination?.totalCount != null && (
+              <span className="ml-2 font-medium">
+                ({pagination.totalCount} {t('common.items', 'items')})
+              </span>
             )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {pagination && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={handlePrevPage}
+                      aria-disabled={pagination.page === 1 || isLoading}
+                      className={pagination.page === 1 || isLoading ? 'pointer-events-none opacity-50' : ''}
+                    />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <span className="text-sm font-medium text-foreground px-3">
+                      {t('common.page', 'Page')} {pagination.page}
+                    </span>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={handleNextPage}
+                      aria-disabled={!pagination.hasNextPage || isLoading}
+                      className={!pagination.hasNextPage || isLoading ? 'pointer-events-none opacity-50' : ''}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+            {onRefresh && (
+              <Button variant="ghost" size="sm" onClick={onRefresh} className="gap-1 ml-2" disabled={isLoading}>
+                <RefreshCw className="w-4 h-4" />
+                {t('common.refresh', 'Refresh')}
+              </Button>
+            )}
+          </div>
         </div>
-    );
+      )}
+    </div>
+  );
 }
 
 export default DataTable;

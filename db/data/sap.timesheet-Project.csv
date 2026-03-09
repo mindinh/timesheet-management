@@ -1,1 +1,4 @@
-"ID",name,description,code,isActive,createdAt,createdBy,modifiedAt,modifiedBy
+ID,name,description,type,code,isActive,projectCreator_ID,createdAt,createdBy,modifiedAt,modifiedBy
+pr000001-0000-0000-0000-000000000001,BTP Development,SAP BTP core platform development,External,BTP-001,true,bb000002-0000-0000-0000-000000000002,2026-01-01T00:00:00Z,system,2026-01-01T00:00:00Z,system
+pr000002-0000-0000-0000-000000000002,Internal Tools,Internal tooling and automation,Internal,INT-001,true,cc000003-0000-0000-0000-000000000003,2026-01-01T00:00:00Z,system,2026-01-01T00:00:00Z,system
+pr000003-0000-0000-0000-000000000003,Client Portal,Customer-facing portal project,External,EXT-001,true,bb000002-0000-0000-0000-000000000002,2026-01-01T00:00:00Z,system,2026-01-01T00:00:00Z,system

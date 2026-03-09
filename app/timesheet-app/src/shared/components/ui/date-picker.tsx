@@ -1,19 +1,28 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { format, parse, isValid } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import * as React from 'react';
+import { format, parse, isValid } from 'date-fns';
+import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { cn } from "@/shared/lib/utils";
-import { InputContainer } from "./input-container";
-import { Popover, PopoverContent, PopoverTrigger } from "./popover";
-import { Button } from "./button";
+import { cn } from '@/shared/lib/utils';
+import { InputContainer } from './input-container';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import { Button } from './button';
 
 // Month names for the month picker
 const MONTHS = [
-  'January', 'February', 'March', 'April',
-  'May', 'June', 'July', 'August',
-  'September', 'October', 'November', 'December'
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 // Day names
@@ -37,14 +46,14 @@ export function DatePicker({
   id,
   value,
   onChange,
-  placeholder = "Pick a date",
+  placeholder = 'Pick a date',
   disabled = false,
   readOnly = false,
   variant,
   className,
   minDate,
   maxDate,
-  formatString = "PPP",
+  formatString = 'PPP',
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<'days' | 'months' | 'years'>('days');
@@ -82,39 +91,39 @@ export function DatePicker({
     setViewMode('days');
     if (onChange) {
       // Always return YYYY-MM-DD string to maintain compatibility
-      onChange(format(selectedDate, "yyyy-MM-dd"));
+      onChange(format(selectedDate, 'yyyy-MM-dd'));
     }
   };
 
   // Calendar navigation
   const goToNextMonth = () => {
-    setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
   const goToPrevMonth = () => {
-    setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
 
   const goToNextYear = () => {
-    setViewDate(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1));
+    setViewDate((prev) => new Date(prev.getFullYear() + 1, prev.getMonth(), 1));
   };
 
   const goToPrevYear = () => {
-    setViewDate(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1));
+    setViewDate((prev) => new Date(prev.getFullYear() - 1, prev.getMonth(), 1));
   };
 
   // Navigate year decades (for year picker)
   const goToNextDecade = () => {
-    setViewDate(prev => new Date(prev.getFullYear() + 20, prev.getMonth(), 1));
+    setViewDate((prev) => new Date(prev.getFullYear() + 20, prev.getMonth(), 1));
   };
 
   const goToPrevDecade = () => {
-    setViewDate(prev => new Date(prev.getFullYear() - 20, prev.getMonth(), 1));
+    setViewDate((prev) => new Date(prev.getFullYear() - 20, prev.getMonth(), 1));
   };
 
   // Handle year selection
   const handleYearClick = (year: number) => {
-    setViewDate(prev => new Date(year, prev.getMonth(), 1));
+    setViewDate((prev) => new Date(year, prev.getMonth(), 1));
     setViewMode('months');
   };
 
@@ -138,7 +147,7 @@ export function DatePicker({
 
   // Handle month selection
   const handleMonthClick = (monthIndex: number) => {
-    setViewDate(prev => new Date(prev.getFullYear(), monthIndex, 1));
+    setViewDate((prev) => new Date(prev.getFullYear(), monthIndex, 1));
     setViewMode('days');
   };
 
@@ -206,12 +215,15 @@ export function DatePicker({
   };
 
   return (
-    <Popover open={open} onOpenChange={(newOpen) => {
-      setOpen(newOpen);
-      if (!newOpen) {
-        setViewMode('days');
-      }
-    }}>
+    <Popover
+      open={open}
+      onOpenChange={(newOpen) => {
+        setOpen(newOpen);
+        if (!newOpen) {
+          setViewMode('days');
+        }
+      }}
+    >
       <PopoverTrigger asChild>
         <InputContainer
           id={id}
@@ -219,11 +231,7 @@ export function DatePicker({
           readOnly={readOnly}
           variant={variant}
           isOpen={open}
-          className={cn(
-            "!h-9 w-full flex items-center justify-between",
-            !date && "text-muted-foreground",
-            className
-          )}
+          className={cn('!h-9 w-full flex items-center justify-between', !date && 'text-muted-foreground', className)}
           onClick={() => !disabled && !readOnly && setOpen(true)}
         >
           <span className="text-sm font-normal flex-1 text-left">
@@ -238,12 +246,7 @@ export function DatePicker({
             <>
               {/* Month/Year Header with Navigation */}
               <div className="flex items-center justify-between mb-4">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={goToPrevMonth}
-                >
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={goToPrevMonth}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex items-center gap-2">
@@ -262,19 +265,14 @@ export function DatePicker({
                     {viewDate.getFullYear()}
                   </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={goToNextMonth}
-                >
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={goToNextMonth}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Day names header */}
               <div className="grid grid-cols-7 gap-1 mb-2">
-                {DAYS.map(day => (
+                {DAYS.map((day) => (
                   <div key={day} className="text-center text-xs text-muted-foreground font-normal w-9">
                     {day}
                   </div>
@@ -299,11 +297,11 @@ export function DatePicker({
                           variant="ghost"
                           disabled={dateDisabled}
                           className={cn(
-                            "h-9 w-9 text-center text-sm p-0 font-normal rounded-md",
-                            !inCurrentMonth && "text-muted-foreground opacity-50",
-                            today && !selected && "bg-accent text-accent-foreground",
-                            selected && "bg-primary text-primary-foreground",
-                            "hover:bg-accent hover:text-accent-foreground"
+                            'h-9 w-9 text-center text-sm p-0 font-normal rounded-md',
+                            !inCurrentMonth && 'text-muted-foreground opacity-50',
+                            today && !selected && 'bg-accent text-accent-foreground',
+                            selected && 'bg-primary text-primary-foreground',
+                            'hover:bg-accent hover:text-accent-foreground'
                           )}
                           onClick={() => handleSelect(dayDate)}
                         >
@@ -319,12 +317,7 @@ export function DatePicker({
             <>
               {/* Year Header with Navigation */}
               <div className="flex items-center justify-between mb-4">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={goToPrevYear}
-                >
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={goToPrevYear}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <Button
@@ -334,12 +327,7 @@ export function DatePicker({
                 >
                   {viewDate.getFullYear()}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={goToNextYear}
-                >
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={goToNextYear}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -354,9 +342,9 @@ export function DatePicker({
                       key={month}
                       variant="ghost"
                       className={cn(
-                        "px-3 py-2 text-sm rounded-md transition-colors",
-                        "hover:bg-accent hover:text-accent-foreground",
-                        isCurrentViewMonth && "border border-primary"
+                        'px-3 py-2 text-sm rounded-md transition-colors',
+                        'hover:bg-accent hover:text-accent-foreground',
+                        isCurrentViewMonth && 'border border-primary'
                       )}
                       onClick={() => handleMonthClick(index)}
                     >
@@ -371,23 +359,11 @@ export function DatePicker({
             <>
               {/* Year Range Header with Navigation */}
               <div className="flex items-center justify-between mb-4">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={goToPrevDecade}
-                >
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={goToPrevDecade}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm font-medium text-primary">
-                  {getYearRange()}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={goToNextDecade}
-                >
+                <span className="text-sm font-medium text-primary">{getYearRange()}</span>
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={goToNextDecade}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -403,10 +379,10 @@ export function DatePicker({
                       key={year}
                       variant="ghost"
                       className={cn(
-                        "px-2 py-2 text-sm rounded-md transition-colors",
-                        isSelectedYear && "border border-primary",
-                        isCurrentYear && !isSelectedYear && "bg-accent",
-                        "hover:bg-accent hover:text-accent-foreground text-primary"
+                        'px-2 py-2 text-sm rounded-md transition-colors',
+                        isSelectedYear && 'border border-primary',
+                        isCurrentYear && !isSelectedYear && 'bg-accent',
+                        'hover:bg-accent hover:text-accent-foreground text-primary'
                       )}
                       onClick={() => handleYearClick(year)}
                     >

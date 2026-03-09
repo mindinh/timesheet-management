@@ -39,11 +39,7 @@ export function SelectedItemCard<T>({
             const id = getItemId(item);
             const label = getItemLabel(item);
             return (
-              <Token
-                key={id}
-                onRemove={() => onRemove(id)}
-                style={{ maxWidth }}
-              >
+              <Token key={id} onRemove={() => onRemove(id)} style={{ maxWidth }}>
                 <span className="font-medium">{label.primary}</span>
                 {label.secondary && (
                   <>

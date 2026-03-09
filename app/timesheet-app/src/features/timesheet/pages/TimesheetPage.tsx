@@ -1,446 +1,517 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { addMonths, subMonths, format } from 'date-fns'
-import { CalendarHeader } from '@/features/timesheet/components/CalendarHeader'
-import { TimesheetStats } from '@/features/timesheet/components/TimesheetStats'
-import { DailyEntryList } from '@/features/timesheet/components/DailyEntryList'
-import { DailyLogDialog } from '@/features/timesheet/components/DailyLogDialog'
-import { TimesheetFooter } from '@/features/timesheet/components/TimesheetFooter'
-import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore'
-import { getUserWithManager, getPotentialApprovers } from '@/features/auth/api/auth-api'
-import { exportToExcel } from '@/features/timesheet/api/timesheet-api'
-import type { TimesheetEntry } from '@/shared/types'
-import { AlertTriangle, History, Save, FileDown } from 'lucide-react'
-import { Alert, AlertTitle, AlertDescription } from '@/shared/components/ui/alert'
-import { Button } from '@/shared/components/ui/button'
-import { AuditHistoryDialog } from '@/features/timesheet/components/AuditHistoryDialog'
-import StatusDialog from '@/shared/components/common/StatusDialog'
-import ConfirmDialog from '@/shared/components/common/ConfirmDialog'
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { addMonths, subMonths, format } from 'date-fns';
+import { CalendarHeader } from '@/features/timesheet/components/CalendarHeader';
+import { TimesheetStats } from '@/features/timesheet/components/TimesheetStats';
+import { DailyEntryList } from '@/features/timesheet/components/DailyEntryList';
+import { DailyLogDialog } from '@/features/timesheet/components/DailyLogDialog';
+import { TimesheetFooter } from '@/features/timesheet/components/TimesheetFooter';
+import { useTimesheetStore } from '@/features/timesheet/store/timesheetStore';
+import { getUserWithManager } from '@/features/auth/api/auth-api';
+import { getTeamLeads } from '@/features/timesheet/api/timesheet-api';
+import { exportSingleTimesheetToExcel } from '@/features/admin/utils/export-excel';
+import type { TimesheetEntry } from '@/shared/types';
+import { AlertTriangle, History, Save, FileDown } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/shared/components/ui/alert';
+import { Button } from '@/shared/components/ui/button';
+import { AuditHistoryDialog } from '@/features/timesheet/components/AuditHistoryDialog';
+import StatusDialog from '@/shared/components/common/StatusDialog';
+import ConfirmDialog from '@/shared/components/common/ConfirmDialog';
 
-import { useProjectStore } from '@/features/projects/store/projectStore'
+import { useProjectStore } from '@/features/projects/store/projectStore';
 
 export default function TimesheetPage() {
-    const { projects, fetchProjects, tasks } = useProjectStore()
-    const {
-        currentMonth,
-        currentUser,
-        setCurrentMonth,
-        addEntry,
-        updateEntry,
-        deleteEntry,
-        deleteEntries,
-        entries,
-        isDirty,
-        isLoading,
-        fetchCurrentUser,
-        fetchEntries,
-        saveEntries,
-        submitTimesheet,
-        currentTimesheetStatus,
-        currentTimesheetComment,
-        currentApprovalHistory,
-    } = useTimesheetStore()
-    const [searchParams] = useSearchParams()
-    const [isDialogOpen, setIsDialogOpen] = useState(false)
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-    const [editingEntry, setEditingEntry] = useState<TimesheetEntry | undefined>(undefined)
-    const [manager, setManager] = useState<{ id: string; firstName: string; lastName: string; role: string } | undefined>()
-    const [potentialApprovers, setPotentialApprovers] = useState<{ id: string; firstName: string; lastName: string; role: string; email: string }[]>([])
-    const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date())
-    const [showAuditHistory, setShowAuditHistory] = useState(false)
-    const [isExporting, setIsExporting] = useState(false)
-    const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set())
+  const { projects, fetchProjects, tasks } = useProjectStore();
+  const {
+    currentMonth,
+    currentUser,
+    setCurrentMonth,
+    addEntry,
+    updateEntry,
+    deleteEntry,
+    deleteEntries,
+    entries,
+    isDirty,
+    isLoading,
+    fetchCurrentUser,
+    fetchEntries,
+    saveEntries,
+    submitTimesheet,
+    currentTimesheetStatus,
+    currentTimesheetComment,
+    currentApprovalHistory,
+  } = useTimesheetStore();
+  const [searchParams] = useSearchParams();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [editingEntry, setEditingEntry] = useState<TimesheetEntry | undefined>(undefined);
+  const [manager, setManager] = useState<
+    { id: string; firstName: string; lastName: string; role: string } | undefined
+  >();
+  const [teamLeads, setTeamLeads] = useState<{ id: string; firstName: string; lastName: string; email: string }[]>([]);
+  const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
+  const [showAuditHistory, setShowAuditHistory] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
 
-    // Dialog state
-    const [statusDialog, setStatusDialog] = useState<{ open: boolean; variant: 'success' | 'error' | 'warning' | 'info'; title: string; description?: string }>({
-        open: false, variant: 'info', title: ''
-    })
-    const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; description?: string; onConfirm: () => void; destructive?: boolean }>({
-        open: false, title: '', onConfirm: () => { }
-    })
+  // Dialog state
+  const [statusDialog, setStatusDialog] = useState<{
+    open: boolean;
+    variant: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    description?: string;
+  }>({
+    open: false,
+    variant: 'info',
+    title: '',
+  });
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description?: string;
+    onConfirm: () => void;
+    destructive?: boolean;
+  }>({
+    open: false,
+    title: '',
+    onConfirm: () => {},
+  });
 
-    // Auto-open audit history when navigating from list with showHistory query param
-    useEffect(() => {
-        if (searchParams.get('showHistory') === 'true') {
-            setShowAuditHistory(true)
-        }
-    }, [searchParams])
+  // Auto-open audit history when navigating from list with showHistory query param
+  useEffect(() => {
+    if (searchParams.get('showHistory') === 'true') {
+      setShowAuditHistory(true);
+    }
+  }, [searchParams]);
 
-    // Determine if editing is allowed (Draft or Reopened)
-    const isReadOnly = currentTimesheetStatus !== 'Draft' && currentTimesheetStatus !== 'Reopened'
+  // Determine if editing is allowed (Draft or Reopened)
+  const isReadOnly = currentTimesheetStatus !== 'Draft' && currentTimesheetStatus !== 'Reopened';
 
-    // Handle URL query params for month/year (from TimesheetListPage navigation)
-    useEffect(() => {
-        const monthParam = searchParams.get('month')
-        const yearParam = searchParams.get('year')
-        if (monthParam && yearParam) {
-            const m = parseInt(monthParam)
-            const y = parseInt(yearParam)
-            if (!isNaN(m) && !isNaN(y)) {
-                const targetDate = new Date(y, m - 1, 1)
-                setCurrentMonth(targetDate)
-            }
-        }
-    }, [searchParams, setCurrentMonth])
+  // Handle URL query params for month/year (from TimesheetListPage navigation)
+  useEffect(() => {
+    const monthParam = searchParams.get('month');
+    const yearParam = searchParams.get('year');
+    if (monthParam && yearParam) {
+      const m = parseInt(monthParam);
+      const y = parseInt(yearParam);
+      if (!isNaN(m) && !isNaN(y)) {
+        const targetDate = new Date(y, m - 1, 1);
+        setCurrentMonth(targetDate);
+      }
+    }
+  }, [searchParams, setCurrentMonth]);
 
-    // Fetch authenticated user on mount
-    useEffect(() => {
-        fetchCurrentUser()
-    }, [fetchCurrentUser])
+  // Fetch authenticated user on mount
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
-    // Fetch manager info when user is available
-    useEffect(() => {
-        if (currentUser) {
-            getUserWithManager(currentUser.id)
-                .then(data => setManager(data.manager))
-                .catch(() => setManager(undefined))
-        }
-    }, [currentUser])
+  // Fetch manager info when user is available
+  useEffect(() => {
+    if (currentUser) {
+      getUserWithManager(currentUser.id)
+        .then((data) => setManager(data.manager))
+        .catch(() => setManager(undefined));
+    }
+  }, [currentUser]);
 
-    // Fetch potential approvers
-    useEffect(() => {
-        getPotentialApprovers()
-            .then(approvers => setPotentialApprovers(approvers))
-            .catch(() => setPotentialApprovers([]))
-    }, [])
+  // Fetch team leads (for manual TL selection when employee has no manager)
+  useEffect(() => {
+    getTeamLeads()
+      .then((tls) => setTeamLeads(tls))
+      .catch(() => setTeamLeads([]));
+  }, []);
 
-    // Fetch projects when user is available
-    useEffect(() => {
-        if (currentUser) {
-            fetchProjects(currentUser.id)
-        }
-    }, [currentUser, fetchProjects])
+  // Fetch projects when component loads
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
-    // Fetch entries when user or month changes
-    useEffect(() => {
-        if (currentUser) {
-            const month = currentMonth.getMonth() + 1
-            const year = currentMonth.getFullYear()
-            fetchEntries(month, year)
-            setLastSyncTime(new Date())
-        }
-    }, [currentMonth, currentUser, fetchEntries])
+  // Fetch entries when user or month changes
+  useEffect(() => {
+    if (currentUser) {
+      const month = currentMonth.getMonth() + 1;
+      const year = currentMonth.getFullYear();
+      fetchEntries(month, year);
+      setLastSyncTime(new Date());
+    }
+  }, [currentMonth, currentUser, fetchEntries]);
 
-    // Filter entries for current month
-    const currentMonthEntries = useMemo(() => {
-        const monthStr = format(currentMonth, 'yyyy-MM')
-        return entries.filter(e => e.date.startsWith(monthStr))
-    }, [entries, currentMonth])
+  // Filter entries for current month
+  const currentMonthEntries = useMemo(() => {
+    const monthStr = format(currentMonth, 'yyyy-MM');
+    return entries.filter((e) => e.date.startsWith(monthStr));
+  }, [entries, currentMonth]);
 
-    const monthlyTotal = useMemo(() => {
-        return currentMonthEntries.reduce((sum, e) => sum + e.hours, 0)
-    }, [currentMonthEntries])
+  const monthlyTotal = useMemo(() => {
+    return currentMonthEntries.reduce((sum, e) => sum + e.hours, 0);
+  }, [currentMonthEntries]);
 
-    const handleAddEntry = (dateStr: string) => {
-        if (isReadOnly) return
-        setSelectedDate(new Date(dateStr))
-        setEditingEntry(undefined)
-        setIsDialogOpen(true)
+  const handleAddEntry = (dateStr: string) => {
+    if (isReadOnly) return;
+    setSelectedDate(new Date(dateStr));
+    setEditingEntry(undefined);
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveEntry = (data: any) => {
+    if (isReadOnly) return;
+    if (editingEntry) {
+      updateEntry(editingEntry.id, data);
+    } else {
+      addEntry({
+        ...data,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+      });
+    }
+    setIsDialogOpen(false);
+    setEditingEntry(undefined);
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      await saveEntries();
+      setLastSyncTime(new Date());
+    } catch {
+      setStatusDialog({
+        open: true,
+        variant: 'error',
+        title: 'Save Failed',
+        description: 'Failed to save changes. Please try again.',
+      });
+    }
+  };
+
+  const executeSubmit = useCallback(
+    async (teamLeadId?: string) => {
+      try {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth() + 1;
+        await submitTimesheet(year, month, teamLeadId);
+        setStatusDialog({
+          open: true,
+          variant: 'success',
+          title: 'Submitted',
+          description: 'Timesheet submitted successfully!',
+        });
+      } catch (error: any) {
+        setStatusDialog({
+          open: true,
+          variant: 'error',
+          title: 'Submission Failed',
+          description: error?.message || 'Failed to submit timesheet.',
+        });
+      }
+    },
+    [currentMonth, submitTimesheet]
+  );
+
+  const handleSubmit = (teamLeadId?: string) => {
+    if (isDirty) {
+      setStatusDialog({
+        open: true,
+        variant: 'warning',
+        title: 'Unsaved Changes',
+        description: 'Please save your changes before submitting.',
+      });
+      return;
+    }
+    setConfirmDialog({
+      open: true,
+      title: 'Submit Timesheet',
+      description: `Submit timesheet for ${format(currentMonth, 'MMMM yyyy')}? You won't be able to edit after submission.`,
+      onConfirm: () => executeSubmit(teamLeadId),
+      destructive: false,
+    });
+  };
+
+  const handleEditEntry = (entry: TimesheetEntry) => {
+    if (isReadOnly) return;
+    setEditingEntry(entry);
+    setSelectedDate(new Date(entry.date));
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteEntry = (entryId: string) => {
+    if (isReadOnly) return;
+    setConfirmDialog({
+      open: true,
+      title: 'Delete Entry',
+      description: 'Are you sure you want to delete this entry?',
+      onConfirm: () => deleteEntry(entryId),
+    });
+  };
+
+  const handleDuplicateDay = (dateStr: string) => {
+    if (isReadOnly) return;
+    const dayEntries = entries.filter((e) => e.date === dateStr);
+
+    if (dayEntries.length === 0) {
+      setStatusDialog({
+        open: true,
+        variant: 'info',
+        title: 'Nothing to Duplicate',
+        description: 'No entries to duplicate for this day.',
+      });
+      return;
     }
 
-    const handleSaveEntry = (data: any) => {
-        if (isReadOnly) return
-        if (editingEntry) {
-            updateEntry(editingEntry.id, data)
+    // If some entries are selected for this day, duplicate only those; otherwise duplicate the last entry
+    const selectedForDay = dayEntries.filter((e) => selectedEntryIds.has(e.id));
+    const entriesToDuplicate = selectedForDay.length > 0 ? selectedForDay : [dayEntries[dayEntries.length - 1]];
+
+    entriesToDuplicate.forEach((entry) => {
+      addEntry({
+        date: entry.date,
+        projectId: entry.projectId,
+        taskId: entry.taskId,
+        hours: entry.hours,
+        description: entry.description,
+      });
+    });
+  };
+
+  const handleSelectEntry = (entryId: string, checked: boolean) => {
+    setSelectedEntryIds((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(entryId);
+      } else {
+        next.delete(entryId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAllForDay = (dateStr: string, checked: boolean) => {
+    const dayEntries = entries.filter((e) => e.date === dateStr);
+    setSelectedEntryIds((prev) => {
+      const next = new Set(prev);
+      dayEntries.forEach((e) => {
+        if (checked) {
+          next.add(e.id);
         } else {
-            addEntry({
-                ...data,
-                date: format(selectedDate, 'yyyy-MM-dd'),
-            })
+          next.delete(e.id);
         }
-        setIsDialogOpen(false)
-        setEditingEntry(undefined)
+      });
+      return next;
+    });
+  };
+
+  const handleDeleteSelectedForDay = (dateStr: string) => {
+    if (isReadOnly) return;
+    const dayEntries = entries.filter((e) => e.date === dateStr);
+    const selectedForDay = dayEntries.filter((e) => selectedEntryIds.has(e.id));
+    if (selectedForDay.length === 0) return;
+    setConfirmDialog({
+      open: true,
+      title: 'Delete Selected Entries',
+      description: `Are you sure you want to delete ${selectedForDay.length} selected entries?`,
+      onConfirm: () => {
+        deleteEntries(selectedForDay.map((e) => e.id));
+        setSelectedEntryIds((prev) => {
+          const next = new Set(prev);
+          selectedForDay.forEach((e) => next.delete(e.id));
+          return next;
+        });
+      },
+      destructive: true,
+    });
+  };
+
+  const handleExport = useCallback(async () => {
+    if (!currentUser) {
+      setStatusDialog({ open: true, variant: 'warning', title: 'No User', description: 'No user loaded yet.' });
+      return;
     }
+    setIsExporting(true);
+    try {
+      await exportSingleTimesheetToExcel(
+        {
+          user: { firstName: currentUser.firstName, lastName: currentUser.lastName },
+          month: currentMonth.getMonth() + 1,
+          year: currentMonth.getFullYear(),
+          entries: currentMonthEntries.map((e) => {
+            // Look up full project info from projectStore
+            const proj = projects.find((p) => p.id === e.projectId);
+            return {
+              date: e.date,
+              description: e.description,
+              approvedHours: e.approvedHours ?? null,
+              loggedHours: e.hours,
+              project: {
+                name: proj?.name ?? e.projectName ?? '',
+                code: proj?.code ?? '',
+                type: proj?.type ?? undefined,
+              },
+              task: { name: e.taskName ?? '' },
+            };
+          }),
+        },
+        projects.map((p) => ({
+          name: p.name ?? '',
+          code: p.code ?? '',
+          type: p.type ?? '',
+          isActive: p.isActive,
+        }))
+      );
 
-    const handleSaveChanges = async () => {
-        try {
-            await saveEntries()
-            setLastSyncTime(new Date())
-        } catch {
-            setStatusDialog({ open: true, variant: 'error', title: 'Save Failed', description: 'Failed to save changes. Please try again.' })
-        }
+      setStatusDialog({
+        open: true,
+        variant: 'success',
+        title: 'Exported',
+        description: 'Timesheet exported successfully!',
+      });
+    } catch (error: any) {
+      setStatusDialog({
+        open: true,
+        variant: 'error',
+        title: 'Export Failed',
+        description: error?.message || 'Failed to export timesheet.',
+      });
+    } finally {
+      setIsExporting(false);
     }
+  }, [currentUser, currentMonth, currentMonthEntries, projects]);
 
-    const executeSubmit = useCallback(async (approverId?: string) => {
-        try {
-            const year = currentMonth.getFullYear()
-            const month = currentMonth.getMonth() + 1
-            await submitTimesheet(year, month, approverId)
-            setStatusDialog({ open: true, variant: 'success', title: 'Submitted', description: 'Timesheet submitted successfully!' })
-        } catch (error: any) {
-            setStatusDialog({ open: true, variant: 'error', title: 'Submission Failed', description: error?.message || 'Failed to submit timesheet.' })
-        }
-    }, [currentMonth, submitTimesheet])
+  return (
+    <div className="space-y-6 pb-20">
+      {/* Header */}
+      <CalendarHeader
+        currentMonth={currentMonth}
+        onPrevMonth={() => setCurrentMonth(subMonths(currentMonth, 1))}
+        onNextMonth={() => setCurrentMonth(addMonths(currentMonth, 1))}
+        monthlyTotal={monthlyTotal}
+        status={currentTimesheetStatus}
+      />
 
-    const handleSubmit = (approverId?: string) => {
-        if (isDirty) {
-            setStatusDialog({ open: true, variant: 'warning', title: 'Unsaved Changes', description: 'Please save your changes before submitting.' })
-            return
-        }
-        setConfirmDialog({
-            open: true,
-            title: 'Submit Timesheet',
-            description: `Submit timesheet for ${format(currentMonth, 'MMMM yyyy')}? You won't be able to edit after submission.`,
-            onConfirm: () => executeSubmit(approverId),
-            destructive: false,
-        })
-    }
-
-    const handleEditEntry = (entry: TimesheetEntry) => {
-        if (isReadOnly) return
-        setEditingEntry(entry)
-        setSelectedDate(new Date(entry.date))
-        setIsDialogOpen(true)
-    }
-
-    const handleDeleteEntry = (entryId: string) => {
-        if (isReadOnly) return
-        setConfirmDialog({
-            open: true,
-            title: 'Delete Entry',
-            description: 'Are you sure you want to delete this entry?',
-            onConfirm: () => deleteEntry(entryId),
-        })
-    }
-
-    const handleDuplicateDay = (dateStr: string) => {
-        if (isReadOnly) return
-        const dayEntries = entries.filter(e => e.date === dateStr)
-
-        if (dayEntries.length === 0) {
-            setStatusDialog({ open: true, variant: 'info', title: 'Nothing to Duplicate', description: 'No entries to duplicate for this day.' })
-            return
-        }
-
-        // If some entries are selected for this day, duplicate only those; otherwise duplicate the last entry
-        const selectedForDay = dayEntries.filter(e => selectedEntryIds.has(e.id))
-        const entriesToDuplicate = selectedForDay.length > 0 ? selectedForDay : [dayEntries[dayEntries.length - 1]]
-
-        entriesToDuplicate.forEach(entry => {
-            addEntry({
-                date: entry.date,
-                projectId: entry.projectId,
-                taskId: entry.taskId,
-                hours: entry.hours,
-                description: entry.description,
-            })
-        })
-    }
-
-    const handleSelectEntry = (entryId: string, checked: boolean) => {
-        setSelectedEntryIds(prev => {
-            const next = new Set(prev)
-            if (checked) {
-                next.add(entryId)
-            } else {
-                next.delete(entryId)
-            }
-            return next
-        })
-    }
-
-    const handleSelectAllForDay = (dateStr: string, checked: boolean) => {
-        const dayEntries = entries.filter(e => e.date === dateStr)
-        setSelectedEntryIds(prev => {
-            const next = new Set(prev)
-            dayEntries.forEach(e => {
-                if (checked) {
-                    next.add(e.id)
-                } else {
-                    next.delete(e.id)
-                }
-            })
-            return next
-        })
-    }
-
-    const handleDeleteSelectedForDay = (dateStr: string) => {
-        if (isReadOnly) return
-        const dayEntries = entries.filter(e => e.date === dateStr)
-        const selectedForDay = dayEntries.filter(e => selectedEntryIds.has(e.id))
-        if (selectedForDay.length === 0) return
-        setConfirmDialog({
-            open: true,
-            title: 'Delete Selected Entries',
-            description: `Are you sure you want to delete ${selectedForDay.length} selected entries?`,
-            onConfirm: () => {
-                deleteEntries(selectedForDay.map(e => e.id))
-                setSelectedEntryIds(prev => {
-                    const next = new Set(prev)
-                    selectedForDay.forEach(e => next.delete(e.id))
-                    return next
-                })
-            },
-            destructive: true,
-        })
-    }
-
-    const handleExport = useCallback(async () => {
-        const { currentTimesheetId } = useTimesheetStore.getState()
-        if (!currentTimesheetId) {
-            setStatusDialog({ open: true, variant: 'warning', title: 'No Timesheet', description: 'Please save your entries first before exporting.' })
-            return
-        }
-        setIsExporting(true)
-        try {
-            await exportToExcel(currentTimesheetId)
-            setStatusDialog({ open: true, variant: 'success', title: 'Exported', description: 'Timesheet exported successfully!' })
-        } catch (error: any) {
-            setStatusDialog({ open: true, variant: 'error', title: 'Export Failed', description: error?.message || 'Failed to export timesheet.' })
-        } finally {
-            setIsExporting(false)
-        }
-    }, [])
-
-    return (
-        <div className="space-y-6 pb-20">
-            {/* Header */}
-            <CalendarHeader
-                currentMonth={currentMonth}
-                onPrevMonth={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                onNextMonth={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                monthlyTotal={monthlyTotal}
-                status={currentTimesheetStatus}
-            />
-
-            {/* Audit History Button — placed after the header */}
-            {currentTimesheetStatus !== 'Draft' && (
-                <div className="flex justify-end -mt-2">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowAuditHistory(true)}
-                    >
-                        <History className="h-4 w-4" />
-                        View History
-                    </Button>
-                </div>
-            )}
-
-            {/* Rejection Alert */}
-            {currentTimesheetStatus === 'Reopened' && (
-                <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Timesheet Reopened for Edit</AlertTitle>
-                    <AlertDescription>
-                        {currentTimesheetComment || 'Your timesheet has been reopened for edit. Please review and resubmit.'}
-                    </AlertDescription>
-                </Alert>
-            )}
-
-            {/* Stats Cards */}
-            <TimesheetStats
-                entries={currentMonthEntries}
-                currentMonth={currentMonth}
-                status={currentTimesheetStatus}
-            />
-
-            {/* Daily Entry List */}
-            <DailyEntryList
-                currentMonth={currentMonth}
-                entries={currentMonthEntries}
-                projects={projects}
-                tasks={Object.values(tasks).flat()}
-                selectedEntryIds={selectedEntryIds}
-                onAddEntry={handleAddEntry}
-                onDuplicateDay={handleDuplicateDay}
-                onEditEntry={handleEditEntry}
-                onDeleteEntry={handleDeleteEntry}
-                onSelectEntry={handleSelectEntry}
-                onSelectAllForDay={handleSelectAllForDay}
-                onDeleteSelectedForDay={handleDeleteSelectedForDay}
-                readOnly={isReadOnly}
-            />
-
-            {/* Footer: Effort Distribution + Approver */}
-            <TimesheetFooter
-                entries={currentMonthEntries}
-                projects={projects}
-                currentUser={currentUser}
-                manager={manager}
-                potentialApprovers={potentialApprovers}
-                onSubmit={handleSubmit}
-                isReadOnly={isReadOnly}
-                status={currentTimesheetStatus}
-            />
-
-            {/* Sticky Action Bar */}
-            <div className="fixed bottom-0 left-0 md:left-[16rem] right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-                <div className="mx-auto max-w-screen-2xl flex items-center justify-between px-6 py-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span className={`h-2 w-2 rounded-full ${isDirty ? 'bg-warning' : 'bg-success'}`} />
-                        <span>{isDirty ? 'Unsaved changes' : 'All saved'}</span>
-                        <span className="text-muted-foreground/50 ml-2">
-                            {lastSyncTime
-                                ? `Last sync: ${Math.round((Date.now() - lastSyncTime.getTime()) / 60000)} mins ago`
-                                : 'Not synced'}
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {!isReadOnly && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleSaveChanges}
-                                disabled={!isDirty || isLoading}
-                                className={isDirty ? 'text-warning hover:opacity-80' : ''}
-                            >
-                                <Save className="h-4 w-4 mr-1.5" />
-                                {isLoading ? 'Saving...' : 'Save as Draft'}
-                            </Button>
-                        )}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="font-medium"
-                            onClick={handleExport}
-                            disabled={isExporting}
-                        >
-                            <FileDown className="h-4 w-4 mr-1.5" />
-                            {isExporting ? 'Exporting...' : 'Export Report'}
-                        </Button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Daily Log Dialog */}
-            {!isReadOnly && (
-                <DailyLogDialog
-                    open={isDialogOpen}
-                    onOpenChange={setIsDialogOpen}
-                    date={selectedDate}
-                    entry={editingEntry}
-                    onSubmit={handleSaveEntry}
-                />
-            )}
-
-            {/* Audit History Dialog */}
-            <AuditHistoryDialog
-                open={showAuditHistory}
-                onOpenChange={setShowAuditHistory}
-                history={currentApprovalHistory}
-                periodLabel={format(currentMonth, 'MMMM yyyy')}
-                userName={currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : undefined}
-            />
-
-            {/* Status Dialog */}
-            <StatusDialog
-                open={statusDialog.open}
-                onOpenChange={(open) => setStatusDialog(prev => ({ ...prev, open }))}
-                variant={statusDialog.variant}
-                title={statusDialog.title}
-                description={statusDialog.description}
-            />
-
-            {/* Confirm Dialog */}
-            <ConfirmDialog
-                open={confirmDialog.open}
-                onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
-                title={confirmDialog.title}
-                description={confirmDialog.description}
-                onConfirm={confirmDialog.onConfirm}
-                destructive={confirmDialog.destructive}
-            />
+      {/* Audit History Button — placed after the header */}
+      {currentTimesheetStatus !== 'Draft' && (
+        <div className="flex justify-end -mt-2">
+          <Button variant="ghost" size="sm" onClick={() => setShowAuditHistory(true)}>
+            <History className="h-4 w-4" />
+            View History
+          </Button>
         </div>
-    )
+      )}
+
+      {/* Rejection Alert */}
+      {currentTimesheetStatus === 'Reopened' && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Timesheet Reopened for Edit</AlertTitle>
+          <AlertDescription>
+            {currentTimesheetComment || 'Your timesheet has been reopened for edit. Please review and resubmit.'}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Stats Cards */}
+      <TimesheetStats entries={currentMonthEntries} currentMonth={currentMonth} status={currentTimesheetStatus} />
+
+      {/* Daily Entry List */}
+      <DailyEntryList
+        currentMonth={currentMonth}
+        entries={currentMonthEntries}
+        projects={projects}
+        tasks={Object.values(tasks).flat()}
+        selectedEntryIds={selectedEntryIds}
+        onAddEntry={handleAddEntry}
+        onDuplicateDay={handleDuplicateDay}
+        onEditEntry={handleEditEntry}
+        onDeleteEntry={handleDeleteEntry}
+        onSelectEntry={handleSelectEntry}
+        onSelectAllForDay={handleSelectAllForDay}
+        onDeleteSelectedForDay={handleDeleteSelectedForDay}
+        onUpdateEntry={(entryId, changes) => {
+          if (!isReadOnly) updateEntry(entryId, changes);
+        }}
+        readOnly={isReadOnly}
+      />
+
+      {/* Footer: Effort Distribution + Approver */}
+      <TimesheetFooter
+        entries={currentMonthEntries}
+        projects={projects}
+        manager={manager}
+        teamLeads={teamLeads}
+        onSubmit={handleSubmit}
+        isReadOnly={isReadOnly}
+        status={currentTimesheetStatus}
+        isAdmin={currentUser?.role === 'Admin'}
+      />
+
+      {/* Sticky Action Bar */}
+      <div className="fixed bottom-0 left-0 md:left-[16rem] right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="mx-auto max-w-screen-2xl flex items-center justify-between px-6 py-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className={`h-2 w-2 rounded-full ${isDirty ? 'bg-warning' : 'bg-success'}`} />
+            <span>{isDirty ? 'Unsaved changes' : 'All saved'}</span>
+            <span className="text-muted-foreground/50 ml-2">
+              {lastSyncTime
+                ? `Last sync: ${Math.round((Date.now() - lastSyncTime.getTime()) / 60000)} mins ago`
+                : 'Not synced'}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            {!isReadOnly && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSaveChanges}
+                disabled={!isDirty || isLoading}
+                className={isDirty ? 'text-warning hover:opacity-80' : ''}
+              >
+                <Save className="h-4 w-4 mr-1.5" />
+                {isLoading ? 'Saving...' : 'Save as Draft'}
+              </Button>
+            )}
+            <Button variant="outline" size="sm" className="font-medium" onClick={handleExport} disabled={isExporting}>
+              <FileDown className="h-4 w-4 mr-1.5" />
+              {isExporting ? 'Exporting...' : 'Export Report'}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily Log Dialog */}
+      {!isReadOnly && (
+        <DailyLogDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          date={selectedDate}
+          entry={editingEntry}
+          onSubmit={handleSaveEntry}
+        />
+      )}
+
+      {/* Audit History Dialog */}
+      <AuditHistoryDialog
+        open={showAuditHistory}
+        onOpenChange={setShowAuditHistory}
+        history={currentApprovalHistory}
+        periodLabel={format(currentMonth, 'MMMM yyyy')}
+        userName={currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : undefined}
+      />
+
+      {/* Status Dialog */}
+      <StatusDialog
+        open={statusDialog.open}
+        onOpenChange={(open) => setStatusDialog((prev) => ({ ...prev, open }))}
+        variant={statusDialog.variant}
+        title={statusDialog.title}
+        description={statusDialog.description}
+      />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        onConfirm={confirmDialog.onConfirm}
+        destructive={confirmDialog.destructive}
+      />
+    </div>
+  );
 }

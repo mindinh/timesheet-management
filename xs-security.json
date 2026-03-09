@@ -1,54 +1,65 @@
 {
   "xsappname": "timesheet-management",
   "tenant-mode": "dedicated",
+  "description": "Conarum Timesheet Management Security",
   "scopes": [
     {
-      "name": "$XSAPPNAME.admin",
-      "description": "Administrator"
-    },
-    {
-      "name": "$XSAPPNAME.member",
-      "description": "Team Member"
-    },
-    {
       "name": "$XSAPPNAME.Admin",
-      "description": "Admin"
+      "description": "Administrator — full access, auto-finish timesheets"
     },
     {
       "name": "$XSAPPNAME.TeamLead",
-      "description": "TeamLead"
+      "description": "Team Lead — approve/reopen timesheets for team members"
+    },
+    {
+      "name": "$XSAPPNAME.Employee",
+      "description": "Employee — log and submit own timesheets"
     }
   ],
   "attributes": [],
   "role-templates": [
     {
-      "name": "admin",
+      "name": "Admin",
       "description": "Administrator with full access",
       "scope-references": [
-        "$XSAPPNAME.admin"
+        "$XSAPPNAME.Admin"
       ]
     },
     {
-      "name": "member",
-      "description": "Team member with basic access",
+      "name": "TeamLead",
+      "description": "Team Lead with approval access",
       "scope-references": [
-        "$XSAPPNAME.member"
+        "$XSAPPNAME.TeamLead"
+      ]
+    },
+    {
+      "name": "Employee",
+      "description": "Employee with timesheet logging access",
+      "scope-references": [
+        "$XSAPPNAME.Employee"
       ]
     }
   ],
   "role-collections": [
     {
       "name": "TimesheetAdmin",
-      "description": "Timesheet Administrator",
+      "description": "Timesheet Administrator — full access",
       "role-template-references": [
-        "$XSAPPNAME.admin"
+        "$XSAPPNAME.Admin"
       ]
     },
     {
-      "name": "TimesheetMember",
-      "description": "Timesheet Team Member",
+      "name": "TimesheetTeamLead",
+      "description": "Timesheet Team Lead — manage team timesheets",
       "role-template-references": [
-        "$XSAPPNAME.member"
+        "$XSAPPNAME.TeamLead"
+      ]
+    },
+    {
+      "name": "TimesheetEmployee",
+      "description": "Timesheet Employee — log and submit timesheets",
+      "role-template-references": [
+        "$XSAPPNAME.Employee"
       ]
     }
   ]

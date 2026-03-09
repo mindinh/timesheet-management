@@ -7,14 +7,14 @@ import type { ComponentType } from 'react';
 // ============================================
 
 export interface DateRange {
-    from: Date | undefined;
-    to: Date | undefined;
+  from: Date | undefined;
+  to: Date | undefined;
 }
 
 export interface SelectOption {
-    value: string;
-    label: string;
-    icon?: LucideIcon;
+  value: string;
+  label: string;
+  icon?: LucideIcon;
 }
 
 // ============================================
@@ -22,82 +22,84 @@ export interface SelectOption {
 // ============================================
 
 interface BaseFilterConfig {
-    /** Unique key for the filter (used in filter values object) */
-    key: string;
-    /** Display label for the filter */
-    label: string;
-    /** Translation key for the label (optional) */
-    labelKey?: string;
-    /** Placeholder text */
-    placeholder?: string;
-    /** Whether the filter is required */
-    required?: boolean;
-    /** Whether the filter is visible by default */
-    visible?: boolean;
-    /** Custom width (e.g., '200px', '1fr') */
-    width?: string;
+  /** Unique key for the filter (used in filter values object) */
+  key: string;
+  /** Display label for the filter */
+  label: string;
+  /** Translation key for the label (optional) */
+  labelKey?: string;
+  /** Placeholder text */
+  placeholder?: string;
+  /** Whether the filter is required */
+  required?: boolean;
+  /** Whether the filter is visible by default */
+  visible?: boolean;
+  /** Custom width (e.g., '200px', '1fr') */
+  width?: string;
+  /** How many grid columns this field spans (default: 1). Use 2 for wide fields like dateRange or search. */
+  colSpan?: number;
 
-    /** API parameter name (defaults to 'key' if not specified) */
-    apiKey?: string;
+  /** API parameter name (defaults to 'key' if not specified) */
+  apiKey?: string;
 
-    /** Transform function to convert UI value to API value */
-    apiTransform?: <TInput = unknown, TOutput = unknown>(value: TInput) => TOutput;
+  /** Transform function to convert UI value to API value */
+  apiTransform?: <TInput = unknown, TOutput = unknown>(value: TInput) => TOutput;
 }
 
 /** Text input filter */
 export interface TextFilterConfig extends BaseFilterConfig {
-    type: 'text';
-    /** Max length for input */
-    maxLength?: number;
+  type: 'text';
+  /** Max length for input */
+  maxLength?: number;
 }
 
 /** Single select dropdown */
 export interface SelectFilterConfig extends BaseFilterConfig {
-    type: 'select';
-    /** Static options */
-    options?: SelectOption[];
-    /** Async options loader */
-    optionsLoader?: () => Promise<SelectOption[]>;
+  type: 'select';
+  /** Static options */
+  options?: SelectOption[];
+  /** Async options loader */
+  optionsLoader?: () => Promise<SelectOption[]>;
 }
 
 /** Multi-select dropdown with checkboxes (SAP UI5 style - for small lists like Status) */
 export interface MultiSelectFilterConfig extends BaseFilterConfig {
-    type: 'multiselect';
-    /** Static options */
-    options?: SelectOption[];
-    /** Async options loader */
-    optionsLoader?: () => Promise<SelectOption[]>;
-    /** Show "Select All" button */
-    showSelectAll?: boolean;
+  type: 'multiselect';
+  /** Static options */
+  options?: SelectOption[];
+  /** Async options loader */
+  optionsLoader?: () => Promise<SelectOption[]>;
+  /** Show"Select All" button */
+  showSelectAll?: boolean;
 }
 
 /** Date range picker */
 export interface DateRangeFilterConfig extends BaseFilterConfig {
-    type: 'dateRange';
-    /** Number of months to show in calendar */
-    numberOfMonths?: 1 | 2;
+  type: 'dateRange';
+  /** Number of months to show in calendar */
+  numberOfMonths?: 1 | 2;
 }
 
 /** Value Help popup (SAP UI5 style - for large lists like Supplier, Appraiser) */
 export interface ValueHelpFilterConfig<T = any> extends BaseFilterConfig {
-    type: 'valueHelp';
-    /** The ValueHelp dialog component to render */
-    valueHelpComponent: ComponentType<ValueHelpComponentProps<T>>;
-    /** Field from selected item to display as token */
-    displayField: keyof T | ((item: T) => string);
-    /** Field from selected item to use as value */
-    valueField: keyof T;
-    /** Whether to allow multiple selection */
-    multiple?: boolean;
+  type: 'valueHelp';
+  /** The ValueHelp dialog component to render */
+  valueHelpComponent: ComponentType<ValueHelpComponentProps<T>>;
+  /** Field from selected item to display as token */
+  displayField: keyof T | ((item: T) => string);
+  /** Field from selected item to use as value */
+  valueField: keyof T;
+  /** Whether to allow multiple selection */
+  multiple?: boolean;
 }
 
 /** Union type for all filter configurations */
 export type FilterFieldConfig =
-    | TextFilterConfig
-    | SelectFilterConfig
-    | MultiSelectFilterConfig
-    | DateRangeFilterConfig
-    | ValueHelpFilterConfig;
+  | TextFilterConfig
+  | SelectFilterConfig
+  | MultiSelectFilterConfig
+  | DateRangeFilterConfig
+  | ValueHelpFilterConfig;
 
 // ============================================
 // Filter Values Type
@@ -110,10 +112,10 @@ export type FilterValues = Record<string, unknown>;
 // ============================================
 
 export interface ValueHelpComponentProps<T = any> {
-    open: boolean;
-    onClose: () => void;
-    onSelect: (items: T[]) => void;
-    selectedIds: string[];
+  open: boolean;
+  onClose: () => void;
+  onSelect: (items: T[]) => void;
+  selectedIds: string[];
 }
 
 // ============================================
@@ -121,24 +123,24 @@ export interface ValueHelpComponentProps<T = any> {
 // ============================================
 
 export interface FilterBarProps {
-    /** Filter field configurations */
-    config: FilterFieldConfig[];
-    /** Current filter values */
-    values: FilterValues;
-    /** Called when any filter value changes */
-    onChange: (values: FilterValues) => void;
-    /** Called when "Go" button is clicked */
-    onApply: (values: FilterValues) => void;
-    /** Called when "Clear" button is clicked */
-    onClear?: () => void;
-    /** Whether data is loading */
-    isLoading?: boolean;
-    /** Whether filter bar is initially expanded */
-    defaultExpanded?: boolean;
-    /** Custom class name */
-    className?: string;
-    /** Render an overlay element (e.g. ValueHelpIcon) inside a field by key */
-    renderFieldOverlay?: (fieldKey: string) => React.ReactNode;
+  /** Filter field configurations */
+  config: FilterFieldConfig[];
+  /** Current filter values */
+  values: FilterValues;
+  /** Called when any filter value changes */
+  onChange: (values: FilterValues) => void;
+  /** Called when"Go" button is clicked */
+  onApply: (values: FilterValues) => void;
+  /** Called when"Clear" button is clicked */
+  onClear?: () => void;
+  /** Whether data is loading */
+  isLoading?: boolean;
+  /** Whether filter bar is initially expanded */
+  defaultExpanded?: boolean;
+  /** Custom class name */
+  className?: string;
+  /** Render an overlay element (e.g. ValueHelpIcon) inside a field by key */
+  renderFieldOverlay?: (fieldKey: string) => React.ReactNode;
 }
 
 // ============================================
@@ -146,7 +148,7 @@ export interface FilterBarProps {
 // ============================================
 
 export interface FilterComponentProps<T = unknown> {
-    config: T;
-    value: unknown;
-    onChange: (value: unknown) => void;
+  config: T;
+  value: unknown;
+  onChange: (value: unknown) => void;
 }

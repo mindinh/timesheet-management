@@ -54,11 +54,11 @@ service TeamLeadService @(
     /** Modify logged hours on a specific entry before approving (Legacy, keep if needed) */
     action   modifyEntryHours(entryId: String, approvedHours: Decimal)                                     returns String;
 
-    /** Review a specific timesheet entry (Accept/Reject, modify hours, comment) */
-    action   reviewEntry(entryId: String, status: String, approvedHours: Decimal, approverComment: String) returns String;
+    /** Review a specific timesheet entry: adjust hours and add a comment */
+    action   reviewEntry(entryId: String, approvedHours: Decimal, approverComment: String)               returns String;
 
-    /** Group approved timesheets into a batch and forward to final Admin */
-    action   createBatch(timesheetIds: array of String, adminId: String)                                   returns String;
+    /** Group approved timesheets into a batch and forward to the Admin automatically */
+    action   createBatch(timesheetIds: array of String)                                                    returns String;
 
     // ── Team Management ───────────────────────────────────────────────────────
 

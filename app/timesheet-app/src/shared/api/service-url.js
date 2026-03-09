@@ -1,5 +1,5 @@
 export const SERVICE_URL = {
-    timesheet: '/timesheet',
-    admin: '/admin',
-    teamlead: '/teamlead',
+  timesheet: '/timesheet',
+  admin: '/admin',
+  teamlead: '/teamlead',
 };

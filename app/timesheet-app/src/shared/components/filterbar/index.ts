@@ -1,6 +1,6 @@
 /**
  * FilterBar System
- * 
+ *
  * A configuration-driven filter bar following SAP UI5 patterns.
  */
 
@@ -9,7 +9,7 @@ export { FilterBar } from './FilterBar';
 export { FilterBarField } from './FilterBarField';
 
 // Utilities
-export { initializeFilterValues, transformFiltersForAPI } from "./utils";
+export { initializeFilterValues, transformFiltersForAPI } from './utils';
 
 // Individual filters (for custom compositions)
 // export { TextFilter } from '../ui/text-filter';
@@ -19,16 +19,16 @@ export { initializeFilterValues, transformFiltersForAPI } from "./utils";
 
 // Types
 export type {
-    FilterBarProps,
-    FilterFieldConfig,
-    FilterValues,
-    FilterComponentProps,
-    TextFilterConfig,
-    SelectFilterConfig,
-    MultiSelectFilterConfig,
-    DateRangeFilterConfig,
-    ValueHelpFilterConfig,
-    DateRange,
-    SelectOption,
-    ValueHelpComponentProps,
+  FilterBarProps,
+  FilterFieldConfig,
+  FilterValues,
+  FilterComponentProps,
+  TextFilterConfig,
+  SelectFilterConfig,
+  MultiSelectFilterConfig,
+  DateRangeFilterConfig,
+  ValueHelpFilterConfig,
+  DateRange,
+  SelectOption,
+  ValueHelpComponentProps,
 } from './types';

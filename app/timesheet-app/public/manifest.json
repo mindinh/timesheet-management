@@ -1,0 +1,9 @@
+{
+  "sap.app": {
+    "id": "cnma.timesheet.app",
+    "type": "application",
+    "applicationVersion": {
+      "version": "1.0.0"
+    }
+  }
+}

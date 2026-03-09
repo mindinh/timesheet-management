@@ -22,6 +22,13 @@ service TimesheetService @(
   entity Projects          as projection on db.Project;
   entity Tasks             as projection on db.Task;
 
+  // ── Project Audit Log (read-only) ─────────────────────────────────────────
+  @readonly
+  entity ProjectAuditLogs  as projection on db.ProjectAuditLog {
+    *,
+    actor : redirected to Users
+  };
+
   // ── Timesheet Operations ──────────────────────────────────────────────────
   entity Timesheets        as projection on db.Timesheet;
   entity TimesheetEntries  as projection on db.TimesheetEntry;
@@ -48,10 +55,19 @@ service TimesheetService @(
   };
 
   // ── Workflow Actions ──────────────────────────────────────────────────────
-  action   submitTimesheet(timesheetId: String, approverId: String)              returns String;
-  action   approveTimesheet(timesheetId: String, comment: String)                returns String;
-  action   rejectTimesheet(timesheetId: String, comment: String)                 returns String;
-  action   finishTimesheet(timesheetId: String)                                  returns String;
+  /** Submit timesheet – approver auto-detected from manager_ID, or manually passed as teamLeadId */
+  action   submitTimesheet(timesheetId: String, teamLeadId: String)               returns String;
+  action   approveTimesheet(timesheetId: String, comment: String)                 returns String;
+  action   rejectTimesheet(timesheetId: String, comment: String)                  returns String;
+  action   finishTimesheet(timesheetId: String)                                   returns String;
+
+  /** Returns all active TeamLeads (for manual selection when employee has no manager) */
+  function getTeamLeads() returns array of {
+    id        : String;
+    firstName : String;
+    lastName  : String;
+    email     : String;
+  };
 
   /** Bulk approve multiple timesheets at once (Team Lead / Admin) */
   action   bulkApproveTimesheets(timesheetIds: array of String, comment: String) returns String;

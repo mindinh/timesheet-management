@@ -1,7 +1,13 @@
 // FilterBar has been migrated to @/shared/components/filterbar
 
-// Reusable table components — local copies (synced from reference)
-export { DataTable, type DataTableColumn, type DataTableProps, type PaginationConfig, type SelectionConfig } from './DataTable';
+// Reusable table components ï¿½ local copies (synced from reference)
+export {
+  DataTable,
+  type DataTableColumn,
+  type DataTableProps,
+  type PaginationConfig,
+  type SelectionConfig,
+} from './DataTable';
 export { DataTableDialog, type DataTableDialogProps } from './DataTableDialog';
 
 export { FieldDisplay, type FieldDisplayProps } from './FieldDisplay';

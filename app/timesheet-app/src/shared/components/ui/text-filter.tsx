@@ -6,24 +6,19 @@ import type { FilterComponentProps, TextFilterConfig } from '../filterbar/types'
  * Text Input Filter
  * Simple text input for free text search
  */
-export function TextFilter({
-    config,
-    value,
-    onChange,
-}: FilterComponentProps<TextFilterConfig>) {
-    const { t } = useTranslation();
+export function TextFilter({ config, value, onChange }: FilterComponentProps<TextFilterConfig>) {
+  const { t } = useTranslation();
 
-    const placeholder = config.placeholder
-        ? t(config.placeholder, config.placeholder)
-        : '';
+  const placeholder = config.placeholder ? t(config.placeholder, config.placeholder) : '';
 
-    return (
-        <Input
-            value={(value as string) || ''}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            maxLength={config.maxLength}
-            variant={"default"}
-        />
-    );
+  return (
+    <Input
+      value={(value as string) || ''}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      maxLength={config.maxLength}
+      variant={'default'}
+      className="h-8"
+    />
+  );
 }

@@ -1,90 +1,90 @@
 {
-    "sidebar": {
-        "title": "勤怠管理",
-        "myTimesheet": "タイムシート記録",
-        "myTimesheets": "タイムシートワークリスト",
-        "myProjects": "プロジェクト",
-        "approvals": "承認",
-        "adminDashboard": "管理者ダッシュボード",
-        "switchUser": "ユーザー切替",
-        "documents": "ドキュメント"
-    },
-    "auditHistory": {
-        "title": "監査履歴",
-        "Submitted": "提出済み",
-        "Approved": "承認済み",
-        "Reopened": "却下済み",
-        "Modified": "修正済み",
-        "Finished": "完了済み"
-    },
-    "projects": {
-        "title": "プロジェクト",
-        "description": "プロジェクトとタスクタイプの管理",
-        "create": "プロジェクト作成",
-        "noProjects": "まだプロジェクトがありません。\"プロジェクト作成\"をクリックして開始してください。",
-        "table": {
-            "id": "ID",
-            "name": "名前",
-            "code": "コード",
-            "type": "タイプ",
-            "tasks": "タスク",
-            "status": "ステータス",
-            "actions": "アクション"
-        }
-    },
-    "approvalsPage": {
-        "title": "承認とバッチ処理",
-        "description": "従業員のタイムシートを確認するか、最終管理者にバッチとして送信します。",
-        "badge": "承認",
-        "searchPlaceholder": "従業員を検索...",
-        "loading": "タイムシートを読み込み中...",
-        "noTimesheets": "タイムシートが見つかりません",
-        "allCaughtUp": "すべて完了しました！承認またはバッチ処理するタイムシートがある場合は、後でもう一度確認してください。",
-        "selectedCount": "{{count}}件のタイムシートを選択済み",
-        "rejectSelected": "選択したものを却下",
-        "approveSelected": "選択したものを承認",
-        "submitBatch": "バッチ送信",
-        "table": {
-            "employee": "従業員",
-            "period": "期間",
-            "submittedDate": "提出日",
-            "totalHours": "合計時間",
-            "status": "ステータス",
-            "actions": "アクション"
-        },
-        "reviewDetails": "詳細を確認",
-        "showing": "表示中",
-        "records": "件のレコード",
-        "adminModal": {
-            "title": "最終管理者を選択",
-            "description": "この{{count}}件のタイムシートのバッチを最終承認のために転送する管理者を選択してください。",
-            "placeholder": "管理者を選択...",
-            "cancel": "キャンセル",
-            "createBatch": "バッチ作成"
-        },
-        "commentModal": {
-            "titleApprove": "タイムシートを承認",
-            "titleReject": "タイムシートを却下",
-            "descApprove": "{{count}}件のタイムシートを承認しようとしています。必要に応じてコメントを追加できます。",
-            "descReject": "{{count}}件のタイムシートを却下しようとしています。理由を入力してください。",
-            "placeholder": "コメントまたは理由を追加...",
-            "cancel": "キャンセル",
-            "confirmApprove": "承認を確認",
-            "confirmReject": "却下を確認"
-        },
-        "months": {
-            "1": "1月",
-            "2": "2月",
-            "3": "3月",
-            "4": "4月",
-            "5": "5月",
-            "6": "6月",
-            "7": "7月",
-            "8": "8月",
-            "9": "9月",
-            "10": "10月",
-            "11": "11月",
-            "12": "12月"
-        }
+  "sidebar": {
+    "title": "勤怠管理",
+    "myTimesheet": "タイムシート記録",
+    "myTimesheets": "タイムシートワークリスト",
+    "myProjects": "プロジェクト",
+    "approvals": "承認",
+    "adminDashboard": "管理者ダッシュボード",
+    "switchUser": "ユーザー切替",
+    "documents": "ドキュメント"
+  },
+  "auditHistory": {
+    "title": "監査履歴",
+    "Submitted": "提出済み",
+    "Approved": "承認済み",
+    "Reopened": "却下済み",
+    "Modified": "修正済み",
+    "Finished": "完了済み"
+  },
+  "projects": {
+    "title": "プロジェクト",
+    "description": "プロジェクトとタスクタイプの管理",
+    "create": "プロジェクト作成",
+    "noProjects": "まだプロジェクトがありません。\"プロジェクト作成\"をクリックして開始してください。",
+    "table": {
+      "id": "ID",
+      "name": "名前",
+      "code": "コード",
+      "type": "タイプ",
+      "tasks": "タスク",
+      "status": "ステータス",
+      "actions": "アクション"
     }
+  },
+  "approvalsPage": {
+    "title": "承認とバッチ処理",
+    "description": "従業員のタイムシートを確認するか、最終管理者にバッチとして送信します。",
+    "badge": "承認",
+    "searchPlaceholder": "従業員を検索...",
+    "loading": "タイムシートを読み込み中...",
+    "noTimesheets": "タイムシートが見つかりません",
+    "allCaughtUp": "すべて完了しました！承認またはバッチ処理するタイムシートがある場合は、後でもう一度確認してください。",
+    "selectedCount": "{{count}}件のタイムシートを選択済み",
+    "rejectSelected": "選択したものを却下",
+    "approveSelected": "選択したものを承認",
+    "submitBatch": "バッチ送信",
+    "table": {
+      "employee": "従業員",
+      "period": "期間",
+      "submittedDate": "提出日",
+      "totalHours": "合計時間",
+      "status": "ステータス",
+      "actions": "アクション"
+    },
+    "reviewDetails": "詳細を確認",
+    "showing": "表示中",
+    "records": "件のレコード",
+    "adminModal": {
+      "title": "最終管理者を選択",
+      "description": "この{{count}}件のタイムシートのバッチを最終承認のために転送する管理者を選択してください。",
+      "placeholder": "管理者を選択...",
+      "cancel": "キャンセル",
+      "createBatch": "バッチ作成"
+    },
+    "commentModal": {
+      "titleApprove": "タイムシートを承認",
+      "titleReject": "タイムシートを却下",
+      "descApprove": "{{count}}件のタイムシートを承認しようとしています。必要に応じてコメントを追加できます。",
+      "descReject": "{{count}}件のタイムシートを却下しようとしています。理由を入力してください。",
+      "placeholder": "コメントまたは理由を追加...",
+      "cancel": "キャンセル",
+      "confirmApprove": "承認を確認",
+      "confirmReject": "却下を確認"
+    },
+    "months": {
+      "1": "1月",
+      "2": "2月",
+      "3": "3月",
+      "4": "4月",
+      "5": "5月",
+      "6": "6月",
+      "7": "7月",
+      "8": "8月",
+      "9": "9月",
+      "10": "10月",
+      "11": "11月",
+      "12": "12月"
+    }
+  }
 }

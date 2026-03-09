@@ -1,90 +1,90 @@
 {
-    "sidebar": {
-        "title": "Quản lý Timesheet",
-        "myTimesheet": "Ghi Timesheet",
-        "myTimesheets": "Worklist Timesheet",
-        "myProjects": "Dự án",
-        "approvals": "Phê duyệt",
-        "adminDashboard": "Bảng điều khiển",
-        "switchUser": "Chuyển người dùng",
-        "documents": "Tài liệu"
-    },
-    "auditHistory": {
-        "title": "Lịch sử thay đổi",
-        "Submitted": "Đã gửi",
-        "Approved": "Đã phê duyệt",
-        "Reopened": "Đã mở lại để sửa",
-        "Modified": "Đã sửa đổi",
-        "Finished": "Đã hoàn thành"
-    },
-    "timesheets": {
-        "title": "Worklist Timesheet",
-        "description": "Xem và quản lý các bản ghi timesheet",
-        "logTimesheet": "Ghi Timesheet",
-        "noTimesheets": "Không tìm thấy timesheet. Hãy thử điều chỉnh bộ lọc hoặc ghi một timesheet mới.",
-        "table": {
-            "period": "Kỳ",
-            "status": "Trạng thái",
-            "totalHours": "Tổng giờ",
-            "entries": "Mục nhập",
-            "submitted": "Ngày gửi",
-            "approved": "Ngày duyệt",
-            "actions": "Hành động"
-        }
-    },
-    "approvalsPage": {
-        "title": "Phê duyệt & Đóng gói",
-        "description": "Xem xét timesheet của nhân viên hoặc đóng gói gửi quản trị viên cuối cùng.",
-        "badge": "Phê duyệt",
-        "searchPlaceholder": "Tìm kiếm nhân viên...",
-        "loading": "Đang tải timesheet...",
-        "noTimesheets": "Không tìm thấy timesheet",
-        "allCaughtUp": "Tất cả đã hoàn tất! Vui lòng quay lại sau khi có timesheet để xem xét hoặc đóng gói.",
-        "selectedCount": "Đã chọn {{count}} timesheet",
-        "rejectSelected": "Mở lại đã chọn để sửa",
-        "approveSelected": "Phê duyệt đã chọn",
-        "submitBatch": "Gửi gói (Batch)",
-        "table": {
-            "employee": "Nhân viên",
-            "period": "Kỳ",
-            "submittedDate": "Ngày gửi",
-            "totalHours": "Tổng giờ",
-            "status": "Trạng thái",
-            "actions": "Hành động"
-        },
-        "reviewDetails": "Xem chi tiết",
-        "showing": "Hiển thị",
-        "records": "bản ghi",
-        "adminModal": {
-            "title": "Chọn Quản trị viên cuối cùng",
-            "description": "Chọn Quản trị viên mà gói gồm {{count}} timesheet này sẽ được chuyển tiếp để phê duyệt cuối cùng.",
-            "placeholder": "Chọn một quản trị viên...",
-            "cancel": "Hủy bỏ",
-            "createBatch": "Tạo gói"
-        },
-        "commentModal": {
-            "titleApprove": "Phê duyệt Timesheet",
-            "titleReject": "Mở lại Timesheet để sửa",
-            "descApprove": "Bạn sắp phê duyệt {{count}} timesheet. Bạn có thể thêm bình luận (tùy chọn).",
-            "descReject": "Bạn sắp mở lại {{count}} timesheet để chỉnh sửa. Vui lòng cung cấp lý do bắt buộc.",
-            "placeholder": "Thêm bình luận hoặc lý do...",
-            "cancel": "Hủy bỏ",
-            "confirmApprove": "Xác nhận Phê duyệt",
-            "confirmReject": "Xác nhận Mở lại"
-        },
-        "months": {
-            "1": "Tháng 1",
-            "2": "Tháng 2",
-            "3": "Tháng 3",
-            "4": "Tháng 4",
-            "5": "Tháng 5",
-            "6": "Tháng 6",
-            "7": "Tháng 7",
-            "8": "Tháng 8",
-            "9": "Tháng 9",
-            "10": "Tháng 10",
-            "11": "Tháng 11",
-            "12": "Tháng 12"
-        }
+  "sidebar": {
+    "title": "Quản lý Timesheet",
+    "myTimesheet": "Ghi Timesheet",
+    "myTimesheets": "Worklist Timesheet",
+    "myProjects": "Dự án",
+    "approvals": "Phê duyệt",
+    "adminDashboard": "Bảng điều khiển",
+    "switchUser": "Chuyển người dùng",
+    "documents": "Tài liệu"
+  },
+  "auditHistory": {
+    "title": "Lịch sử thay đổi",
+    "Submitted": "Đã gửi",
+    "Approved": "Đã phê duyệt",
+    "Reopened": "Đã mở lại để sửa",
+    "Modified": "Đã sửa đổi",
+    "Finished": "Đã hoàn thành"
+  },
+  "timesheets": {
+    "title": "Worklist Timesheet",
+    "description": "Xem và quản lý các bản ghi timesheet",
+    "logTimesheet": "Ghi Timesheet",
+    "noTimesheets": "Không tìm thấy timesheet. Hãy thử điều chỉnh bộ lọc hoặc ghi một timesheet mới.",
+    "table": {
+      "period": "Kỳ",
+      "status": "Trạng thái",
+      "totalHours": "Tổng giờ",
+      "entries": "Mục nhập",
+      "submitted": "Ngày gửi",
+      "approved": "Ngày duyệt",
+      "actions": "Hành động"
     }
+  },
+  "approvalsPage": {
+    "title": "Phê duyệt & Đóng gói",
+    "description": "Xem xét timesheet của nhân viên hoặc đóng gói gửi quản trị viên cuối cùng.",
+    "badge": "Phê duyệt",
+    "searchPlaceholder": "Tìm kiếm nhân viên...",
+    "loading": "Đang tải timesheet...",
+    "noTimesheets": "Không tìm thấy timesheet",
+    "allCaughtUp": "Tất cả đã hoàn tất! Vui lòng quay lại sau khi có timesheet để xem xét hoặc đóng gói.",
+    "selectedCount": "Đã chọn {{count}} timesheet",
+    "rejectSelected": "Mở lại đã chọn để sửa",
+    "approveSelected": "Phê duyệt đã chọn",
+    "submitBatch": "Gửi gói (Batch)",
+    "table": {
+      "employee": "Nhân viên",
+      "period": "Kỳ",
+      "submittedDate": "Ngày gửi",
+      "totalHours": "Tổng giờ",
+      "status": "Trạng thái",
+      "actions": "Hành động"
+    },
+    "reviewDetails": "Xem chi tiết",
+    "showing": "Hiển thị",
+    "records": "bản ghi",
+    "adminModal": {
+      "title": "Chọn Quản trị viên cuối cùng",
+      "description": "Chọn Quản trị viên mà gói gồm {{count}} timesheet này sẽ được chuyển tiếp để phê duyệt cuối cùng.",
+      "placeholder": "Chọn một quản trị viên...",
+      "cancel": "Hủy bỏ",
+      "createBatch": "Tạo gói"
+    },
+    "commentModal": {
+      "titleApprove": "Phê duyệt Timesheet",
+      "titleReject": "Mở lại Timesheet để sửa",
+      "descApprove": "Bạn sắp phê duyệt {{count}} timesheet. Bạn có thể thêm bình luận (tùy chọn).",
+      "descReject": "Bạn sắp mở lại {{count}} timesheet để chỉnh sửa. Vui lòng cung cấp lý do bắt buộc.",
+      "placeholder": "Thêm bình luận hoặc lý do...",
+      "cancel": "Hủy bỏ",
+      "confirmApprove": "Xác nhận Phê duyệt",
+      "confirmReject": "Xác nhận Mở lại"
+    },
+    "months": {
+      "1": "Tháng 1",
+      "2": "Tháng 2",
+      "3": "Tháng 3",
+      "4": "Tháng 4",
+      "5": "Tháng 5",
+      "6": "Tháng 6",
+      "7": "Tháng 7",
+      "8": "Tháng 8",
+      "9": "Tháng 9",
+      "10": "Tháng 10",
+      "11": "Tháng 11",
+      "12": "Tháng 12"
+    }
+  }
 }

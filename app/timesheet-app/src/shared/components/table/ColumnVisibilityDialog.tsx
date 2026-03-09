@@ -27,23 +27,19 @@ export function ColumnVisibilityDialog({
   if (!isOpen) return null;
 
   const handleToggle = (columnId: string) => {
-    const updatedColumns = columns.map(col =>
-      col.id === columnId && !col.mandatory
-        ? { ...col, visible: !col.visible }
-        : col
+    const updatedColumns = columns.map((col) =>
+      col.id === columnId && !col.mandatory ? { ...col, visible: !col.visible } : col
     );
     onApply(updatedColumns);
   };
 
   const handleSelectAll = () => {
-    const updatedColumns = columns.map(col => ({ ...col, visible: true }));
+    const updatedColumns = columns.map((col) => ({ ...col, visible: true }));
     onApply(updatedColumns);
   };
 
   const handleDeselectAll = () => {
-    const updatedColumns = columns.map(col =>
-      col.mandatory ? col : { ...col, visible: false }
-    );
+    const updatedColumns = columns.map((col) => (col.mandatory ? col : { ...col, visible: false }));
     onApply(updatedColumns);
   };
 
@@ -53,12 +49,7 @@ export function ColumnVisibilityDialog({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="font-semibold text-foreground">{title}</h3>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
             <X className="w-5 h-5" />
           </Button>
         </div>
@@ -68,18 +59,10 @@ export function ColumnVisibilityDialog({
           <div className="mb-4">
             <h4 className="text-sm font-medium text-muted-foreground mb-2">Column Visibility</h4>
             <div className="flex gap-2 mb-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-              >
+              <Button variant="outline" size="sm" onClick={handleSelectAll}>
                 Select All
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDeselectAll}
-              >
+              <Button variant="outline" size="sm" onClick={handleDeselectAll}>
                 Deselect All
               </Button>
             </div>
@@ -89,8 +72,9 @@ export function ColumnVisibilityDialog({
             {columns.map((column) => (
               <label
                 key={column.id}
-                className={`flex items-center gap-2 p-2 rounded hover:bg-muted ${column.mandatory ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                  }`}
+                className={`flex items-center gap-2 p-2 rounded hover:bg-muted ${
+                  column.mandatory ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                }`}
               >
                 <Checkbox
                   checked={column.visible}
@@ -99,9 +83,7 @@ export function ColumnVisibilityDialog({
                 />
                 <span className="text-sm text-muted-foreground">
                   {column.label}
-                  {column.mandatory && (
-                    <span className="ml-2 text-xs text-muted-foreground">(Required)</span>
-                  )}
+                  {column.mandatory && <span className="ml-2 text-xs text-muted-foreground">(Required)</span>}
                 </span>
               </label>
             ))}
@@ -110,11 +92,7 @@ export function ColumnVisibilityDialog({
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 p-4 border-t border-border bg-muted">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-          >
+          <Button variant="outline" size="sm" onClick={onClose}>
             Close
           </Button>
         </div>

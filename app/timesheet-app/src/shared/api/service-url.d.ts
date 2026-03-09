@@ -1,9 +1,9 @@
 // Type declarations for service-url.js
 
 interface ServiceUrlMap {
-    readonly timesheet: string
-    readonly admin: string
-    readonly teamlead: string
+  readonly timesheet: string;
+  readonly admin: string;
+  readonly teamlead: string;
 }
 
-export declare const SERVICE_URL: ServiceUrlMap
+export declare const SERVICE_URL: ServiceUrlMap;

@@ -12,23 +12,23 @@ const batch2Id = uuidv4();
 // ─── 1. Users (enough employees to fill 7-10 timesheets per batch) ───────────
 const users = [
     { email: 'diana@example.com', firstName: 'Diana', lastName: 'Pham', role: 'Admin', isActive: true, manager_email: '' },
-    { email: 'manager@conarum.com', firstName: 'Minh', lastName: 'Tran', role: 'Manager', isActive: true, manager_email: '' },
-    // Team 1 - lead1
-    { email: 'lead1@conarum.com', firstName: 'Bob', lastName: 'Tran', role: 'TeamLead', isActive: true, manager_email: 'manager@conarum.com' },
-    { email: 'alice@conarum.com', firstName: 'Alice', lastName: 'Nguyen', role: 'Employee', isActive: true, manager_email: 'lead1@conarum.com' },
-    { email: 'cuong@conarum.com', firstName: 'Cuong', lastName: 'Nguyen', role: 'Employee', isActive: true, manager_email: 'lead1@conarum.com' },
-    { email: 'dung@conarum.com', firstName: 'Dung', lastName: 'Pham', role: 'Employee', isActive: true, manager_email: 'lead1@conarum.com' },
-    { email: 'mai@conarum.com', firstName: 'Mai', lastName: 'Le', role: 'Employee', isActive: true, manager_email: 'lead1@conarum.com' },
-    { email: 'tuan@conarum.com', firstName: 'Tuan', lastName: 'Hoang', role: 'Employee', isActive: true, manager_email: 'lead1@conarum.com' },
-    // Team 2 - lead2
-    { email: 'lead2@conarum.com', firstName: 'Charlie', lastName: 'Le', role: 'TeamLead', isActive: true, manager_email: 'manager@conarum.com' },
-    { email: 'hoa@conarum.com', firstName: 'Hoa', lastName: 'Vo', role: 'Employee', isActive: true, manager_email: 'lead2@conarum.com' },
-    { email: 'nam@conarum.com', firstName: 'Nam', lastName: 'Do', role: 'Employee', isActive: true, manager_email: 'lead2@conarum.com' },
-    { email: 'linh@conarum.com', firstName: 'Linh', lastName: 'Bui', role: 'Employee', isActive: true, manager_email: 'lead2@conarum.com' },
-    { email: 'khoa@conarum.com', firstName: 'Khoa', lastName: 'Dao', role: 'Employee', isActive: true, manager_email: 'lead2@conarum.com' },
-    { email: 'trang@conarum.com', firstName: 'Trang', lastName: 'Vu', role: 'Employee', isActive: true, manager_email: 'lead2@conarum.com' },
-    { email: 'phuc@conarum.com', firstName: 'Phuc', lastName: 'Dinh', role: 'Employee', isActive: true, manager_email: 'lead2@conarum.com' },
-    { email: 'an@conarum.com', firstName: 'An', lastName: 'Ngo', role: 'Employee', isActive: false, manager_email: 'lead2@conarum.com' },
+    { email: 'manager@conarum.com', firstName: 'Minh', lastName: 'Tran', role: 'Admin', isActive: true, manager_email: '' },
+    // Team 1 - bob (TeamLead) – email must match package.json mock auth: bob@conarum.com
+    { email: 'bob@conarum.com', firstName: 'Bob', lastName: 'Tran', role: 'TeamLead', isActive: true, manager_email: 'manager@conarum.com' },
+    { email: 'alice@conarum.com', firstName: 'Alice', lastName: 'Nguyen', role: 'Employee', isActive: true, manager_email: 'bob@conarum.com' },
+    { email: 'cuong@conarum.com', firstName: 'Cuong', lastName: 'Nguyen', role: 'Employee', isActive: true, manager_email: 'bob@conarum.com' },
+    { email: 'dung@conarum.com', firstName: 'Dung', lastName: 'Pham', role: 'Employee', isActive: true, manager_email: 'bob@conarum.com' },
+    { email: 'mai@conarum.com', firstName: 'Mai', lastName: 'Le', role: 'Employee', isActive: true, manager_email: 'bob@conarum.com' },
+    { email: 'tuan@conarum.com', firstName: 'Tuan', lastName: 'Hoang', role: 'Employee', isActive: true, manager_email: 'bob@conarum.com' },
+    // Team 2 - charlie (TeamLead) – email must match package.json mock auth: charlie@conarum.com
+    { email: 'charlie@conarum.com', firstName: 'Charlie', lastName: 'Le', role: 'TeamLead', isActive: true, manager_email: 'manager@conarum.com' },
+    { email: 'hoa@conarum.com', firstName: 'Hoa', lastName: 'Vo', role: 'Employee', isActive: true, manager_email: 'charlie@conarum.com' },
+    { email: 'nam@conarum.com', firstName: 'Nam', lastName: 'Do', role: 'Employee', isActive: true, manager_email: 'charlie@conarum.com' },
+    { email: 'linh@conarum.com', firstName: 'Linh', lastName: 'Bui', role: 'Employee', isActive: true, manager_email: 'charlie@conarum.com' },
+    { email: 'khoa@conarum.com', firstName: 'Khoa', lastName: 'Dao', role: 'Employee', isActive: true, manager_email: 'charlie@conarum.com' },
+    { email: 'trang@conarum.com', firstName: 'Trang', lastName: 'Vu', role: 'Employee', isActive: true, manager_email: 'charlie@conarum.com' },
+    { email: 'phuc@conarum.com', firstName: 'Phuc', lastName: 'Dinh', role: 'Employee', isActive: true, manager_email: 'charlie@conarum.com' },
+    { email: 'an@conarum.com', firstName: 'An', lastName: 'Ngo', role: 'Employee', isActive: false, manager_email: 'charlie@conarum.com' },
 ];
 
 // ─── 2. Projects ─────────────────────────────────────────────────────────────
@@ -58,8 +58,8 @@ const tasks = [
 
 // ─── 4. TimesheetBatches ─────────────────────────────────────────────────────
 const timesheetBatches = [
-    { ID: batch1Id, teamLead_email: 'lead1@conarum.com', admin_email: 'diana@example.com', status: 'Pending' },
-    { ID: batch2Id, teamLead_email: 'lead2@conarum.com', admin_email: 'diana@example.com', status: 'Processed' },
+    { ID: batch1Id, teamLead_email: 'bob@conarum.com', admin_email: 'diana@example.com', status: 'Pending' },
+    { ID: batch2Id, teamLead_email: 'charlie@conarum.com', admin_email: 'diana@example.com', status: 'Processed' },
 ];
 
 // ─── 5. Timesheets ───────────────────────────────────────────────────────────
@@ -72,8 +72,8 @@ const timesheets = [
     { user_email: 'dung@conarum.com', month: 2, year: 2026, status: 'Approved', submitDate: '2026-02-27T16:00:00Z', approveDate: '2026-03-01T11:00:00Z', batch_ID: batch1Id, currentApprover_email: '' },
     { user_email: 'mai@conarum.com', month: 2, year: 2026, status: 'Approved', submitDate: '2026-02-28T09:00:00Z', approveDate: '2026-03-01T11:30:00Z', batch_ID: batch1Id, currentApprover_email: '' },
     { user_email: 'tuan@conarum.com', month: 2, year: 2026, status: 'Approved', submitDate: '2026-02-28T10:00:00Z', approveDate: '2026-03-01T12:00:00Z', batch_ID: batch1Id, currentApprover_email: '' },
-    // lead1 also has own timesheet in batch
-    { user_email: 'lead1@conarum.com', month: 2, year: 2026, status: 'Approved', submitDate: '2026-02-28T15:00:00Z', approveDate: '2026-03-01T09:00:00Z', batch_ID: batch1Id, currentApprover_email: '' },
+    // bob also has own timesheet in batch
+    { user_email: 'bob@conarum.com', month: 2, year: 2026, status: 'Approved', submitDate: '2026-02-28T15:00:00Z', approveDate: '2026-03-01T09:00:00Z', batch_ID: batch1Id, currentApprover_email: '' },
     // Extra timesheets in batch1 (approved Jan timesheets added late)
     { user_email: 'alice@conarum.com', month: 1, year: 2026, status: 'Approved', submitDate: '2026-02-01T08:00:00Z', approveDate: '2026-02-02T10:00:00Z', batch_ID: batch1Id, currentApprover_email: '' },
     { user_email: 'cuong@conarum.com', month: 1, year: 2026, status: 'Approved', submitDate: '2026-02-01T09:00:00Z', approveDate: '2026-02-02T10:30:00Z', batch_ID: batch1Id, currentApprover_email: '' },
@@ -85,7 +85,7 @@ const timesheets = [
     { user_email: 'khoa@conarum.com', month: 2, year: 2026, status: 'Finished', submitDate: '2026-02-28T08:30:00Z', approveDate: '2026-02-28T10:30:00Z', batch_ID: batch2Id, currentApprover_email: '', finishedDate: '2026-03-02T14:00:00Z' },
     { user_email: 'trang@conarum.com', month: 2, year: 2026, status: 'Finished', submitDate: '2026-02-28T09:00:00Z', approveDate: '2026-02-28T11:00:00Z', batch_ID: batch2Id, currentApprover_email: '', finishedDate: '2026-03-02T14:00:00Z' },
     { user_email: 'phuc@conarum.com', month: 2, year: 2026, status: 'Finished', submitDate: '2026-02-28T09:30:00Z', approveDate: '2026-02-28T11:30:00Z', batch_ID: batch2Id, currentApprover_email: '', finishedDate: '2026-03-02T14:00:00Z' },
-    { user_email: 'lead2@conarum.com', month: 2, year: 2026, status: 'Finished', submitDate: '2026-02-28T14:00:00Z', approveDate: '2026-02-28T15:00:00Z', batch_ID: batch2Id, currentApprover_email: '', finishedDate: '2026-03-02T14:00:00Z' },
+    { user_email: 'charlie@conarum.com', month: 2, year: 2026, status: 'Finished', submitDate: '2026-02-28T14:00:00Z', approveDate: '2026-02-28T15:00:00Z', batch_ID: batch2Id, currentApprover_email: '', finishedDate: '2026-03-02T14:00:00Z' },
     // Extra: Jan timesheets in batch 2
     { user_email: 'hoa@conarum.com', month: 1, year: 2026, status: 'Finished', submitDate: '2026-02-01T10:00:00Z', approveDate: '2026-02-02T08:00:00Z', batch_ID: batch2Id, currentApprover_email: '', finishedDate: '2026-03-02T14:00:00Z' },
     { user_email: 'nam@conarum.com', month: 1, year: 2026, status: 'Finished', submitDate: '2026-02-01T10:30:00Z', approveDate: '2026-02-02T08:30:00Z', batch_ID: batch2Id, currentApprover_email: '', finishedDate: '2026-03-02T14:00:00Z' },
@@ -93,8 +93,8 @@ const timesheets = [
 
     // ── Not in any batch (Mar 2026 - various statuses) ─────────────────────────
     { user_email: 'alice@conarum.com', month: 3, year: 2026, status: 'Draft', submitDate: '', approveDate: '', batch_ID: '', currentApprover_email: '' },
-    { user_email: 'cuong@conarum.com', month: 3, year: 2026, status: 'Submitted', submitDate: '2026-03-03T18:00:00Z', approveDate: '', batch_ID: '', currentApprover_email: 'lead1@conarum.com' },
-    { user_email: 'hoa@conarum.com', month: 3, year: 2026, status: 'Rejected', submitDate: '2026-03-02T08:00:00Z', approveDate: '', batch_ID: '', currentApprover_email: 'lead2@conarum.com', comment: 'Missing project hours' },
+    { user_email: 'cuong@conarum.com', month: 3, year: 2026, status: 'Submitted', submitDate: '2026-03-03T18:00:00Z', approveDate: '', batch_ID: '', currentApprover_email: 'bob@conarum.com' },
+    { user_email: 'hoa@conarum.com', month: 3, year: 2026, status: 'Rejected', submitDate: '2026-03-02T08:00:00Z', approveDate: '', batch_ID: '', currentApprover_email: 'charlie@conarum.com', comment: 'Missing project hours' },
 ];
 
 // ─── 6. TimesheetEntries ─────────────────────────────────────────────────────
@@ -177,13 +177,13 @@ addEntries('tuan@conarum.com', 'INT-002', 'Pipeline Setup',
     [8, 8, 8, 8, 8], 'Approved'
 );
 
-// Lead1 - Feb
-addEntries('lead1@conarum.com', 'INT-001', 'Backend API',
+// Bob (Team Lead 1) - Feb
+addEntries('bob@conarum.com', 'INT-001', 'Backend API',
     weekdays(2026, 2, 3), [4, 4, 4],
     ['Code review', 'Architecture meeting', 'Sprint planning'],
     [4, 4, 4], 'Approved'
 );
-addEntries('lead1@conarum.com', 'EXT-001', 'Implementation Phase',
+addEntries('bob@conarum.com', 'EXT-001', 'Implementation Phase',
     ['2026-02-09', '2026-02-10'], [8, 6],
     ['Client sync call', 'Technical review'], [8, 6], 'Approved'
 );
@@ -256,13 +256,13 @@ addEntries('phuc@conarum.com', 'INT-001', 'Frontend Development',
     [8, 8, 8, 8, 7], 'Finished'
 );
 
-// Lead2 - Feb
-addEntries('lead2@conarum.com', 'EXT-002', 'Data Analysis',
+// Charlie (Team Lead 2) - Feb
+addEntries('charlie@conarum.com', 'EXT-002', 'Data Analysis',
     weekdays(2026, 2, 3), [4, 4, 4],
     ['Team standup', 'Client meeting', 'Sprint review'],
     [4, 4, 4], 'Finished'
 );
-addEntries('lead2@conarum.com', 'OTH-001', 'AI Exploration',
+addEntries('charlie@conarum.com', 'OTH-001', 'AI Exploration',
     ['2026-02-09', '2026-02-10'], [6, 4],
     ['AI roadmap planning', 'Budget estimation'], [6, 4], 'Finished'
 );
@@ -317,14 +317,14 @@ function addApprovalFlow(userEmail, month, year, leadEmail, submitTs, approveTs)
 }
 
 // Batch 1 approvals (Feb)
-addApprovalFlow('alice@conarum.com', 2, 2026, 'lead1@conarum.com', '2026-02-28T17:00:00Z', '2026-03-01T10:00:00Z');
-addApprovalFlow('cuong@conarum.com', 2, 2026, 'lead1@conarum.com', '2026-02-28T18:00:00Z', '2026-03-01T10:30:00Z');
-addApprovalFlow('dung@conarum.com', 2, 2026, 'lead1@conarum.com', '2026-02-27T16:00:00Z', '2026-03-01T11:00:00Z');
-addApprovalFlow('mai@conarum.com', 2, 2026, 'lead1@conarum.com', '2026-02-28T09:00:00Z', '2026-03-01T11:30:00Z');
-addApprovalFlow('tuan@conarum.com', 2, 2026, 'lead1@conarum.com', '2026-02-28T10:00:00Z', '2026-03-01T12:00:00Z');
-addApprovalFlow('lead1@conarum.com', 2, 2026, 'manager@conarum.com', '2026-02-28T15:00:00Z', '2026-03-01T09:00:00Z');
-addApprovalFlow('alice@conarum.com', 1, 2026, 'lead1@conarum.com', '2026-02-01T08:00:00Z', '2026-02-02T10:00:00Z');
-addApprovalFlow('cuong@conarum.com', 1, 2026, 'lead1@conarum.com', '2026-02-01T09:00:00Z', '2026-02-02T10:30:00Z');
+addApprovalFlow('alice@conarum.com', 2, 2026, 'bob@conarum.com', '2026-02-28T17:00:00Z', '2026-03-01T10:00:00Z');
+addApprovalFlow('cuong@conarum.com', 2, 2026, 'bob@conarum.com', '2026-02-28T18:00:00Z', '2026-03-01T10:30:00Z');
+addApprovalFlow('dung@conarum.com', 2, 2026, 'bob@conarum.com', '2026-02-27T16:00:00Z', '2026-03-01T11:00:00Z');
+addApprovalFlow('mai@conarum.com', 2, 2026, 'bob@conarum.com', '2026-02-28T09:00:00Z', '2026-03-01T11:30:00Z');
+addApprovalFlow('tuan@conarum.com', 2, 2026, 'bob@conarum.com', '2026-02-28T10:00:00Z', '2026-03-01T12:00:00Z');
+addApprovalFlow('bob@conarum.com', 2, 2026, 'manager@conarum.com', '2026-02-28T15:00:00Z', '2026-03-01T09:00:00Z');
+addApprovalFlow('alice@conarum.com', 1, 2026, 'bob@conarum.com', '2026-02-01T08:00:00Z', '2026-02-02T10:00:00Z');
+addApprovalFlow('cuong@conarum.com', 1, 2026, 'bob@conarum.com', '2026-02-01T09:00:00Z', '2026-02-02T10:30:00Z');
 
 // Batch 2 approvals (Feb) + finished
 function addFinishedFlow(userEmail, month, year, leadEmail, submitTs, approveTs, finishTs) {
@@ -334,28 +334,28 @@ function addFinishedFlow(userEmail, month, year, leadEmail, submitTs, approveTs,
     );
 }
 
-addFinishedFlow('hoa@conarum.com', 2, 2026, 'lead2@conarum.com', '2026-02-27T16:00:00Z', '2026-02-28T09:00:00Z', '2026-03-02T14:00:00Z');
-addFinishedFlow('nam@conarum.com', 2, 2026, 'lead2@conarum.com', '2026-02-27T17:00:00Z', '2026-02-28T09:30:00Z', '2026-03-02T14:00:00Z');
-addFinishedFlow('linh@conarum.com', 2, 2026, 'lead2@conarum.com', '2026-02-28T08:00:00Z', '2026-02-28T10:00:00Z', '2026-03-02T14:00:00Z');
-addFinishedFlow('khoa@conarum.com', 2, 2026, 'lead2@conarum.com', '2026-02-28T08:30:00Z', '2026-02-28T10:30:00Z', '2026-03-02T14:00:00Z');
-addFinishedFlow('trang@conarum.com', 2, 2026, 'lead2@conarum.com', '2026-02-28T09:00:00Z', '2026-02-28T11:00:00Z', '2026-03-02T14:00:00Z');
-addFinishedFlow('phuc@conarum.com', 2, 2026, 'lead2@conarum.com', '2026-02-28T09:30:00Z', '2026-02-28T11:30:00Z', '2026-03-02T14:00:00Z');
-addFinishedFlow('lead2@conarum.com', 2, 2026, 'manager@conarum.com', '2026-02-28T14:00:00Z', '2026-02-28T15:00:00Z', '2026-03-02T14:00:00Z');
-addFinishedFlow('hoa@conarum.com', 1, 2026, 'lead2@conarum.com', '2026-02-01T10:00:00Z', '2026-02-02T08:00:00Z', '2026-03-02T14:00:00Z');
-addFinishedFlow('nam@conarum.com', 1, 2026, 'lead2@conarum.com', '2026-02-01T10:30:00Z', '2026-02-02T08:30:00Z', '2026-03-02T14:00:00Z');
-addFinishedFlow('linh@conarum.com', 1, 2026, 'lead2@conarum.com', '2026-02-01T11:00:00Z', '2026-02-02T09:00:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('hoa@conarum.com', 2, 2026, 'charlie@conarum.com', '2026-02-27T16:00:00Z', '2026-02-28T09:00:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('nam@conarum.com', 2, 2026, 'charlie@conarum.com', '2026-02-27T17:00:00Z', '2026-02-28T09:30:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('linh@conarum.com', 2, 2026, 'charlie@conarum.com', '2026-02-28T08:00:00Z', '2026-02-28T10:00:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('khoa@conarum.com', 2, 2026, 'charlie@conarum.com', '2026-02-28T08:30:00Z', '2026-02-28T10:30:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('trang@conarum.com', 2, 2026, 'charlie@conarum.com', '2026-02-28T09:00:00Z', '2026-02-28T11:00:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('phuc@conarum.com', 2, 2026, 'charlie@conarum.com', '2026-02-28T09:30:00Z', '2026-02-28T11:30:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('charlie@conarum.com', 2, 2026, 'manager@conarum.com', '2026-02-28T14:00:00Z', '2026-02-28T15:00:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('hoa@conarum.com', 1, 2026, 'charlie@conarum.com', '2026-02-01T10:00:00Z', '2026-02-02T08:00:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('nam@conarum.com', 1, 2026, 'charlie@conarum.com', '2026-02-01T10:30:00Z', '2026-02-02T08:30:00Z', '2026-03-02T14:00:00Z');
+addFinishedFlow('linh@conarum.com', 1, 2026, 'charlie@conarum.com', '2026-02-01T11:00:00Z', '2026-02-02T09:00:00Z', '2026-03-02T14:00:00Z');
 
 // Mar timesheets (not in batch)
 approvalHistory.push(
     { timesheet_user_email: 'cuong@conarum.com', timesheet_month: 3, timesheet_year: 2026, actor_email: 'cuong@conarum.com', action: 'Submitted', fromStatus: 'Draft', toStatus: 'Submitted', comment: '', timestamp: '2026-03-03T18:00:00Z' },
     { timesheet_user_email: 'hoa@conarum.com', timesheet_month: 3, timesheet_year: 2026, actor_email: 'hoa@conarum.com', action: 'Submitted', fromStatus: 'Draft', toStatus: 'Submitted', comment: '', timestamp: '2026-03-02T08:00:00Z' },
-    { timesheet_user_email: 'hoa@conarum.com', timesheet_month: 3, timesheet_year: 2026, actor_email: 'lead2@conarum.com', action: 'Rejected', fromStatus: 'Submitted', toStatus: 'Rejected', comment: 'Missing project hours for EXT-001', timestamp: '2026-03-02T12:00:00Z' },
+    { timesheet_user_email: 'hoa@conarum.com', timesheet_month: 3, timesheet_year: 2026, actor_email: 'charlie@conarum.com', action: 'Rejected', fromStatus: 'Submitted', toStatus: 'Rejected', comment: 'Missing project hours for EXT-001', timestamp: '2026-03-02T12:00:00Z' },
 );
 
 // ─── 8. BatchHistory ─────────────────────────────────────────────────────────
 const batchHistory = [
-    { batch_ID: batch1Id, actor_email: 'lead1@conarum.com', action: 'Created', status: 'Pending', comment: 'Submitting team 1 approved timesheets for Jan & Feb', timestamp: '2026-03-01T13:00:00Z' },
-    { batch_ID: batch2Id, actor_email: 'lead2@conarum.com', action: 'Created', status: 'Pending', comment: 'Team 2 Jan & Feb batch', timestamp: '2026-03-01T14:00:00Z' },
+    { batch_ID: batch1Id, actor_email: 'bob@conarum.com', action: 'Created', status: 'Pending', comment: 'Submitting team 1 approved timesheets for Jan & Feb', timestamp: '2026-03-01T13:00:00Z' },
+    { batch_ID: batch2Id, actor_email: 'charlie@conarum.com', action: 'Created', status: 'Pending', comment: 'Team 2 Jan & Feb batch', timestamp: '2026-03-01T14:00:00Z' },
     { batch_ID: batch2Id, actor_email: 'diana@example.com', action: 'Finished', status: 'Processed', comment: 'All entries verified and exported', timestamp: '2026-03-02T14:00:00Z' },
 ];
 

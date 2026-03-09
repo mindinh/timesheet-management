@@ -1,41 +1,145 @@
-_schema-version: 3.3.0
+_schema-version: '3.3.0'
 ID: timesheet-management
 version: 1.0.0
-description: "A simple CAP project."
+description: 'Conarum Timesheet Management - CAP backend + React Vite SPA'
+
 parameters:
   enable-parallel-deployments: true
+
 build-parameters:
   before-all:
     - builder: custom
       commands:
         - npm ci
-        - npx cds build --production
+        - npm ci --prefix app/timesheet-app
+        - npx -p @sap/cds-dk cds build --production
+
 modules:
+  # ── 1. CAP Backend ─────────────────────────────────────────────────────────
   - name: timesheet-management-srv
     type: nodejs
     path: gen/srv
     parameters:
-      instances: 1
       buildpack: nodejs_buildpack
+      memory: 512M
+      disk-quota: 1024M
     build-parameters:
       builder: npm-ci
     provides:
-      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+      - name: srv-api
         properties:
           srv-url: ${default-url}
     requires:
       - name: timesheet-management-auth
       - name: timesheet-management-db
+      - name: timesheet-management-destination
+      - name: timesheet-management-connectivity
 
+  # ── 2. HANA DB Deployer ────────────────────────────────────────────────────
   - name: timesheet-management-db-deployer
     type: hdb
     path: gen/db
     parameters:
       buildpack: nodejs_buildpack
+      memory: 256M
+      disk-quota: 1024M
     requires:
       - name: timesheet-management-db
 
+  # ── 3. React / Vite SPA (HTML5 Module) ────────────────────────────────────
+  - name: timesheet-management-app-ui
+    type: html5
+    path: app/timesheet-app
+    build-parameters:
+      builder: custom
+      build-result: dist
+      commands:
+        - npm run build
+      supported-platforms: []
+
+  # ── 4. HTML5 UI Deployer ───────────────────────────────────────────────────
+  - name: timesheet-management-ui-deployer
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: timesheet-management-html5-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: ui_resources
+      requires:
+        - name: timesheet-management-app-ui
+          artifacts:
+            - timesheet-management-app-ui.zip
+          target-path: ui_resources/
+
+  # ── 5. Approuter ──────────────────────────────────────────────────────────
+  - name: timesheet-management-approuter
+    type: approuter.nodejs
+    path: approuter
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: timesheet-management-srv
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: timesheet-management-auth
+      - name: timesheet-management-html5-repo-runtime
+      - name: timesheet-management-destination
+    provides:
+      - name: app-api
+        properties:
+          app-url: ${default-url}
+          protocol: ${protocol}
+
+  # ── 6. Destination Content ────────────────────────────────────────────────
+  - name: timesheet-management-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: srv-api
+      - name: timesheet-management-destination
+        parameters:
+          content-target: true
+      - name: timesheet-management-auth
+        parameters:
+          service-key:
+            name: timesheet-management-auth-key
+      - name: timesheet-management-html5-repo-host
+        parameters:
+          service-key:
+            name: timesheet-management-html5-repo-host-key
+    build-parameters:
+      no-source: true
+    parameters:
+      content:
+        instance:
+          existing_destinations_policy: update
+          destinations:
+            - Name: timesheet_management_xsuaa_dest
+              Authentication: OAuth2UserTokenExchange
+              ServiceInstanceName: timesheet-management-auth
+              ServiceKeyName: timesheet-management-auth-key
+              sap.cloud.service: cnma.timesheet
+            - Name: timesheet_management_html5_repo_host_dest
+              Authentication: OAuth2UserTokenExchange
+              ServiceInstanceName: timesheet-management-html5-repo-host
+              ServiceKeyName: timesheet-management-html5-repo-host-key
+              sap.cloud.service: cnma.timesheet
+
 resources:
+  # ── HANA HDI Container ────────────────────────────────────────────────────
+  - name: timesheet-management-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+
+  # ── XSUAA (SAP Authorization & Trust Management) ─────────────────────────
   - name: timesheet-management-auth
     type: org.cloudfoundry.managed-service
     parameters:
@@ -45,12 +149,49 @@ resources:
       config:
         xsappname: timesheet-management-${org}-${space}
         tenant-mode: dedicated
-        oauth2-configuration:
-          credential-types:
-            - "binding-secret"
-            - "x509"
-  - name: timesheet-management-db
-    type: com.sap.xs.hdi-container
+
+  # ── Destination Service ───────────────────────────────────────────────────
+  - name: timesheet-management-destination
+    type: org.cloudfoundry.managed-service
     parameters:
-      service: hana
-      service-plan: hdi-shared
+      service: destination
+      service-plan: lite
+      config:
+        version: 1.0.0
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            existing_destinations_policy: update
+            destinations:
+              - Name: timesheet-management-srv
+                Description: Conarum Timesheet CAP Service
+                Authentication: NoAuthentication
+                Type: HTTP
+                ProxyType: Internet
+                URL: ~{srv-api/srv-url}
+                HTML5.DynamicDestination: true
+                HTML5.ForwardAuthToken: true
+                ForwardAuthToken: true
+    requires:
+      - name: srv-api
+
+  # ── HTML5 App Host (stores UI bundles) ────────────────────────────────────
+  - name: timesheet-management-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+
+  # ── HTML5 App Runtime (serves UI from CDN) ────────────────────────────────
+  - name: timesheet-management-html5-repo-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
+
+  # ── Connectivity Service ──────────────────────────────────────────────────
+  - name: timesheet-management-connectivity
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: connectivity
+      service-plan: lite

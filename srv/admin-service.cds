@@ -107,4 +107,26 @@ service AdminService @(
    * Admin can reassign an employee to a different Team Lead.
    */
   action reassignMember(memberId: String, newTeamLeadId: String)                      returns String;
+
+  /**
+   * Get all teams: each TeamLead with their list of direct-report employees.
+   * Returns a JSON string of { teamLeadId, firstName, lastName, email, members: [...] }[].
+   */
+  action getAllTeams()                                                                 returns String;
+
+  /**
+   * Admin assigns a TeamLead to their own admin scope (sets teamlead.manager_ID = current admin).
+   * This is how Admin "owns" / oversees a team lead.
+   */
+  action adminAssignTeamLead(teamLeadId: String)                                      returns String;
+
+  /**
+   * Admin unassigns a TeamLead (clears teamlead.manager_ID).
+   */
+  action adminUnassignTeamLead(teamLeadId: String)                                    returns String;
+
+  /**
+   * Get all TeamLeads not yet assigned to any admin (manager_ID is null).
+   */
+  action getUnassignedTeamLeads()                                                     returns String;
 }

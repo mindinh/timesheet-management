@@ -14,10 +14,7 @@ export function useValueHelpSelection<T>(options: UseValueHelpSelectionOptions<T
 
   const selectedIds = new Set(selection.map((item) => item[idKey] as string | number));
 
-  const isSelected = useCallback(
-    (item: T) => selectedIds.has(item[idKey] as string | number),
-    [selectedIds, idKey]
-  );
+  const isSelected = useCallback((item: T) => selectedIds.has(item[idKey] as string | number), [selectedIds, idKey]);
 
   const toggle = useCallback(
     (item: T) => {

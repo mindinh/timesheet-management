@@ -16,6 +16,13 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:4004',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            // Strip WWW-Authenticate so browser never shows its native Basic Auth dialog.
+            // Auth is handled by the FE user-switcher (Authorization header in httpClient.js).
+            delete proxyRes.headers['www-authenticate']
+          })
+        },
       },
     },
     fs: {

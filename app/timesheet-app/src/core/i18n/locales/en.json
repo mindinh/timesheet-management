@@ -1,14 +1,14 @@
 {
     "sidebar": {
-        "title": "Timesheet Mgmt",
+        "title": "Conarum Timesheet",
         "myTimesheet": "Log Timesheet",
         "myTimesheets": "Timesheet Worklist",
-        "myProjects": "My Projects",
+        "myProjects": "Projects",
         "approvals": "Approvals",
         "adminDashboard": "Admin Dashboard",
         "switchUser": "Switch User",
         "documents": "Documents",
-        "myTeam": "My Team"
+        "myTeam": "Team Members"
     },
     "auditHistory": {
         "title": "Audit History",
