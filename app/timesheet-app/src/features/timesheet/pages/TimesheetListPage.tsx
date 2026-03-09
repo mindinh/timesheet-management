@@ -323,14 +323,14 @@ export default function TimesheetListPage() {
       },
       {
         key: 'workDays',
-        label: 'Work Days',
+        label: t('timesheets.table.workDays', 'Work Days'),
         labelKey: 'timesheets.table.workDays',
         flex: 1,
         render: (_value: unknown, row: Timesheet) => {
           const days = (row.totalHours || 0) / 8;
           return (
             <span className="font-semibold text-primary whitespace-nowrap" title={`${(row.totalHours || 0).toFixed(1)}h ÷ 8h`}>
-              {days.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">days</span>
+              {days.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">{t('timesheets.table.daysCount', 'days')}</span>
             </span>
           );
         },
@@ -384,7 +384,7 @@ export default function TimesheetListPage() {
         ),
       },
     ],
-    [navigate, handleOpenAudit]
+    [t, navigate, handleOpenAudit]
   );
 
   return (

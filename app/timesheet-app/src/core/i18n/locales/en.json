@@ -23,6 +23,7 @@
         "description": "View and manage your timesheet submissions",
         "logTimesheet": "Log Timesheet",
         "noTimesheets": "No timesheets found. Try adjusting your filters or log a new timesheet.",
+        "syncPapierkram": "Sync Papierkram",
         "table": {
             "period": "Period",
             "status": "Status",
@@ -30,7 +31,9 @@
             "entries": "Entries",
             "submitted": "Submitted",
             "approved": "Approved",
-            "actions": "Actions"
+            "actions": "Actions",
+            "workDays": "Work Days",
+            "daysCount": "days"
         }
     },
     "projects": {

@@ -17,6 +17,24 @@
     "Modified": "修正済み",
     "Finished": "完了済み"
   },
+  "timesheets": {
+    "title": "タイムシートワークリスト",
+    "description": "タイムシートの提出を表示および管理します",
+    "logTimesheet": "タイムシート記録",
+    "noTimesheets": "タイムシートが見つかりません。フィルタを調整するか、新しいタイムシートを記録してください。",
+    "syncPapierkram": "Papierkram 同期",
+    "table": {
+      "period": "期間",
+      "status": "ステータス",
+      "totalHours": "合計時間",
+      "workDays": "稼働日",
+      "daysCount": "日",
+      "entries": "エントリ",
+      "submitted": "提出済み",
+      "approved": "承認済み",
+      "actions": "アクション"
+    }
+  },
   "projects": {
     "title": "プロジェクト",
     "description": "プロジェクトとタスクタイプの管理",

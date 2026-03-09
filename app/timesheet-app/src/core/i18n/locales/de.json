@@ -29,7 +29,9 @@
       "entries": "Einträge",
       "submitted": "Eingereicht",
       "approved": "Genehmigt",
-      "actions": "Aktionen"
+      "actions": "Aktionen",
+      "workDays": "Arbeitstage",
+      "daysCount": "Tage"
     }
   },
   "projects": {

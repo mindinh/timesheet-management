@@ -11,7 +11,7 @@ import { getUserWithManager } from '@/features/auth/api/auth-api';
 import { getTeamLeads } from '@/features/timesheet/api/timesheet-api';
 import { exportSingleTimesheetToExcel } from '@/features/admin/utils/export-excel';
 import type { TimesheetEntry } from '@/shared/types';
-import { AlertTriangle, History, Save, FileDown } from 'lucide-react';
+import { AlertTriangle, History, Save, FileDown, CloudDownload } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/shared/components/ui/alert';
 import { Button } from '@/shared/components/ui/button';
 import { AuditHistoryDialog } from '@/features/timesheet/components/AuditHistoryDialog';
@@ -19,8 +19,10 @@ import StatusDialog from '@/shared/components/common/StatusDialog';
 import ConfirmDialog from '@/shared/components/common/ConfirmDialog';
 
 import { useProjectStore } from '@/features/projects/store/projectStore';
+import { useTranslation } from 'react-i18next';
 
 export default function TimesheetPage() {
+  const { t } = useTranslation();
   const { projects, fetchProjects, tasks } = useProjectStore();
   const {
     currentMonth,
@@ -74,7 +76,7 @@ export default function TimesheetPage() {
   }>({
     open: false,
     title: '',
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   // Auto-open audit history when navigating from list with showHistory query param
@@ -469,6 +471,10 @@ export default function TimesheetPage() {
             <Button variant="outline" size="sm" className="font-medium" onClick={handleExport} disabled={isExporting}>
               <FileDown className="h-4 w-4 mr-1.5" />
               {isExporting ? 'Exporting...' : 'Export Report'}
+            </Button>
+            <Button size="sm" className="font-medium" onClick={() => { }} disabled={isReadOnly}>
+              <CloudDownload className="h-4 w-4 mr-1.5" />
+              {t('timesheets.syncPapierkram')}
             </Button>
           </div>
         </div>

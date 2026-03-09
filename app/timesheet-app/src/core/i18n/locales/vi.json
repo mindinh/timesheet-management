@@ -22,6 +22,7 @@
     "description": "Xem và quản lý các bản ghi timesheet",
     "logTimesheet": "Ghi Timesheet",
     "noTimesheets": "Không tìm thấy timesheet. Hãy thử điều chỉnh bộ lọc hoặc ghi một timesheet mới.",
+    "syncPapierkram": "Đồng bộ Papierkram",
     "table": {
       "period": "Kỳ",
       "status": "Trạng thái",
@@ -29,7 +30,9 @@
       "entries": "Mục nhập",
       "submitted": "Ngày gửi",
       "approved": "Ngày duyệt",
-      "actions": "Hành động"
+      "actions": "Hành động",
+      "workDays": "Số ngày công",
+      "daysCount": "ngày"
     }
   },
   "approvalsPage": {
